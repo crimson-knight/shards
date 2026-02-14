@@ -459,10 +459,10 @@ module Shards
           end
 
           # Methods
-          {"constructors" => "Constructors",
-           "class_methods" => "Class Methods",
+          {"constructors"     => "Constructors",
+           "class_methods"    => "Class Methods",
            "instance_methods" => "Instance Methods",
-           "macros" => "Macros"}.each do |field, title|
+           "macros"           => "Macros"}.each do |field, title|
             if methods = type_json[field]?.try(&.as_a?)
               unless methods.empty?
                 md << "## #{title}\n\n"
@@ -542,10 +542,10 @@ module Shards
 
       private def html_decode(text : String) : String
         text.gsub("&amp;", "&")
-            .gsub("&lt;", "<")
-            .gsub("&gt;", ">")
-            .gsub("&quot;", "\"")
-            .gsub("&#39;", "'")
+          .gsub("&lt;", "<")
+          .gsub("&gt;", ">")
+          .gsub("&quot;", "\"")
+          .gsub("&#39;", "'")
       end
     end
   end

@@ -109,8 +109,8 @@ module Shards
     # ### Manual execution
     #
     # ```
-    # shards run-script              # run all pending scripts
-    # shards run-script my_shard     # run for specific shard
+    # shards run - script          # run all pending scripts
+    # shards run - script my_shard # run for specific shard
     # ```
     #
     # See `PostinstallInfo`, `Commands::RunScript`, `Package#postinstall`.
@@ -135,7 +135,7 @@ module Shards
     # shard servers into the user's config:
     #
     # ```
-    # shards ai-docs merge-mcp
+    # shards ai - docs merge - mcp
     # ```
     #
     # ### Example .mcp.json in a shard

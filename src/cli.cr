@@ -149,9 +149,9 @@ module Shards
             sbom_include_dev = false
             args[1..-1].each do |arg|
               case arg
-              when .starts_with?("--format=")  then sbom_format = arg.split("=", 2).last
-              when .starts_with?("--output=")  then sbom_output = arg.split("=", 2).last
-              when "--include-dev"              then sbom_include_dev = true
+              when .starts_with?("--format=") then sbom_format = arg.split("=", 2).last
+              when .starts_with?("--output=") then sbom_output = arg.split("=", 2).last
+              when "--include-dev"            then sbom_include_dev = true
               end
             end
             Commands::SBOM.run(path, sbom_format, sbom_output, sbom_include_dev)

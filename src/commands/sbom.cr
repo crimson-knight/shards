@@ -113,8 +113,8 @@ module Shards
       end
 
       private def write_spdx_package(json : JSON::Builder, spdx_id : String, name : String, version : String,
-                                      download_location : String, license : String?, description : String?,
-                                      supplier : String?, purl : String?)
+                                     download_location : String, license : String?, description : String?,
+                                     supplier : String?, purl : String?)
         json.object do
           json.field "SPDXID", spdx_id
           json.field "name", name
@@ -349,9 +349,9 @@ module Shards
           purl_type = case host
                       when .includes?("github")    then "github"
                       when .includes?("gitlab")    then "gitlab"
-                      when .includes?("bitbucket")  then "bitbucket"
-                      when .includes?("codeberg")   then "codeberg"
-                      else                               nil
+                      when .includes?("bitbucket") then "bitbucket"
+                      when .includes?("codeberg")  then "codeberg"
+                      else                              nil
                       end
 
           if purl_type

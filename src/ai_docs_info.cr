@@ -68,7 +68,7 @@ module Shards
 
                 pull.each_in_mapping do
                   case pull.read_scalar
-                  when "version"       then version = pull.read_scalar
+                  when "version" then version = pull.read_scalar
                   when "files"
                     pull.each_in_mapping do
                       file_path = pull.read_scalar

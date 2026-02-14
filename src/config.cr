@@ -3,11 +3,11 @@ require "./ai_docs_info"
 require "./postinstall_info"
 
 module Shards
-  SPEC_FILENAME          = "shard.yml"
-  LOCK_FILENAME          = "shard.lock"
-  OVERRIDE_FILENAME      = "shard.override.yml"
-  INSTALL_DIR            = "lib"
-  AI_DOCS_INFO_FILENAME  = ".ai-docs-info.yml"
+  SPEC_FILENAME             = "shard.yml"
+  LOCK_FILENAME             = "shard.lock"
+  OVERRIDE_FILENAME         = "shard.override.yml"
+  INSTALL_DIR               = "lib"
+  AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
 
   DEFAULT_COMMAND = "install"
