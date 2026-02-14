@@ -1,0 +1,122 @@
+name: Release
+
+# Builds and publishes a release when a tag is pushed.
+# Usage: git tag v0.21.0-alpha.1 && git push origin v0.21.0-alpha.1
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-15
+            arch: arm64
+            artifact: shards-alpha-darwin-arm64
+          - os: macos-15-intel
+            arch: x86_64
+            artifact: shards-alpha-darwin-x86_64
+          - os: ubuntu-24.04
+            arch: x86_64
+            artifact: shards-alpha-linux-x86_64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build release binary
+        run: make bin/shards-alpha release=1
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp bin/shards-alpha dist/
+          cp LICENSE dist/
+          cp man/shards.1 dist/ 2>/dev/null || true
+          cp man/shard.yml.5 dist/ 2>/dev/null || true
+          cd dist && tar czf ../${{ matrix.artifact }}.tar.gz *
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Get changes since last tag
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${GITHUB_REF_NAME}$" | head -1)
+          if [ -n "$PREV_TAG" ]; then
+            CHANGES=$(git log --oneline $PREV_TAG..HEAD)
+          else
+            CHANGES=$(git log --oneline -20)
+          fi
+
+          cat > release_notes.md <<EOF
+          ## Shards Alpha $VERSION
+
+          A fork of [Crystal's Shards](https://github.com/crystal-lang/shards) with alpha features.
+
+          ### Alpha Features
+          - **AI docs distribution**: \`shards install\` copies AI docs from dependencies
+          - **SBOM generation**: \`shards sbom\` produces SPDX 2.3 / CycloneDX 1.6 JSON
+          - **MCP server distribution**: Dependencies can ship MCP server configs
+          - **Docs theming**: \`shards docs\` with CSS theming and AI assistant buttons
+          - **Postinstall tracking**: Version-aware script execution
+
+          ### Install via Homebrew
+          \`\`\`
+          brew tap crimson-knight/tap
+          brew install shards-alpha
+          \`\`\`
+
+          ### Install from binary
+          Download the archive for your platform and extract \`shards-alpha\` to your PATH.
+
+          ### Changes
+          \`\`\`
+          $CHANGES
+          \`\`\`
+          EOF
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "Shards Alpha ${{ steps.notes.outputs.version }}" \
+            --notes-file release_notes.md \
+            --prerelease \
+            artifacts/shards-alpha-darwin-arm64/*.tar.gz \
+            artifacts/shards-alpha-darwin-x86_64/*.tar.gz \
+            artifacts/shards-alpha-linux-x86_64/*.tar.gz

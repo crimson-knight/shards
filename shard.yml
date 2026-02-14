@@ -1,21 +1,23 @@
-name: shards
-version: 0.21.0-dev
+name: shards-alpha
+version: 0.21.0-alpha.1
 description: |
- Resolves, installs and updates project dependencies reproducibly from source
- repositories.
+ Fork of Crystal's Shards package manager with alpha features:
+ AI docs distribution, SBOM generation, MCP server distribution,
+ docs theming, and postinstall script tracking.
 
 authors:
   - Julien Portalier <julien@portalier.com>
+  - Seth Tucker
 
-documentation: https://crystal-lang.org/reference/man/shards
-repository: https://github.com/crystal-lang/shards
+documentation: https://github.com/crimson-knight/shards
+repository: https://github.com/crimson-knight/shards
 
 dependencies:
   molinillo:
     github: crystal-lang/crystal-molinillo
 
 targets:
-  shards:
+  shards-alpha:
     main: src/shards.cr
 
 crystal: ">= 0.35.0, < 2.0.0"

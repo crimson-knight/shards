@@ -1,0 +1,148 @@
+name: Upstream Sync
+
+# Checks for updates from crystal-lang/shards and creates a PR if mergeable,
+# or an issue if there are conflicts.
+
+on:
+  schedule:
+    - cron: "0 8 * * 1,4" # Monday and Thursday at 8 AM UTC
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/crystal-lang/shards.git || true
+          git fetch upstream master
+
+      - name: Check for new commits
+        id: check
+        run: |
+          UPSTREAM_HEAD=$(git rev-parse upstream/master)
+          MERGE_BASE=$(git merge-base HEAD upstream/master)
+
+          if [ "$UPSTREAM_HEAD" = "$MERGE_BASE" ]; then
+            echo "already_current=true" >> $GITHUB_OUTPUT
+            echo "No new upstream commits."
+          else
+            echo "already_current=false" >> $GITHUB_OUTPUT
+            COMMIT_COUNT=$(git rev-list --count $MERGE_BASE..$UPSTREAM_HEAD)
+            echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+            # Get summary of upstream changes
+            SUMMARY=$(git log --oneline $MERGE_BASE..$UPSTREAM_HEAD | head -20)
+            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            echo "$SUMMARY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Attempt merge
+        if: steps.check.outputs.already_current != 'true'
+        id: merge
+        run: |
+          BRANCH="upstream-sync/$(date +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+
+          if git merge upstream/master --no-edit; then
+            echo "clean=true" >> $GITHUB_OUTPUT
+            echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+            git push origin "$BRANCH"
+          else
+            echo "clean=false" >> $GITHUB_OUTPUT
+            # Capture conflict info
+            CONFLICTS=$(git diff --name-only --diff-filter=U)
+            echo "conflicts<<EOF" >> $GITHUB_OUTPUT
+            echo "$CONFLICTS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            git merge --abort
+          fi
+
+      - name: Create PR for clean merge
+        if: steps.check.outputs.already_current != 'true' && steps.merge.outputs.clean == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Upstream sync: ${{ steps.check.outputs.commit_count }} new commits from crystal-lang/shards" \
+            --body "$(cat <<'EOF'
+          ## Upstream Sync
+
+          **${{ steps.check.outputs.commit_count }}** new commits from [crystal-lang/shards](https://github.com/crystal-lang/shards).
+
+          ### Upstream changes
+          ```
+          ${{ steps.check.outputs.summary }}
+          ```
+
+          ### Merge status
+          Clean merge -- no conflicts detected.
+
+          ### Action needed
+          Review the changes and merge when ready. Run tests to verify compatibility with alpha features.
+
+          ---
+          *Automated by upstream-sync workflow*
+          EOF
+          )" \
+            --base master \
+            --head "${{ steps.merge.outputs.branch }}"
+
+      - name: Create issue for conflicts
+        if: steps.check.outputs.already_current != 'true' && steps.merge.outputs.clean == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if an open conflict issue already exists
+          EXISTING=$(gh issue list --label "upstream-sync" --state open --json number -q '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "Conflict issue #$EXISTING already open, skipping."
+            exit 0
+          fi
+
+          gh issue create \
+            --title "Upstream sync: merge conflicts with crystal-lang/shards" \
+            --label "upstream-sync" \
+            --body "$(cat <<'EOF'
+          ## Upstream Sync Conflict
+
+          **${{ steps.check.outputs.commit_count }}** new commits from [crystal-lang/shards](https://github.com/crystal-lang/shards) could not be merged automatically.
+
+          ### Upstream changes
+          ```
+          ${{ steps.check.outputs.summary }}
+          ```
+
+          ### Conflicting files
+          ```
+          ${{ steps.merge.outputs.conflicts }}
+          ```
+
+          ### Resolution
+          1. `git fetch upstream master`
+          2. `git merge upstream/master`
+          3. Resolve conflicts in the files listed above
+          4. `make test` to verify
+          5. Commit and push
+
+          ---
+          *Automated by upstream-sync workflow*
+          EOF
+          )"

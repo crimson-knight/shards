@@ -2,9 +2,9 @@
 
 # Recipes for this Makefile
 
-## Build shards
+## Build shards-alpha
 ##   $ make
-## Build shards in release mode
+## Build shards-alpha in release mode
 ##   $ make release=1
 ## Run tests
 ##   $ make test
@@ -12,11 +12,11 @@
 ##   $ make test skip_fossil=1
 ## Generate docs
 ##   $ make docs
-## Install shards
+## Install shards-alpha
 ##   $ make install
-## Uninstall shards
+## Uninstall shards-alpha
 ##   $ make uninstall
-## Build and install shards
+## Build and install shards-alpha
 ##   $ make build && sudo make install
 
 release ?=      ## Compile in release mode
@@ -61,36 +61,40 @@ all: build
 include docs.mk
 
 .PHONY: build
-build: bin/shards$(EXE)
+build: bin/shards-alpha$(EXE)
 
 .PHONY: clean
 clean: ## Remove build artifacts
 clean: clean_docs
-	rm -f bin/shards$(EXE)
+	rm -f bin/shards-alpha$(EXE) bin/shards$(EXE)
 
-bin/shards$(EXE): $(SOURCES) $(TEMPLATES)
+bin/shards-alpha$(EXE): $(SOURCES) $(TEMPLATES)
 	@mkdir -p bin
 	$(EXPORTS) $(CRYSTAL) build $(FLAGS) src/shards.cr -o "$@"
 
+# Symlink for test compatibility (integration tests call `shards`, not `shards-alpha`)
+bin/shards$(EXE): bin/shards-alpha$(EXE)
+	ln -sf shards-alpha$(EXE) bin/shards$(EXE)
+
 .PHONY: install
-install: ## Install shards
-install: bin/shards$(EXE) man/shards.1.gz man/shard.yml.5.gz
+install: ## Install shards-alpha
+install: bin/shards-alpha$(EXE) man/shards.1.gz man/shard.yml.5.gz
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(BINDIR)" "$(DESTDIR)$(MANDIR)/man1" "$(DESTDIR)$(MANDIR)/man5"
-	$(INSTALL) -m 0755 bin/shards$(EXE) "$(DESTDIR)$(BINDIR)"
+	$(INSTALL) -m 0755 bin/shards-alpha$(EXE) "$(DESTDIR)$(BINDIR)"
 	$(INSTALL) -m 0644 man/shards.1.gz "$(DESTDIR)$(MANDIR)/man1"
 	$(INSTALL) -m 0644 man/shard.yml.5.gz "$(DESTDIR)$(MANDIR)/man5"
 
 ifeq ($(WINDOWS),1)
 .PHONY: install_dlls
-install_dlls: bin/shards$(EXE) ## Install the dependent DLLs at DESTDIR (Windows only)
+install_dlls: bin/shards-alpha$(EXE) ## Install the dependent DLLs at DESTDIR (Windows only)
 	$(INSTALL) -d -m 0755 "$(BINDIR)/"
-	@ldd bin/shards$(EXE) | grep -iv ' => /c/windows/system32' | sed 's/.* => //; s/ (.*//' | xargs -t -i $(INSTALL) -m 0755 '{}' "$(BINDIR)/"
+	@ldd bin/shards-alpha$(EXE) | grep -iv ' => /c/windows/system32' | sed 's/.* => //; s/ (.*//' | xargs -t -i $(INSTALL) -m 0755 '{}' "$(BINDIR)/"
 endif
 
 .PHONY: uninstall
-uninstall: ## Uninstall shards
+uninstall: ## Uninstall shards-alpha
 uninstall:
-	rm -f "$(DESTDIR)$(BINDIR)/shards"
+	rm -f "$(DESTDIR)$(BINDIR)/shards-alpha"
 	rm -f "$(DESTDIR)$(MANDIR)/man1/shards.1.gz"
 	rm -f "$(DESTDIR)$(MANDIR)/man5/shard.yml.5.gz"
 
@@ -105,7 +109,7 @@ test_unit:
 
 .PHONY: test_integration
 test_integration: ## Run integration tests
-test_integration: bin/shards$(EXE)
+test_integration: bin/shards$(EXE) bin/shards-alpha$(EXE)
 	$(CRYSTAL) spec ./spec/integration/
 
 man/%.gz: man/%
