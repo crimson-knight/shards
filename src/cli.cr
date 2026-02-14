@@ -14,6 +14,10 @@ module Shards
     prune
     update
     version
+    run-script
+    ai-docs
+    docs
+    sbom
   ]
 
   def self.display_help_and_exit(opts)
@@ -32,6 +36,10 @@ module Shards
           run [<target>] [<options>]           - Build and run specified target
           update [<shards>...]                 - Update dependencies and `shard.lock`.
           version [<path>]                     - Print the current version of the shard.
+          run-script [<shards>...]             - Run pending postinstall scripts.
+          ai-docs [status|diff|reset|update|merge-mcp]  - Manage AI documentation from dependencies.
+          docs [<crystal_docs_options>]            - Generate themed docs with AI assistant buttons.
+          sbom [--format=spdx|cyclonedx] [--output=FILE]  - Generate Software Bill of Materials.
 
       General options:
       HELP
@@ -62,6 +70,9 @@ module Shards
       end
       opts.on("--skip-executables", "Does not install executables") do
         self.skip_executables = true
+      end
+      opts.on("--skip-ai-docs", "Does not install AI documentation from dependencies") do
+        self.skip_ai_docs = true
       end
       opts.on("--local", "Don't update remote repositories, use the local cache only.") { self.local = true }
       opts.on("--jobs=N", "Number of repository downloads to perform in parallel (default: 8). Currently only for git.") { |n| self.jobs = n.to_i }
@@ -117,6 +128,33 @@ module Shards
             )
           when "version"
             Commands::Version.run(args[1]? || path)
+          when "run-script"
+            Commands::RunScript.run(
+              path,
+              args[1..-1].reject(&.starts_with?("--"))
+            )
+          when "ai-docs"
+            Commands::AIDocs.run(
+              path,
+              args[1..-1].reject(&.starts_with?("--"))
+            )
+          when "docs"
+            Commands::Docs.run(
+              path,
+              args[1..-1]
+            )
+          when "sbom"
+            sbom_format = "spdx"
+            sbom_output = nil : String?
+            sbom_include_dev = false
+            args[1..-1].each do |arg|
+              case arg
+              when .starts_with?("--format=")  then sbom_format = arg.split("=", 2).last
+              when .starts_with?("--output=")  then sbom_output = arg.split("=", 2).last
+              when "--include-dev"              then sbom_include_dev = true
+              end
+            end
+            Commands::SBOM.run(path, sbom_format, sbom_output, sbom_include_dev)
           else
             raise "BUG: unknown command #{command}"
           end

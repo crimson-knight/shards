@@ -45,6 +45,49 @@ module Shards
       end
     end
 
+    # Optional `ai_docs` section in `shard.yml` for customizing AI documentation
+    # distribution. When absent, auto-detection handles standard locations.
+    #
+    # ```yaml
+    # ai_docs:
+    #   include:
+    #     - docs/claude/custom_guide.md
+    #   exclude:
+    #     - .claude/skills/internal_dev_tool/
+    # ```
+    class AIDocs
+      # Extra files to include beyond auto-detected locations.
+      getter include : Array(String)
+
+      # Paths to exclude from auto-detected AI docs.
+      getter exclude : Array(String)
+
+      def initialize(@include = [] of String, @exclude = [] of String)
+      end
+
+      def self.new(pull : YAML::PullParser)
+        include_paths = [] of String
+        exclude_paths = [] of String
+
+        pull.each_in_mapping do
+          case pull.read_scalar
+          when "include"
+            pull.read_empty_or do
+              pull.each_in_sequence { include_paths << pull.read_scalar }
+            end
+          when "exclude"
+            pull.read_empty_or do
+              pull.each_in_sequence { exclude_paths << pull.read_scalar }
+            end
+          else
+            pull.skip
+          end
+        end
+
+        new(include_paths, exclude_paths)
+      end
+    end
+
     def to_s(io)
       io << name << " " << version
     end
@@ -81,6 +124,7 @@ module Shards
     getter crystal : String?
     property resolver : Resolver?
     getter? read_from_yaml : Bool
+    getter ai_docs : AIDocs?
 
     def mismatched_version?
       Versions.compare(version, original_version) != 0
@@ -155,6 +199,11 @@ module Shards
             pull.each_in_mapping do
               scripts[pull.read_scalar] = pull.read_scalar
             end
+          end
+        when "ai_docs"
+          check_duplicate(@ai_docs, "ai_docs", line, column)
+          pull.read_empty_or do
+            @ai_docs = AIDocs.new(pull)
           end
         else
           if validate

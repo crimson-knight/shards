@@ -1,5 +1,6 @@
 require "./command"
 require "../molinillo_solver"
+require "../ai_docs"
 
 module Shards
   module Commands
@@ -21,6 +22,8 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
         install(packages)
+
+        AIDocsInstaller.new(path).install(packages)
 
         if generate_lockfile?(packages)
           write_lockfile(packages)

@@ -93,7 +93,34 @@ module Shards
     end
 
     def postinstall
-      run_script("postinstall", Shards.skip_postinstall?)
+      return unless installed?
+      return unless command = spec.scripts["postinstall"]?
+
+      if Shards.skip_postinstall?
+        Log.info { "Postinstall of #{name}: #{command} (skipped)" }
+        return
+      end
+
+      script_hash = PostinstallInfo.hash_script(command)
+      info = Shards.postinstall_info
+
+      if entry = info.shards[name]?
+        if entry.has_run && entry.script_hash == script_hash
+          # Already run and unchanged, skip silently
+          return
+        elsif entry.has_run && entry.script_hash != script_hash
+          Log.warn { "Postinstall script for #{name} has changed." }
+          Log.warn { "  Run `shards run-script #{name}` to execute it." }
+          info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: false)
+          info.save
+          return
+        end
+      end
+
+      Log.info { "Postinstall of #{name}: #{command}" }
+      Script.run(install_path, command, "postinstall", name)
+      info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: true)
+      info.save
     rescue ex : Script::Error
       cleanup_install_directory
       raise ex

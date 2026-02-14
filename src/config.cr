@@ -1,10 +1,14 @@
 require "./info"
+require "./ai_docs_info"
+require "./postinstall_info"
 
 module Shards
-  SPEC_FILENAME     = "shard.yml"
-  LOCK_FILENAME     = "shard.lock"
-  OVERRIDE_FILENAME = "shard.override.yml"
-  INSTALL_DIR       = "lib"
+  SPEC_FILENAME          = "shard.yml"
+  LOCK_FILENAME          = "shard.lock"
+  OVERRIDE_FILENAME      = "shard.override.yml"
+  INSTALL_DIR            = "lib"
+  AI_DOCS_INFO_FILENAME  = ".ai-docs-info.yml"
+  POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
 
   DEFAULT_COMMAND = "install"
   DEFAULT_VERSION = "0"
@@ -116,6 +120,19 @@ module Shards
   class_property? local = false
   class_property? skip_postinstall = false
   class_property? skip_executables = false
+  class_property? skip_ai_docs = false
 
   class_property jobs : Int32 = 8
+
+  def self.ai_docs_info
+    @@ai_docs_info ||= AIDocsInfo.new(
+      File.join(Dir.current, ".claude", AI_DOCS_INFO_FILENAME)
+    )
+  end
+
+  def self.postinstall_info
+    @@postinstall_info ||= PostinstallInfo.new(
+      File.join(install_path, POSTINSTALL_INFO_FILENAME)
+    )
+  end
 end
