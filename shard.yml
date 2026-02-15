@@ -1,5 +1,5 @@
 name: shards-alpha
-version: 2025.11.25.1
+version: 2025.11.25.2
 description: |
  Fork of Crystal's Shards package manager with alpha features:
  AI docs distribution, SBOM generation, MCP server distribution,
