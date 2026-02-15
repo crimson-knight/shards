@@ -1,30 +1,18 @@
 class ShardsAlpha < Formula
-  desc "Fork of Crystal's Shards with alpha features: AI docs, SBOM, MCP distribution"
+  desc "Crystal Shards fork with supply chain compliance, MCP server, and AI docs"
   homepage "https://github.com/crimson-knight/shards"
+  url "https://github.com/crimson-knight/shards/archive/refs/tags/v2025.11.25.1.tar.gz"
+  sha256 "4756c8b006552b2fa2b702f86a6dd9c78cd69f49dfdb0dc13e06b34c8f270430"
   license "Apache-2.0"
-  version "0.21.0-alpha.1"
 
-  on_macos do
-    if Hardware::CPU.arm?
-      url "https://github.com/crimson-knight/shards/releases/download/v0.21.0-alpha.1/shards-alpha-darwin-arm64.tar.gz"
-      sha256 "784cbe62d94c81f1b54bbdfc15954e17a04eab45760017fcbe455b3629f8772c"
-    else
-      url "https://github.com/crimson-knight/shards/releases/download/v0.21.0-alpha.1/shards-alpha-darwin-x86_64.tar.gz"
-      sha256 "2a796e0b566284c7fe53f62097f9b27100f73f24d7c94fcb72789a7116dbc188"
-    end
-  end
+  depends_on "crystal"
 
-  on_linux do
-    url "https://github.com/crimson-knight/shards/releases/download/v0.21.0-alpha.1/shards-alpha-linux-x86_64.tar.gz"
-    sha256 "e22efb221ad6372198051dd0c6a1c262a6664454a257a1102013ca4d01c1e6c0"
-  end
-
-  # Does not conflict with crystal-lang/shards -- installs as shards-alpha
   def install
-    bin.install "shards-alpha"
+    system "make", "bin/shards-alpha", "release=1"
+    bin.install "bin/shards-alpha"
   end
 
   test do
-    assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
+    assert_match "shards-alpha", shell_output("#{bin}/shards-alpha --version")
   end
 end
