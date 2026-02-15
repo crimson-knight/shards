@@ -26,6 +26,7 @@ module Shards
     policy
     compliance-report
     mcp-server
+    assistant
   ]
 
   def self.display_help_and_exit(opts)
@@ -55,6 +56,7 @@ module Shards
           policy [check|init|show]                         - Manage dependency policies.
           compliance-report [<options>]                      - Generate supply chain compliance report.
           mcp-server [--interactive]                              - Start MCP compliance server for AI agents (audit, licenses, policy, etc.).
+          assistant [init|update|status|remove] [options]        - Manage Claude Code assistant configuration (skills, agents, settings).
 
       General options:
       HELP
@@ -89,6 +91,9 @@ module Shards
       opts.on("--skip-ai-docs", "Does not install AI documentation from dependencies") do
         self.skip_ai_docs = true
       end
+      opts.on("--skip-ai-assistant", "Skip AI assistant auto-configuration") do
+        self.skip_ai_assistant = true
+      end
       opts.on("--skip-verify", "Skip checksum verification during install.") do
         self.skip_verify = true
       end
@@ -104,7 +109,7 @@ module Shards
         command = args[0]? || DEFAULT_COMMAND
 
         if BUILTIN_COMMANDS.includes?(command)
-          if display_help && command != "mcp-server"
+          if display_help && !{"mcp-server", "assistant"}.includes?(command)
             display_help_and_exit(opts)
           end
 
@@ -225,6 +230,12 @@ module Shards
             mcp_args = args[1..-1]
             mcp_args << "--help" if display_help
             ComplianceMCPServer.run(path, mcp_args)
+          when "assistant"
+            assistant_args = args[1..-1]
+            if display_help
+              assistant_args << "--help"
+            end
+            Commands::Assistant.run(path, assistant_args)
           else
             raise "BUG: unknown command #{command}"
           end

@@ -22,6 +22,14 @@ shards-alpha mcp-server init
 
 This creates or updates `.mcp.json` in the current directory with the `shards-compliance` server entry.
 
+For Claude Code skills, agents, and settings, also run:
+
+```bash
+shards-alpha assistant init
+```
+
+See `shards-alpha assistant --help` for component selection and update options.
+
 ### 2. Restart your MCP client
 
 Restart Claude Code (or your MCP-compatible editor) so it discovers the new server in `.mcp.json`.
@@ -582,7 +590,7 @@ Usage:
     shards-alpha mcp-server [command] [options]
 
 Commands:
-    init               Add shards-compliance to .mcp.json for Claude Code
+    init               Configure .mcp.json for MCP server
     (default)          Start the MCP server (stdio transport)
 
 Options:
@@ -598,9 +606,12 @@ Tools provided:
     sbom               Generate Software Bill of Materials (SPDX/CycloneDX)
 
 Examples:
-    shards-alpha mcp-server init          # Configure for Claude Code
+    shards-alpha mcp-server init          # Configure .mcp.json
     shards-alpha mcp-server               # Start server (for MCP clients)
     shards-alpha mcp-server --interactive  # Manual testing mode
+
+For Claude Code skills, agents, and settings, use:
+    shards-alpha assistant init
 ```
 
 ---

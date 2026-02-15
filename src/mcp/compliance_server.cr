@@ -136,7 +136,7 @@ module Shards
         shards-alpha mcp-server [command] [options]
 
     Commands:
-        init               Configure .mcp.json, skills, agents for Claude Code
+        init               Configure .mcp.json for MCP server
         (default)          Start the MCP server (stdio transport)
 
     Options:
@@ -152,9 +152,12 @@ module Shards
         sbom               Generate Software Bill of Materials (SPDX/CycloneDX)
 
     Examples:
-        shards-alpha mcp-server init          # Set up MCP server + skills + agents
+        shards-alpha mcp-server init          # Configure .mcp.json
         shards-alpha mcp-server               # Start server (for MCP clients)
         shards-alpha mcp-server --interactive  # Manual testing mode
+
+    For Claude Code skills, agents, and settings, use:
+        shards-alpha assistant init
     HELP
 
     MCP_SERVER_NAME = "shards-compliance"
@@ -176,9 +179,8 @@ module Shards
 
       if args.includes?("init")
         init_mcp_config(path)
-        init_claude_config(path)
         puts ""
-        puts "Restart Claude Code to pick up the new server and skills."
+        puts "MCP server configured. Run 'shards-alpha assistant init' for skills, agents, and Claude Code config."
         return
       end
 

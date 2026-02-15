@@ -3,6 +3,7 @@ version: 2025.11.25.2
 description: |
  Fork of Crystal's Shards package manager with alpha features:
  AI docs distribution, SBOM generation, MCP server distribution,
+ Claude Code assistant config, supply chain compliance tools,
  docs theming, and postinstall script tracking.
 
 authors:

@@ -3,6 +3,7 @@ require "../molinillo_solver"
 require "../ai_docs"
 require "../checksum"
 require "../change_logger"
+require "../assistant_config"
 
 module Shards
   module Commands
@@ -50,6 +51,13 @@ module Shards
         end
 
         AIDocsInstaller.new(path).install(packages)
+
+        # Auto-install/update assistant config if opted in
+        unless Shards.skip_ai_assistant?
+          if spec.ai_assistant.try(&.auto_install)
+            AssistantConfig.auto_install(path)
+          end
+        end
 
         if generate_lockfile?(packages)
           old_packages = if lockfile?

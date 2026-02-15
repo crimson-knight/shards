@@ -138,6 +138,72 @@ To distribute AI docs and MCP servers with your shard, add any of:
 See [`examples/`](examples/) for a complete walkthrough with a working
 demo project.
 
+### Claude Code Assistant Setup
+
+Set up Claude Code with compliance skills, agents, and settings for your
+project in one command:
+
+```sh
+shards-alpha assistant init       # Install skills, agents, settings, and MCP config
+```
+
+This creates:
+
+| What | Files |
+|------|-------|
+| **Skills** (6) | `/audit`, `/licenses`, `/policy-check`, `/diff-deps`, `/compliance-report`, `/sbom` |
+| **Agents** (2) | `compliance-checker`, `security-reviewer` |
+| **Settings** | `.claude/settings.json` (pre-approved compliance commands) |
+| **Context** | `.claude/CLAUDE.md` (project overview for Claude) |
+| **MCP server** | `.mcp.json` entry for the compliance MCP server |
+
+A tracking file (`.claude/.assistant-config.yml`) records the installed
+version, enabled components, and per-file checksums so upgrades can
+detect and preserve your local modifications.
+
+#### Managing the assistant config
+
+```sh
+shards-alpha assistant status     # Show version, components, modified files
+shards-alpha assistant update     # Upgrade to latest (preserves local edits)
+shards-alpha assistant update --dry-run  # Preview what would change
+shards-alpha assistant remove     # Remove all tracked files
+```
+
+#### Selective installation
+
+Skip components you don't need:
+
+```sh
+shards-alpha assistant init --no-agents    # Skip agent definitions
+shards-alpha assistant init --no-mcp       # Skip .mcp.json configuration
+shards-alpha assistant init --no-skills    # Skip skill files
+shards-alpha assistant init --no-settings  # Skip settings.json and CLAUDE.md
+```
+
+#### Automatic setup via shard.yml
+
+Projects can opt in to automatic assistant configuration during
+`shards install` by adding an `ai_assistant` section to `shard.yml`:
+
+```yaml
+ai_assistant:
+  auto_install: true
+```
+
+When enabled, `shards install` will:
+- Run `assistant init` if no assistant config exists
+- Run `assistant update` if the installed version is older than the binary
+
+Skip auto-configuration with `--skip-ai-assistant`.
+
+#### Upgrading from `mcp-server init`
+
+If you previously used `shards-alpha mcp-server init` to set up skills
+and agents, running `assistant init` will detect the existing files,
+adopt them into the tracking system, and create any missing files. Your
+local modifications are preserved.
+
 ## Supply Chain Compliance
 
 Shards-alpha includes a suite of supply chain security tools designed for

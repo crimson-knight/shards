@@ -88,6 +88,31 @@ module Shards
       end
     end
 
+    # Optional `ai_assistant` section in `shard.yml` for enabling automatic
+    # installation/update of AI assistant configuration during `shards install`.
+    #
+    # ```yaml
+    # ai_assistant:
+    #   auto_install: true
+    # ```
+    class AIAssistant
+      getter auto_install : Bool
+
+      def initialize(@auto_install = false)
+      end
+
+      def self.new(pull : YAML::PullParser)
+        auto_install = false
+        pull.each_in_mapping do
+          case pull.read_scalar
+          when "auto_install" then auto_install = pull.read_scalar == "true"
+          else                     pull.skip
+          end
+        end
+        new(auto_install)
+      end
+    end
+
     def to_s(io)
       io << name << " " << version
     end
@@ -125,6 +150,7 @@ module Shards
     property resolver : Resolver?
     getter? read_from_yaml : Bool
     getter ai_docs : AIDocs?
+    getter ai_assistant : AIAssistant?
 
     def mismatched_version?
       Versions.compare(version, original_version) != 0
@@ -204,6 +230,11 @@ module Shards
           check_duplicate(@ai_docs, "ai_docs", line, column)
           pull.read_empty_or do
             @ai_docs = AIDocs.new(pull)
+          end
+        when "ai_assistant"
+          check_duplicate(@ai_assistant, "ai_assistant", line, column)
+          pull.read_empty_or do
+            @ai_assistant = AIAssistant.new(pull)
           end
         else
           if validate

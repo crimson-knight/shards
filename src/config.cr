@@ -10,6 +10,7 @@ module Shards
   INSTALL_DIR               = "lib"
   AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
+  ASSISTANT_CONFIG_FILENAME = ".assistant-config.yml"
 
   DEFAULT_COMMAND = "install"
   DEFAULT_VERSION = "0"
@@ -122,6 +123,7 @@ module Shards
   class_property? skip_postinstall = false
   class_property? skip_executables = false
   class_property? skip_ai_docs = false
+  class_property? skip_ai_assistant = false
   class_property? skip_verify = false
 
   class_property jobs : Int32 = 8

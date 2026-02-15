@@ -16,6 +16,7 @@ Shards-alpha is the Crystal language package manager extended with supply-chain 
 | `shards-alpha compliance-report [options]` | Generate unified supply-chain compliance report |
 | `shards-alpha sbom [options]` | Generate Software Bill of Materials (SPDX or CycloneDX) |
 | `shards-alpha mcp-server [options]` | Start MCP compliance server for AI agent integration |
+| `shards-alpha assistant [init\|update\|status\|remove]` | Manage Claude Code assistant configuration (skills, agents, settings) |
 
 ## Build
 
@@ -49,6 +50,7 @@ crystal tool format src/ spec/
 | `src/` | Main source files (dependency, lock, config, etc.) |
 | `src/commands/` | CLI command implementations (audit, licenses, policy, etc.) |
 | `src/mcp/` | MCP compliance server implementation |
+| `src/assistant_versions/` | Versioned assistant config files (embedded at compile time) |
 | `src/compliance/` | Compliance report generation internals |
 | `spec/unit/` | Unit tests |
 | `spec/integration/` | Integration tests |
@@ -63,6 +65,7 @@ crystal tool format src/ spec/
 | `.shards-policy.yml` | Dependency policy rules (allowed hosts, blocked deps, etc.) |
 | `.shards-audit-ignore` | Suppressed vulnerability advisory IDs with expiry dates |
 | `.mcp.json` | MCP server configuration for Claude Code integration |
+| `.claude/.assistant-config.yml` | Assistant config tracking (version, components, checksums) |
 
 ## MCP Compliance Server
 
@@ -73,6 +76,32 @@ Start the server:
 shards-alpha mcp-server              # stdio mode
 shards-alpha mcp-server --interactive # manual testing
 shards-alpha mcp-server init          # add to .mcp.json
+```
+
+## Assistant Configuration
+
+The `assistant` command (`src/commands/assistant.cr`) manages Claude Code skills, agents, and settings. File contents are embedded at compile time from `src/assistant_versions/` via `{{ run() }}` macro.
+
+Key files:
+- `src/assistant_versions.cr` — Version overlay logic (compile-time embedded)
+- `src/build_assistant_versions.cr` — Compile-time script that walks version directories
+- `src/assistant_config.cr` — Install/update/remove logic with modification detection
+- `src/assistant_config_info.cr` — Tracking YAML class (`.claude/.assistant-config.yml`)
+
+To add a new version: create `src/assistant_versions/<version>/` with only changed files. The binary picks them up at compile time.
+
+```sh
+shards-alpha assistant init                # Install all components
+shards-alpha assistant init --no-agents    # Skip agents
+shards-alpha assistant update              # Upgrade, preserve local edits
+shards-alpha assistant status              # Show installed version and state
+shards-alpha assistant remove              # Remove tracked files
+```
+
+Projects can auto-install via `shard.yml`:
+```yaml
+ai_assistant:
+  auto_install: true
 ```
 
 ## Language and Style
