@@ -158,6 +158,46 @@ module Shards
     module MCPDistribution
     end
 
+    # ## MCP Server Lifecycle Management
+    #
+    # The `shards mcp` command manages the runtime lifecycle of MCP servers
+    # distributed via `.mcp-shards.json`. This completes the pipeline from
+    # distribution (handled by `shards install`) to execution.
+    #
+    # ### Commands
+    #
+    # ```
+    # shards mcp                         # Show server status (default)
+    # shards mcp start [server_name]     # Start all or one server
+    # shards mcp stop [server_name]      # Stop all or one server
+    # shards mcp restart [server_name]   # Restart all or one server
+    # shards mcp logs <name> [--no-follow] [--lines=N]
+    # ```
+    #
+    # ### Runtime state
+    #
+    # All managed state lives in `.shards/mcp/`:
+    # - `servers.json`: PID, port, timestamps per server
+    # - `<name>.log`: per-server stdout/stderr logs
+    # - `bin/`: cached builds for `crystal_main` servers
+    #
+    # ### Process management
+    #
+    # Servers are spawned via `Process.new` (non-blocking) with output
+    # redirected to log files. PID tracking uses `LibC.kill(pid, 0)`.
+    # Shutdown sends SIGTERM, waits 5 seconds, then SIGKILL if needed.
+    # Stale PIDs are detected and cleaned on every status check.
+    #
+    # ### Name resolution
+    #
+    # Server names use the existing namespacing from `.mcp-shards.json`
+    # (e.g., `my_shard/explorer`). Partial name matching is supported:
+    # `explorer` finds `my_shard/explorer` if unambiguous.
+    #
+    # See `MCPManager`, `Commands::MCP`.
+    module MCPLifecycle
+    end
+
     # ## CLI Commands Reference
     #
     # ### Core commands
@@ -188,6 +228,16 @@ module Shards
     # | `shards run-script [names...]` | Run pending postinstall scripts |
     # | `shards docs [options]` | Generate themed docs with AI buttons |
     # | `shards sbom [options]` | Generate SBOM (SPDX/CycloneDX) |
+    #
+    # ### MCP lifecycle commands
+    #
+    # | Command | Description |
+    # |---|---|
+    # | `shards mcp` | Show MCP server status (default) |
+    # | `shards mcp start [name]` | Start all or one MCP server |
+    # | `shards mcp stop [name]` | Stop all or one MCP server |
+    # | `shards mcp restart [name]` | Restart all or one MCP server |
+    # | `shards mcp logs <name>` | Tail server logs (`--no-follow`, `--lines=N`) |
     #
     # ### Global flags
     #

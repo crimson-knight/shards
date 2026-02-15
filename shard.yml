@@ -1,5 +1,5 @@
 name: shards-alpha
-version: 0.21.0-alpha.1
+version: 2025.11.25.1
 description: |
  Fork of Crystal's Shards package manager with alpha features:
  AI docs distribution, SBOM generation, MCP server distribution,
@@ -15,6 +15,8 @@ repository: https://github.com/crimson-knight/shards
 dependencies:
   molinillo:
     github: crystal-lang/crystal-molinillo
+  mcprotocol:
+    github: crimson-knight/mcprotocol
 
 targets:
   shards-alpha:

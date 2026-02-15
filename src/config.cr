@@ -6,6 +6,7 @@ module Shards
   SPEC_FILENAME             = "shard.yml"
   LOCK_FILENAME             = "shard.lock"
   OVERRIDE_FILENAME         = "shard.override.yml"
+  POLICY_FILENAME           = ".shards-policy.yml"
   INSTALL_DIR               = "lib"
   AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
@@ -121,6 +122,7 @@ module Shards
   class_property? skip_postinstall = false
   class_property? skip_executables = false
   class_property? skip_ai_docs = false
+  class_property? skip_verify = false
 
   class_property jobs : Int32 = 8
 

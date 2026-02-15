@@ -1,11 +1,13 @@
 require "option_parser"
 require "./commands/*"
+require "./mcp/compliance_server"
 
 module Shards
   BUILTIN_COMMANDS = %w[
     build
     run
     check
+    diff
     init
     install
     list
@@ -18,6 +20,12 @@ module Shards
     ai-docs
     docs
     sbom
+    mcp
+    audit
+    licenses
+    policy
+    compliance-report
+    mcp-server
   ]
 
   def self.display_help_and_exit(opts)
@@ -27,6 +35,7 @@ module Shards
       Commands:
           build [<targets>] [<build_options>]  - Build the specified <targets> in `bin` path, all build_options are delegated to `crystal build`.
           check                                - Verify all dependencies are installed.
+          diff [--from=REF] [--to=REF] [--format=FORMAT]    - Show dependency changes between lockfile states.
           init                                 - Initialize a `shard.yml` file.
           install                              - Install dependencies, creating or using the `shard.lock` file.
           list [--tree]                        - List installed dependencies.
@@ -40,6 +49,12 @@ module Shards
           ai-docs [status|diff|reset|update|merge-mcp]  - Manage AI documentation from dependencies.
           docs [<crystal_docs_options>]            - Generate themed docs with AI assistant buttons.
           sbom [--format=spdx|cyclonedx] [--output=FILE]  - Generate Software Bill of Materials.
+          mcp [status|start|stop|restart|logs]           - Manage MCP server lifecycle.
+          audit [options]                                 - Audit dependencies for known vulnerabilities.
+          licenses [options]                               - List dependency licenses and check compliance.
+          policy [check|init|show]                         - Manage dependency policies.
+          compliance-report [<options>]                      - Generate supply chain compliance report.
+          mcp-server [--interactive]                              - Start MCP compliance server for AI agents (audit, licenses, policy, etc.).
 
       General options:
       HELP
@@ -74,6 +89,9 @@ module Shards
       opts.on("--skip-ai-docs", "Does not install AI documentation from dependencies") do
         self.skip_ai_docs = true
       end
+      opts.on("--skip-verify", "Skip checksum verification during install.") do
+        self.skip_verify = true
+      end
       opts.on("--local", "Don't update remote repositories, use the local cache only.") { self.local = true }
       opts.on("--jobs=N", "Number of repository downloads to perform in parallel (default: 8). Currently only for git.") { |n| self.jobs = n.to_i }
       # TODO: remove in the future
@@ -86,7 +104,7 @@ module Shards
         command = args[0]? || DEFAULT_COMMAND
 
         if BUILTIN_COMMANDS.includes?(command)
-          if display_help
+          if display_help && command != "mcp-server"
             display_help_and_exit(opts)
           end
 
@@ -143,6 +161,11 @@ module Shards
               path,
               args[1..-1]
             )
+          when "mcp"
+            Commands::MCP.run(
+              path,
+              args[1..-1]
+            )
           when "sbom"
             sbom_format = "spdx"
             sbom_output = nil : String?
@@ -155,6 +178,53 @@ module Shards
               end
             end
             Commands::SBOM.run(path, sbom_format, sbom_output, sbom_include_dev)
+          when "audit"
+            audit_format = "terminal"
+            audit_severity : String? = nil
+            audit_ignore_ids = [] of String
+            audit_ignore_file : String? = nil
+            audit_fail_above : String? = nil
+            audit_offline = false
+            audit_update_db = false
+            args[1..-1].each do |arg|
+              case arg
+              when .starts_with?("--format=")      then audit_format = arg.split("=", 2).last
+              when .starts_with?("--severity=")    then audit_severity = arg.split("=", 2).last
+              when .starts_with?("--ignore=")      then audit_ignore_ids = arg.split("=", 2).last.split(",")
+              when .starts_with?("--ignore-file=") then audit_ignore_file = arg.split("=", 2).last
+              when .starts_with?("--fail-above=")  then audit_fail_above = arg.split("=", 2).last
+              when "--offline"                     then audit_offline = true
+              when "--update-db"                   then audit_update_db = true
+              end
+            end
+            Commands::Audit.run(path, audit_format, audit_severity, audit_ignore_ids,
+              audit_ignore_file, audit_fail_above, audit_offline, audit_update_db)
+          when "licenses"
+            lic_format = "terminal"
+            lic_policy : String? = nil
+            lic_check = false
+            lic_include_dev = false
+            lic_detect = false
+            args[1..-1].each do |arg|
+              case arg
+              when .starts_with?("--format=") then lic_format = arg.split("=", 2).last
+              when .starts_with?("--policy=") then lic_policy = arg.split("=", 2).last
+              when "--check"                  then lic_check = true
+              when "--include-dev"            then lic_include_dev = true
+              when "--detect"                 then lic_detect = true
+              end
+            end
+            Commands::Licenses.run(path, lic_format, lic_policy, lic_check, lic_include_dev, lic_detect)
+          when "policy"
+            Commands::Policy.run(path, args[1..-1])
+          when "compliance-report"
+            Commands::ComplianceReport.run(path, args[1..-1])
+          when "diff"
+            Commands::Diff.run(path, args[1..-1])
+          when "mcp-server"
+            mcp_args = args[1..-1]
+            mcp_args << "--help" if display_help
+            ComplianceMCPServer.run(path, mcp_args)
           else
             raise "BUG: unknown command #{command}"
           end

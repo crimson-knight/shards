@@ -1,6 +1,8 @@
 require "./command"
 require "../molinillo_solver"
 require "../ai_docs"
+require "../checksum"
+require "../change_logger"
 
 module Shards
   module Commands
@@ -21,12 +23,22 @@ module Shards
         solver.prepare(development: Shards.with_development?)
 
         packages = handle_resolver_errors { solver.solve }
+        check_policy(packages)
         install(packages)
+
+        # Compute checksums for all packages (update always regenerates)
+        compute_checksums(packages)
 
         AIDocsInstaller.new(path).install(packages)
 
         if generate_lockfile?(packages)
+          old_packages = if lockfile?
+                           Shards::Lock.from_file(lockfile_path).shards
+                         else
+                           [] of Package
+                         end
           write_lockfile(packages)
+          ChangeLogger.record(path, "update", old_packages, packages, lockfile_path)
         else
           # Touch lockfile so its mtime is bigger than that of shard.yml
           File.touch(lockfile_path)
@@ -64,6 +76,15 @@ module Shards
 
       private def generate_lockfile?(packages)
         !Shards.frozen?
+      end
+
+      private def compute_checksums(packages : Array(Package))
+        packages.each do |package|
+          next unless package.installed?
+          if computed = package.compute_checksum
+            package.checksum = computed
+          end
+        end
       end
     end
   end

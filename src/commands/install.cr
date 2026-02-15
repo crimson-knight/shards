@@ -1,6 +1,8 @@
 require "./command"
 require "../molinillo_solver"
 require "../ai_docs"
+require "../checksum"
+require "../change_logger"
 
 module Shards
   module Commands
@@ -24,16 +26,39 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
 
+        # Propagate checksums from lock file to resolved packages
+        if lockfile?
+          lock_checksums = locks.shards.to_h { |p| {p.name, p.checksum} }
+          packages.each do |pkg|
+            pkg.checksum = lock_checksums[pkg.name]?
+          end
+        end
+
+        check_policy(packages)
+
         if Shards.frozen?
           validate(packages)
         end
 
         install(packages)
 
+        # Checksum verification/computation
+        unless Shards.skip_verify?
+          verify_or_compute_checksums(packages)
+        else
+          Log.warn { "Checksum verification skipped (--skip-verify)" }
+        end
+
         AIDocsInstaller.new(path).install(packages)
 
         if generate_lockfile?(packages)
+          old_packages = if lockfile?
+                           Shards::Lock.from_file(lockfile_path).shards
+                         else
+                           [] of Package
+                         end
           write_lockfile(packages)
+          ChangeLogger.record(path, "install", old_packages, packages, lockfile_path)
         elsif !Shards.frozen?
           # Touch lockfile so its mtime is bigger than that of shard.yml
           File.touch(lockfile_path)
@@ -99,8 +124,34 @@ module Shards
       private def outdated_lockfile?(packages)
         return true if locks.version != Shards::Lock::CURRENT_VERSION
         return true if packages.size != locks.shards.size
+        # Trigger lockfile rewrite if any locked package is missing a checksum
+        return true if locks.shards.any? { |pkg| pkg.checksum.nil? }
 
         packages.index_by(&.name) != locks.shards.index_by(&.name)
+      end
+
+      private def verify_or_compute_checksums(packages : Array(Package))
+        packages.each do |package|
+          next unless package.installed?
+          # Path dependencies in non-frozen mode are symlinks, skip verification
+          # but in frozen mode they should still be verified
+          next if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+
+          if expected = package.checksum
+            # Verify against locked checksum
+            actual = package.compute_checksum
+            if actual && actual != expected
+              raise ChecksumMismatch.new(package.name, expected, actual)
+            end
+            Log.debug { "Checksum verified for #{package.name}" }
+          else
+            # No checksum in lock file yet (migration case) -- compute and store
+            if computed = package.compute_checksum
+              package.checksum = computed
+              Log.debug { "Computed checksum for #{package.name}: #{computed}" }
+            end
+          end
+        end
       end
     end
   end

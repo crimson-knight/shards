@@ -1,6 +1,12 @@
 version: 2.0
 shards:
+  mcprotocol:
+    git: https://github.com/crimson-knight/mcprotocol.git
+    version: 2024-11-05
+    checksum: sha256:d19ca729aa49fb805ddbdf58952fe353a5d6db55452ca9d5b7b11d5f095775c6
+
   molinillo:
     git: https://github.com/crystal-lang/crystal-molinillo.git
     version: 0.2.0
+    checksum: sha256:cc0015b4aa7b84ae2fcf01f603d9aa3e789241ff2a08693c874c00bf1e964384
 

@@ -1,0 +1,33 @@
+name: mcprotocol
+version: 0.1.0
+
+authors:
+  - Margret Riegert <margret@eowyn.net>
+
+description: |
+  A Crystal implementation of Anthropic's Model Context Protocol (MCP), 
+  providing type-safe bindings for building MCP servers and clients.
+  
+  Features:
+  - Complete MCP protocol support (2024-11-05)
+  - Auto-generated Crystal classes from official JSON schema
+  - Server-Sent Events (SSE) support for real-time communication
+  - JSON-RPC 2.0 compliant message handling
+  - Type-safe tool, resource, and prompt definitions
+  - Comprehensive examples and documentation
+
+crystal: ">= 1.15.1"
+
+license: MIT
+
+homepage: https://github.com/nobodywasishere/mcprotocol
+repository: https://github.com/nobodywasishere/mcprotocol
+
+development_dependencies:
+  crygen:
+    github: tamdaz/crygen
+    branch: main
+
+targets:
+  mcprotocol:
+    main: src/mcprotocol.cr

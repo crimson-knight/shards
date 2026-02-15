@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "shards-compliance": {
+      "command": "shards-alpha",
+      "args": [
+        "mcp-server"
+      ]
+    }
+  }
+}

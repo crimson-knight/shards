@@ -1,6 +1,9 @@
 require "../lock"
 require "../spec"
 require "../override"
+require "../policy"
+require "../policy_checker"
+require "../policy_report"
 
 module Shards
   abstract class Command
@@ -107,6 +110,25 @@ module Shards
     def touch_install_path
       Dir.mkdir_p(Shards.install_path)
       File.touch(Shards.install_path)
+    end
+
+    protected def check_policy(packages : Array(Package))
+      policy_path = File.join(path, POLICY_FILENAME)
+      return unless File.exists?(policy_path)
+
+      Log.info { "Checking dependency policies" }
+
+      policy = Shards::Policy.from_file(policy_path)
+      checker = PolicyChecker.new(policy)
+      report = checker.check(packages)
+
+      unless report.clean?
+        report.to_terminal(STDERR)
+      end
+
+      if report.has_errors?
+        raise Error.new("Policy violations found. Use 'shards policy check' for details.")
+      end
     end
   end
 end

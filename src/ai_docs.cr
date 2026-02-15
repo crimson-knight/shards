@@ -361,7 +361,7 @@ module Shards
         # Rewrite relative command paths
         if command = config_hash["command"]?.try(&.as_s?)
           if command.starts_with?("./") || command.starts_with?("../")
-            config_hash["command"] = JSON::Any.new(File.join("lib", shard_name, command))
+            config_hash["command"] = JSON::Any.new(Path["lib", shard_name, command].normalize.to_s)
           end
         end
 
@@ -370,7 +370,7 @@ module Shards
           rewritten_args = args.map do |arg|
             str = arg.as_s?
             if str && (str.starts_with?("./") || str.starts_with?("../"))
-              JSON::Any.new(File.join("lib", shard_name, str))
+              JSON::Any.new(Path["lib", shard_name, str].normalize.to_s)
             else
               arg
             end

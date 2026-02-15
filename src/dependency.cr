@@ -7,6 +7,7 @@ module Shards
     property name : String
     property resolver : Resolver
     property requirement : Requirement
+    property checksum : String?
 
     def initialize(@name : String, @resolver : Resolver, @requirement : Requirement = Any)
     end
@@ -17,12 +18,15 @@ module Shards
       pull.read_mapping do
         resolver_data = nil
         params = Hash(String, String).new
+        checksum : String? = nil
 
         until pull.kind.mapping_end?
           location = pull.location
           key, value = pull.read_scalar, pull.read_scalar
 
-          if type = Resolver.find_class(key)
+          if key == "checksum"
+            checksum = value
+          elsif type = Resolver.find_class(key)
             if resolver_data
               raise YAML::ParseException.new("Duplicate resolver mapping for dependency #{name.inspect}", *location)
             else
@@ -40,7 +44,9 @@ module Shards
         resolver = resolver_data[:type].find_resolver(resolver_data[:key], name, resolver_data[:source])
 
         requirement = resolver.parse_requirement(params)
-        Dependency.new(name, resolver, requirement)
+        dep = Dependency.new(name, resolver, requirement)
+        dep.checksum = checksum
+        dep
       end
     end
 
@@ -67,7 +73,9 @@ module Shards
           versions.first
         end
 
-      Package.new(@name, @resolver, version)
+      pkg = Package.new(@name, @resolver, version)
+      pkg.checksum = @checksum
+      pkg
     end
 
     def_equals @name, @resolver, @requirement

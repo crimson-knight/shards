@@ -68,5 +68,65 @@ module Shards
         YAML
       lock.shards.empty?.should be_true
     end
+
+    it "parses checksum field" do
+      create_git_repository "library", "0.1.0"
+
+      lock = Lock.from_yaml <<-YAML
+      version: 2.0
+      shards:
+        repo:
+          git: https://example.com/repo.git
+          version: 1.2.3
+          checksum: sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+      YAML
+
+      lock.shards[0].checksum.should eq("sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890")
+    end
+
+    it "handles missing checksum field" do
+      create_git_repository "library", "0.1.0"
+
+      lock = Lock.from_yaml <<-YAML
+      version: 2.0
+      shards:
+        repo:
+          git: https://example.com/repo.git
+          version: 1.2.3
+      YAML
+
+      lock.shards[0].checksum.should be_nil
+    end
+
+    it "writes checksum field" do
+      create_git_repository "library", "0.1.0"
+
+      resolver = GitResolver.new("mylib", "https://example.com/mylib.git")
+      package = Package.new("mylib", resolver, version("1.0.0"))
+      package.checksum = "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+
+      io = IO::Memory.new
+      Lock.write([package], nil, io)
+      output = io.to_s
+
+      output.should contain("version: 2.0")
+      output.should contain("mylib:")
+      output.should contain("checksum: sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890")
+    end
+
+    it "omits checksum field when nil" do
+      create_git_repository "library", "0.1.0"
+
+      resolver = GitResolver.new("mylib", "https://example.com/mylib.git")
+      package = Package.new("mylib", resolver, version("1.0.0"))
+      # checksum is nil by default
+
+      io = IO::Memory.new
+      Lock.write([package], nil, io)
+      output = io.to_s
+
+      output.should contain("mylib:")
+      output.should_not contain("checksum:")
+    end
   end
 end

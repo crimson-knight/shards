@@ -14,9 +14,11 @@
 /spec/.repositories
 /spec/unit/.lib
 /spec/.shards
+/test/mcp_e2e/mcp_echo_server
 
 # Build artifacts
 /bin/shards
+/bin/shards-alpha
 *.o
 *.ll
 *.s

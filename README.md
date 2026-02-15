@@ -56,6 +56,202 @@ Run `shards --help` to list other commands with their options.
 
 Happy Hacking!
 
+## Shards-Alpha Features
+
+Shards-alpha extends the standard Crystal dependency manager with features
+for AI-assisted development. It distributes AI documentation and MCP server
+configurations alongside library code, so consuming projects get everything
+they need from `shards install`.
+
+### AI Documentation Distribution
+
+Shard authors can ship AI context files (`CLAUDE.md`, skills, agents,
+commands) that are automatically installed into the consumer's `.claude/`
+directory with shard-namespaced paths.
+
+```sh
+shards install          # AI docs are installed alongside dependencies
+shards ai-docs          # Check status of installed AI documentation
+```
+
+Auto-detected locations in each dependency:
+
+| Shard path | Installed as |
+|---|---|
+| `.claude/skills/<name>/` | `.claude/skills/<shard>--<name>/` |
+| `.claude/agents/<name>.md` | `.claude/agents/<shard>--<name>.md` |
+| `.claude/commands/<name>.md` | `.claude/commands/<shard>:<name>.md` |
+| `CLAUDE.md` | `.claude/skills/<shard>--docs/SKILL.md` |
+| `.mcp.json` | Merged into `.mcp-shards.json` |
+
+### MCP Server Distribution & Lifecycle
+
+Shards that ship `.mcp.json` files have their MCP server configurations
+merged into a project-level `.mcp-shards.json` during install. Server
+names are namespaced as `<shard>/<server>` and paths are rewritten
+automatically.
+
+```sh
+shards mcp              # Show server status
+shards mcp start        # Start all MCP servers
+shards mcp stop         # Stop all MCP servers
+shards mcp restart      # Restart servers
+shards mcp logs <name>  # Tail server logs
+```
+
+### Postinstall Script Tracking
+
+Postinstall scripts are tracked by content hash. Changed scripts emit a
+warning instead of running automatically, requiring explicit approval:
+
+```sh
+shards run-script              # Run all pending postinstall scripts
+shards run-script <shard>      # Run for a specific shard
+```
+
+### SBOM Generation
+
+Generate a Software Bill of Materials for your project's dependency tree:
+
+```sh
+shards sbom                      # SPDX 2.3 JSON (default)
+shards sbom --format=cyclonedx   # CycloneDX 1.6 JSON
+```
+
+### Documentation Generation
+
+Generate Crystal API documentation with optional theming:
+
+```sh
+shards docs
+```
+
+### For Shard Authors
+
+To distribute AI docs and MCP servers with your shard, add any of:
+
+- `CLAUDE.md` — General AI context for your library
+- `.claude/skills/<name>/SKILL.md` — Specific AI workflows
+- `.mcp.json` — MCP server configurations
+- `ai_docs` section in `shard.yml` — Fine-grained include/exclude control
+
+See [`examples/`](examples/) for a complete walkthrough with a working
+demo project.
+
+## Supply Chain Compliance
+
+Shards-alpha includes a suite of supply chain security tools designed for
+SOC2 and ISO 27001 compliance. These commands can be used individually or
+combined into a unified compliance report.
+
+For detailed usage, examples, and CI/CD integration patterns, see the
+[Compliance Guide](docs/compliance-guide.md).
+
+### Vulnerability Audit
+
+Scan locked dependencies against the [OSV](https://osv.dev/) vulnerability
+database:
+
+```sh
+shards audit                        # Colored terminal output
+shards audit --format=json          # Machine-readable JSON
+shards audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
+shards audit --severity=high        # Only show high/critical
+shards audit --fail-above=critical  # Exit 1 only for critical vulns
+shards audit --ignore=GHSA-xxxx    # Suppress specific advisories
+shards audit --offline              # Use cached data only
+```
+
+Suppressions can be managed in `.shards-audit-ignore`:
+
+```yaml
+- id: GHSA-xxxx-yyyy-zzzz
+  reason: "Not applicable: we don't use the affected code path"
+  expires: 2026-06-01
+```
+
+### Integrity Verification
+
+Every `shards install` and `shards update` records SHA-256 checksums in
+`shard.lock`. Subsequent installs verify that installed files match.
+
+```sh
+shards install              # Checksums computed and verified automatically
+shards install --skip-verify # Bypass verification (logs a warning)
+```
+
+Tampered dependencies produce a clear error:
+
+```
+E: Checksum mismatch for web: expected sha256:abc123... got sha256:def456...
+```
+
+### License Compliance
+
+List licenses for all locked dependencies with optional policy enforcement:
+
+```sh
+shards licenses                     # Colored table
+shards licenses --format=json       # Machine-readable JSON
+shards licenses --format=csv        # CSV export
+shards licenses --format=markdown   # Markdown table
+shards licenses --detect            # Heuristic detection from LICENSE files
+shards licenses --check             # Exit 1 on policy violations
+shards licenses --policy=path.yml   # Use custom license policy
+```
+
+### Dependency Policy
+
+Define and enforce rules about what dependencies are allowed in your
+project. Create a `.shards-policy.yml` file:
+
+```sh
+shards policy init    # Create a starter policy file
+shards policy check   # Check dependencies against policy
+shards policy show    # Display current policy summary
+```
+
+Policy rules include source host restrictions, blocked dependencies,
+minimum version requirements, and postinstall script controls. Policies
+are automatically enforced during `shards install` and `shards update`
+when a `.shards-policy.yml` file is present.
+
+### Change Audit Trail
+
+Compare dependency states between lockfile versions:
+
+```sh
+shards diff                              # Compare HEAD vs current shard.lock
+shards diff --from=HEAD --to=current     # Same as above (explicit)
+shards diff --from=v1.0.0                # Compare against a git tag
+shards diff --from=old.lock              # Compare against a saved lockfile
+shards diff --format=json                # Machine-readable output
+shards diff --format=markdown            # Markdown table for PR descriptions
+```
+
+An audit log is automatically maintained at `.shards/audit/changelog.json`
+with timestamped entries for every `install` and `update` that modifies
+the lock file.
+
+### Compliance Report
+
+Generate a unified report combining all compliance data into a single
+document suitable for auditors:
+
+```sh
+shards compliance-report                         # JSON (default)
+shards compliance-report --format=html           # Professional HTML report
+shards compliance-report --format=markdown       # Markdown report
+shards compliance-report --output=report.json    # Custom output path
+shards compliance-report --sections=sbom,integrity # Only specific sections
+shards compliance-report --reviewer=security@co.com # Add attestation
+```
+
+The report aggregates SBOM data, vulnerability findings, license inventory,
+policy compliance status, integrity verification, and change history into a
+single document with an executive summary and overall pass/fail status.
+Reports are automatically archived to `.shards/audit/reports/`.
+
 ## Developers
 
 ### Requirements

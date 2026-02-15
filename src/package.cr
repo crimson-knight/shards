@@ -1,4 +1,5 @@
 require "file_utils"
+require "./checksum"
 require "./helpers"
 
 module Shards
@@ -7,9 +8,10 @@ module Shards
     getter resolver : Resolver
     getter version : Version
     getter is_override : Bool
+    property checksum : String?
     @spec : Spec?
 
-    def initialize(@name, @resolver, @version, @is_override = false)
+    def initialize(@name, @resolver, @version, @is_override = false, @checksum : String? = nil)
     end
 
     def_equals @name, @resolver, @version
@@ -55,6 +57,11 @@ module Shards
 
     def install_path
       File.join(Shards.install_path, name)
+    end
+
+    def compute_checksum : String?
+      return nil unless File.exists?(install_path)
+      Checksum.compute(install_path)
     end
 
     def install

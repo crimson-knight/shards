@@ -1,0 +1,13 @@
+name: demo_analytics
+version: 0.1.0
+
+authors:
+  - Shards Alpha <shards-alpha@example.com>
+
+description: |
+  A demo analytics library showcasing shards-alpha's AI documentation
+  distribution, MCP server distribution, and lifecycle management.
+
+crystal: ">= 1.0.0"
+
+license: Apache-2.0

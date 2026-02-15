@@ -1,4 +1,5 @@
 require "./command"
+require "../purl"
 require "json"
 
 module Shards
@@ -73,7 +74,7 @@ module Shards
                   packages.each do |pkg|
                     spdx_id = spdx_element_id(pkg.name)
                     source_url = download_location(pkg)
-                    purl = generate_purl(pkg)
+                    purl = PurlGenerator.generate(pkg)
 
                     write_spdx_package(json, spdx_id, pkg.name, pkg.version.to_s,
                       source_url, pkg.spec.license, pkg.spec.description,
@@ -235,7 +236,7 @@ module Shards
               json.field "components" do
                 json.array do
                   packages.each do |pkg|
-                    purl = generate_purl(pkg)
+                    purl = PurlGenerator.generate(pkg)
                     bom_ref = purl || pkg.name
 
                     json.object do
@@ -294,7 +295,7 @@ module Shards
                       json.array do
                         packages.each do |pkg|
                           if root_dep_names.includes?(pkg.name)
-                            json.string(generate_purl(pkg) || pkg.name)
+                            json.string(PurlGenerator.generate(pkg) || pkg.name)
                           end
                         end
                       end
@@ -303,7 +304,7 @@ module Shards
 
                   # Transitive dependencies
                   packages.each do |pkg|
-                    pkg_bom_ref = generate_purl(pkg) || pkg.name
+                    pkg_bom_ref = PurlGenerator.generate(pkg) || pkg.name
                     deps = dep_graph[pkg.name]?
 
                     json.object do
@@ -314,7 +315,7 @@ module Shards
                             deps.each do |dep_name|
                               dep_pkg = packages.find { |p| p.name == dep_name }
                               if dep_pkg
-                                json.string(generate_purl(dep_pkg) || dep_name)
+                                json.string(PurlGenerator.generate(dep_pkg) || dep_name)
                               end
                             end
                           end
@@ -332,56 +333,6 @@ module Shards
       end
 
       # --- Helpers ---
-
-      private def generate_purl(pkg : Package) : String?
-        resolver = pkg.resolver
-        source = resolver.source
-        version = pkg.version.to_s
-
-        if resolver.is_a?(PathResolver)
-          return nil
-        end
-
-        owner, repo = parse_owner_repo(source)
-
-        if owner && repo
-          host = URI.parse(source).host.try(&.downcase) || ""
-          purl_type = case host
-                      when .includes?("github")    then "github"
-                      when .includes?("gitlab")    then "gitlab"
-                      when .includes?("bitbucket") then "bitbucket"
-                      when .includes?("codeberg")  then "codeberg"
-                      else                              nil
-                      end
-
-          if purl_type
-            return "pkg:#{purl_type}/#{owner}/#{repo}@#{version}"
-          end
-        end
-
-        # Generic fallback for unknown git sources
-        "pkg:generic/#{URI.encode_path(pkg.name)}@#{version}?download_url=#{URI.encode_www_form(source)}"
-      end
-
-      private def parse_owner_repo(source : String) : {String?, String?}
-        uri = URI.parse(source)
-        path = uri.path
-
-        return {nil, nil} unless path
-
-        # Remove leading slash and trailing .git
-        path = path.lchop('/')
-        path = path.rchop(".git") if path.ends_with?(".git")
-
-        parts = path.split('/')
-        if parts.size >= 2
-          {parts[0], parts[1]}
-        else
-          {nil, nil}
-        end
-      rescue
-        {nil, nil}
-      end
 
       private def download_location(pkg : Package) : String
         resolver = pkg.resolver

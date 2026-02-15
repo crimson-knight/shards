@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "shards-test": {
+      "type": "stdio",
+      "command": "./test/mcp_e2e/mcp_echo_server",
+      "args": []
+    }
+  }
+}

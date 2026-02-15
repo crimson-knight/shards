@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "query-tool": {
+      "command": "crystal",
+      "args": ["run", "--no-color", "./src/mcp_server.cr"]
+    }
+  }
+}

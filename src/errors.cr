@@ -67,4 +67,14 @@ module Shards
       io.flush
     end
   end
+
+  class ChecksumMismatch < Error
+    def initialize(package_name : String, expected : String, actual : String)
+      super "Checksum verification failed for #{package_name}.\n" \
+            "  Expected: #{expected}\n" \
+            "  Got:      #{actual}\n" \
+            "This may indicate the source has been tampered with or force-pushed.\n" \
+            "Run `shards update #{package_name}` to re-resolve, or use `--skip-verify` to bypass."
+    end
+  end
 end
