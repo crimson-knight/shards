@@ -204,7 +204,7 @@ module Shards
 
       it "includes init command and examples" do
         ComplianceMCPServer::HELP_TEXT.should contain("init")
-        ComplianceMCPServer::HELP_TEXT.should contain("Configure for Claude Code")
+        ComplianceMCPServer::HELP_TEXT.should contain("Configure .mcp.json, skills, agents for Claude Code")
       end
 
       it "documents --interactive and --help flags" do

@@ -1,6 +1,7 @@
 require "json"
 require "mcprotocol"
 require "../version"
+require "./claude_config"
 
 module Shards
   class ComplianceMCPServer
@@ -135,7 +136,7 @@ module Shards
         shards-alpha mcp-server [command] [options]
 
     Commands:
-        init               Add shards-compliance to .mcp.json for Claude Code
+        init               Configure .mcp.json, skills, agents for Claude Code
         (default)          Start the MCP server (stdio transport)
 
     Options:
@@ -151,7 +152,7 @@ module Shards
         sbom               Generate Software Bill of Materials (SPDX/CycloneDX)
 
     Examples:
-        shards-alpha mcp-server init          # Configure for Claude Code
+        shards-alpha mcp-server init          # Set up MCP server + skills + agents
         shards-alpha mcp-server               # Start server (for MCP clients)
         shards-alpha mcp-server --interactive  # Manual testing mode
     HELP
@@ -175,6 +176,9 @@ module Shards
 
       if args.includes?("init")
         init_mcp_config(path)
+        init_claude_config(path)
+        puts ""
+        puts "Restart Claude Code to pick up the new server and skills."
         return
       end
 
@@ -218,7 +222,7 @@ module Shards
       end
 
       puts ""
-      puts "MCP server configured. Restart Claude Code to pick up the new server."
+      puts "MCP server configured."
       puts "Tools available: audit, licenses, policy_check, diff, compliance_report, sbom"
     end
 
@@ -230,6 +234,28 @@ module Shards
       }
       File.write(mcp_path, config.to_pretty_json + "\n")
       puts "Created .mcp.json with #{MCP_SERVER_NAME} server"
+    end
+
+    def self.init_claude_config(path : String)
+      installed = ClaudeConfig.install(path)
+
+      if installed.empty?
+        puts "Claude Code skills and agents already configured"
+      else
+        puts ""
+        puts "Installed #{installed.size} Claude Code files:"
+        skills = installed.select(&.includes?("/skills/"))
+        agents = installed.select(&.includes?("/agents/"))
+        other = installed.reject { |f| f.includes?("/skills/") || f.includes?("/agents/") }
+
+        skills.each { |f| puts "  skill:    #{f}" }
+        agents.each { |f| puts "  agent:    #{f}" }
+        other.each { |f| puts "  config:   #{f}" }
+
+        puts ""
+        puts "Available skills: /audit, /licenses, /policy-check, /diff-deps, /compliance-report, /sbom"
+        puts "Available agents: compliance-checker, security-reviewer"
+      end
     end
 
     private def self.find_executable_for_config : String
