@@ -1,7 +1,16 @@
 name: Upstream Sync
 
-# Checks for updates from crystal-lang/shards and creates a PR if mergeable,
-# or an issue if there are conflicts.
+# Syncs master with crystal-lang/shards, rebases alpha on top, and updates
+# the Homebrew formula. If rebase conflicts arise, Claude Code attempts
+# automated resolution. Results are posted as a GitHub issue with full
+# analysis details.
+#
+# Required secrets:
+#   ANTHROPIC_API_KEY    - Claude Code API key for conflict resolution
+#   HOMEBREW_TAP_TOKEN   - GitHub PAT with repo scope for crimson-knight/homebrew-tap
+#
+# Optional secrets:
+#   NOTIFICATION_EMAIL   - Override email for notifications (defaults to GitHub notifications)
 
 on:
   schedule:
@@ -16,10 +25,12 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          ref: alpha
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -32,98 +43,301 @@ jobs:
         run: |
           git remote add upstream https://github.com/crystal-lang/shards.git || true
           git fetch upstream master
+          git fetch origin master
 
-      - name: Check for new commits
+      # ── Step 1: Check for new upstream commits ──────────────────────
+      - name: Check for upstream changes
         id: check
         run: |
           UPSTREAM_HEAD=$(git rev-parse upstream/master)
-          MERGE_BASE=$(git merge-base HEAD upstream/master)
+          OUR_MASTER=$(git rev-parse origin/master)
+          MERGE_BASE=$(git merge-base origin/master upstream/master)
 
           if [ "$UPSTREAM_HEAD" = "$MERGE_BASE" ]; then
-            echo "already_current=true" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No new upstream commits."
           else
-            echo "already_current=false" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
             COMMIT_COUNT=$(git rev-list --count $MERGE_BASE..$UPSTREAM_HEAD)
             echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+            echo "upstream_head=$UPSTREAM_HEAD" >> $GITHUB_OUTPUT
+            echo "our_master=$OUR_MASTER" >> $GITHUB_OUTPUT
 
-            # Get summary of upstream changes
-            SUMMARY=$(git log --oneline $MERGE_BASE..$UPSTREAM_HEAD | head -20)
-            echo "summary<<EOF" >> $GITHUB_OUTPUT
+            SUMMARY=$(git log --oneline $MERGE_BASE..$UPSTREAM_HEAD | head -30)
+            echo "summary<<EOFSUM" >> $GITHUB_OUTPUT
             echo "$SUMMARY" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            echo "EOFSUM" >> $GITHUB_OUTPUT
+
+            echo "Found $COMMIT_COUNT new upstream commits."
           fi
 
-      - name: Attempt merge
-        if: steps.check.outputs.already_current != 'true'
-        id: merge
+      # ── Step 2: Fast-forward master to upstream ─────────────────────
+      - name: Fast-forward master
+        if: steps.check.outputs.has_changes == 'true'
+        id: ff_master
         run: |
-          BRANCH="upstream-sync/$(date +%Y-%m-%d)"
-          git checkout -b "$BRANCH"
+          git checkout master
 
-          if git merge upstream/master --no-edit; then
+          if git merge --ff-only upstream/master; then
+            echo "success=true" >> $GITHUB_OUTPUT
+            git push origin master
+            echo "Master fast-forwarded to upstream."
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "Cannot fast-forward master. Our master has diverged from upstream."
+            echo "This requires manual intervention — master should only track upstream."
+          fi
+
+      # ── Step 3: Rebase alpha onto updated master ────────────────────
+      - name: Rebase alpha onto master
+        if: steps.check.outputs.has_changes == 'true' && steps.ff_master.outputs.success == 'true'
+        id: rebase
+        run: |
+          git checkout alpha
+
+          if git rebase master; then
             echo "clean=true" >> $GITHUB_OUTPUT
-            echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-            git push origin "$BRANCH"
+            echo "Alpha rebased cleanly onto updated master."
           else
             echo "clean=false" >> $GITHUB_OUTPUT
-            # Capture conflict info
-            CONFLICTS=$(git diff --name-only --diff-filter=U)
-            echo "conflicts<<EOF" >> $GITHUB_OUTPUT
+
+            # Capture conflict details
+            CONFLICTS=$(git diff --name-only --diff-filter=U 2>/dev/null || echo "unknown")
+            echo "conflicts<<EOFCONF" >> $GITHUB_OUTPUT
             echo "$CONFLICTS" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-            git merge --abort
+            echo "EOFCONF" >> $GITHUB_OUTPUT
+
+            git rebase --abort
+            echo "Rebase had conflicts. Will attempt Claude Code resolution."
           fi
 
-      - name: Create PR for clean merge
-        if: steps.check.outputs.already_current != 'true' && steps.merge.outputs.clean == 'true'
+      # ── Step 4: Claude Code conflict resolution ─────────────────────
+      - name: Install Claude Code
+        if: steps.rebase.outputs.clean == 'false'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Resolve conflicts with Claude Code
+        if: steps.rebase.outputs.clean == 'false'
+        id: claude_resolve
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Start the rebase again so conflict markers are present
+          git checkout alpha
+          git rebase master || true
+
+          CONFLICTED_FILES=$(git diff --name-only --diff-filter=U)
+          echo "Conflicted files:"
+          echo "$CONFLICTED_FILES"
+
+          # Build a prompt for Claude Code
+          PROMPT="You are resolving git rebase conflicts in shards-alpha, a Crystal language \
+          package manager. The 'alpha' branch adds these features on top of upstream crystal-lang/shards: \
+          supply chain compliance (audit, licenses, policy, diff, compliance-report, sbom), \
+          AI documentation distribution, MCP compliance server, and Claude Code assistant configuration. \
+
+          The rebase of alpha onto the updated master (from upstream) has conflicts in these files: \
+          $CONFLICTED_FILES \
+
+          For each conflicted file: \
+          1. Read the file to see the conflict markers \
+          2. Resolve by keeping BOTH upstream changes AND alpha additions \
+          3. Remove all conflict markers (<<<<<<< ======= >>>>>>>) \
+          4. Ensure the result compiles as valid Crystal code \
+          5. Preserve all alpha features while incorporating upstream improvements \
+
+          After resolving all files, run 'git add' on each resolved file. \
+          Do NOT run 'git rebase --continue' — just resolve and stage the files. \
+
+          When done, output a summary of what you changed and why for each file."
+
+          # Run Claude Code in non-interactive print mode
+          # Capture output for the notification report
+          set +e
+          CLAUDE_OUTPUT=$(claude -p "$PROMPT" \
+            --allowedTools "Read,Edit,Bash" \
+            --max-turns 30 2>&1)
+          CLAUDE_EXIT=$?
+          set -e
+
+          echo "$CLAUDE_OUTPUT" > /tmp/claude-resolution-report.txt
+
+          # Check if all conflicts are resolved
+          REMAINING=$(git diff --name-only --diff-filter=U 2>/dev/null)
+
+          if [ -z "$REMAINING" ]; then
+            echo "resolved=true" >> $GITHUB_OUTPUT
+            echo "Claude Code resolved all conflicts."
+
+            # Continue the rebase
+            GIT_EDITOR=true git rebase --continue || {
+              # If rebase continue fails (e.g., more conflicts in later commits),
+              # try to resolve those too, but for now mark as partial
+              echo "resolved=partial" >> $GITHUB_OUTPUT
+              echo "Claude resolved initial conflicts but rebase continue hit more issues."
+              git rebase --abort
+            }
+          else
+            echo "resolved=false" >> $GITHUB_OUTPUT
+            echo "remaining_conflicts<<EOFREM" >> $GITHUB_OUTPUT
+            echo "$REMAINING" >> $GITHUB_OUTPUT
+            echo "EOFREM" >> $GITHUB_OUTPUT
+            echo "Claude Code could not resolve all conflicts."
+            git rebase --abort
+          fi
+
+          # Save the report
+          {
+            echo "## Claude Code Resolution Report"
+            echo ""
+            echo "### Exit code: $CLAUDE_EXIT"
+            echo ""
+            echo "### Output"
+            echo '```'
+            head -200 /tmp/claude-resolution-report.txt
+            echo '```'
+          } > /tmp/claude-report-formatted.txt
+
+          REPORT=$(cat /tmp/claude-report-formatted.txt)
+          echo "report<<EOFREP" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOFREP" >> $GITHUB_OUTPUT
+
+      # ── Step 5: Push rebased alpha ──────────────────────────────────
+      - name: Push alpha
+        if: steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true'
+        id: push_alpha
+        run: |
+          git push origin alpha --force-with-lease
+          NEW_SHA=$(git rev-parse HEAD)
+          echo "new_head=$NEW_SHA" >> $GITHUB_OUTPUT
+
+          # Read the version from the branch
+          VERSION=$(cat VERSION)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Alpha pushed. HEAD: $NEW_SHA, Version: $VERSION"
+
+      # ── Step 6: Update Homebrew formula ─────────────────────────────
+      - name: Update Homebrew formula
+        if: steps.push_alpha.outputs.new_head != ''
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          # Download the new alpha tarball and compute SHA
+          curl -sL "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz" \
+            -o /tmp/alpha.tar.gz
+          NEW_SHA256=$(sha256sum /tmp/alpha.tar.gz | awk '{print $1}')
+          VERSION=${{ steps.push_alpha.outputs.version }}
+
+          # Get current formula SHA for the API update
+          FORMULA_SHA=$(gh api repos/crimson-knight/homebrew-tap/contents/Formula/shards-alpha.rb \
+            --jq '.sha')
+
+          # Generate the updated formula
+          FORMULA=$(cat <<FORMULA_EOF
+          class ShardsAlpha < Formula
+            desc "Crystal Shards fork with supply chain compliance, AI assistant config, and AI docs"
+            homepage "https://github.com/crimson-knight/shards"
+            url "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz"
+            version "$VERSION"
+            sha256 "$NEW_SHA256"
+            license "Apache-2.0"
+
+            depends_on "crystal"
+
+            def install
+              system "make", "bin/shards-alpha", "release=1"
+              bin.install "bin/shards-alpha"
+            end
+
+            test do
+              assert_match "shards-alpha", shell_output("#{bin}/shards-alpha --version")
+            end
+          end
+          FORMULA_EOF
+          )
+
+          ENCODED=$(echo -n "$FORMULA" | base64 -w 0)
+
+          gh api -X PUT repos/crimson-knight/homebrew-tap/contents/Formula/shards-alpha.rb \
+            -f message="Update formula to alpha branch (v$VERSION)" \
+            -f content="$ENCODED" \
+            -f sha="$FORMULA_SHA" \
+            --silent
+
+          echo "Homebrew formula updated to alpha branch v$VERSION (sha256: $NEW_SHA256)"
+
+      # ── Step 7: Notification ────────────────────────────────────────
+      - name: Post success notification
+        if: >-
+          steps.check.outputs.has_changes == 'true' &&
+          (steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --title "Upstream sync: ${{ steps.check.outputs.commit_count }} new commits from crystal-lang/shards" \
-            --body "$(cat <<'EOF'
-          ## Upstream Sync
+          RESOLUTION_METHOD="Clean rebase"
+          RESOLUTION_DETAILS=""
+          if [ "${{ steps.rebase.outputs.clean }}" != "true" ]; then
+            RESOLUTION_METHOD="Claude Code auto-resolution"
+            RESOLUTION_DETAILS="${{ steps.claude_resolve.outputs.report }}"
+          fi
 
-          **${{ steps.check.outputs.commit_count }}** new commits from [crystal-lang/shards](https://github.com/crystal-lang/shards).
+          gh issue create \
+            --title "Upstream sync complete: ${{ steps.check.outputs.commit_count }} commits merged" \
+            --label "upstream-sync,automated" \
+            --assignee "crimson-knight" \
+            --body "$(cat <<'ISSUE_EOF'
+          ## Upstream Sync Report
 
-          ### Upstream changes
+          **Status:** Successfully synced
+          **Upstream commits:** ${{ steps.check.outputs.commit_count }}
+          **Resolution method:** RESOLUTION_METHOD_PLACEHOLDER
+          **Alpha branch:** pushed and up to date
+          **Homebrew formula:** updated
+
+          ### Upstream changes incorporated
           ```
           ${{ steps.check.outputs.summary }}
           ```
 
-          ### Merge status
-          Clean merge -- no conflicts detected.
+          ### What happened
+          1. Master was fast-forwarded to upstream crystal-lang/shards
+          2. Alpha branch was rebased onto the updated master
+          3. All changes pushed and Homebrew formula updated
 
-          ### Action needed
-          Review the changes and merge when ready. Run tests to verify compatibility with alpha features.
+          RESOLUTION_DETAILS_PLACEHOLDER
+
+          ### Verification
+          - [ ] `brew upgrade shards-alpha` installs the new version
+          - [ ] `shards-alpha assistant status` works correctly
+          - [ ] `shards-alpha audit` works correctly
 
           ---
           *Automated by upstream-sync workflow*
-          EOF
-          )" \
-            --base master \
-            --head "${{ steps.merge.outputs.branch }}"
+          ISSUE_EOF
+          )" | sed "s/RESOLUTION_METHOD_PLACEHOLDER/$RESOLUTION_METHOD/" \
+             | sed "s|RESOLUTION_DETAILS_PLACEHOLDER|$RESOLUTION_DETAILS|"
 
-      - name: Create issue for conflicts
-        if: steps.check.outputs.already_current != 'true' && steps.merge.outputs.clean == 'false'
+      - name: Post failure notification
+        if: >-
+          steps.check.outputs.has_changes == 'true' &&
+          steps.ff_master.outputs.success == 'true' &&
+          steps.rebase.outputs.clean == 'false' &&
+          steps.claude_resolve.outputs.resolved != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if an open conflict issue already exists
-          EXISTING=$(gh issue list --label "upstream-sync" --state open --json number -q '.[0].number')
-          if [ -n "$EXISTING" ]; then
-            echo "Conflict issue #$EXISTING already open, skipping."
-            exit 0
-          fi
+          CLAUDE_REPORT="${{ steps.claude_resolve.outputs.report }}"
 
           gh issue create \
-            --title "Upstream sync: merge conflicts with crystal-lang/shards" \
-            --label "upstream-sync" \
-            --body "$(cat <<'EOF'
-          ## Upstream Sync Conflict
+            --title "Upstream sync FAILED: manual intervention needed" \
+            --label "upstream-sync,needs-intervention" \
+            --assignee "crimson-knight" \
+            --body "$(cat <<'ISSUE_EOF'
+          ## Upstream Sync — Manual Intervention Required
 
-          **${{ steps.check.outputs.commit_count }}** new commits from [crystal-lang/shards](https://github.com/crystal-lang/shards) could not be merged automatically.
+          **Status:** Failed — conflicts could not be auto-resolved
+          **Upstream commits:** ${{ steps.check.outputs.commit_count }}
 
           ### Upstream changes
           ```
@@ -132,17 +346,67 @@ jobs:
 
           ### Conflicting files
           ```
-          ${{ steps.merge.outputs.conflicts }}
+          ${{ steps.rebase.outputs.conflicts }}
           ```
 
-          ### Resolution
-          1. `git fetch upstream master`
-          2. `git merge upstream/master`
-          3. Resolve conflicts in the files listed above
-          4. `make test` to verify
-          5. Commit and push
+          ### Claude Code resolution attempt
+          Claude Code attempted to resolve the conflicts but was not fully successful.
+
+          CLAUDE_REPORT_PLACEHOLDER
+
+          ### Manual resolution steps
+          ```sh
+          git fetch upstream master
+          git checkout master && git merge --ff-only upstream/master && git push origin master
+          git checkout alpha
+          git rebase master
+          # Resolve conflicts in the files listed above
+          git add <resolved-files>
+          git rebase --continue
+          # Verify
+          crystal build src/shards.cr -o bin/shards-alpha
+          crystal spec spec/unit/
+          git push origin alpha --force-with-lease
+          ```
+
+          ### Files needing attention
+          ```
+          ${{ steps.claude_resolve.outputs.remaining_conflicts }}
+          ```
 
           ---
           *Automated by upstream-sync workflow*
-          EOF
+          ISSUE_EOF
+          )" | sed "s|CLAUDE_REPORT_PLACEHOLDER|$CLAUDE_REPORT|"
+
+      - name: Post master-diverged notification
+        if: steps.check.outputs.has_changes == 'true' && steps.ff_master.outputs.success == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Upstream sync BLOCKED: master has diverged from upstream" \
+            --label "upstream-sync,needs-intervention" \
+            --assignee "crimson-knight" \
+            --body "$(cat <<'ISSUE_EOF'
+          ## Upstream Sync — Master Diverged
+
+          Master cannot be fast-forwarded to upstream. This means commits exist on
+          master that are not in upstream crystal-lang/shards.
+
+          **Action required:** Reset master to track upstream, then rebase alpha.
+
+          ```sh
+          git fetch upstream master
+          git checkout master
+          git reset --hard upstream/master
+          git push origin master --force-with-lease
+          git checkout alpha
+          git rebase master
+          git push origin alpha --force-with-lease
+          ```
+
+          ---
+          *Automated by upstream-sync workflow*
+          ISSUE_EOF
           )"
