@@ -82,7 +82,25 @@ Auto-detected locations in each dependency:
 | `.claude/agents/<name>.md` | `.claude/agents/<shard>--<name>.md` |
 | `.claude/commands/<name>.md` | `.claude/commands/<shard>:<name>.md` |
 | `CLAUDE.md` | `.claude/skills/<shard>--docs/SKILL.md` |
+| `AGENTS.md` | `.claude/skills/<shard>--docs/reference/AGENTS.md` |
 | `.mcp.json` | Merged into `.mcp-shards.json` |
+
+#### Version tracking and update safety
+
+Every installed AI doc file is tracked in `.claude/.ai-docs-info.yml` with:
+
+- The **dependency version** from `shard.lock` (e.g., `kemal: 1.3.0`)
+- A **dual-checksum** per file: the upstream checksum (as shipped by the shard) and the installed checksum (as it exists on disk)
+
+When you run `shards update` and a dependency version changes:
+
+- **Unmodified files** (checksums match) are silently updated to the new version
+- **Locally modified files** (checksums differ) are preserved — the new upstream version is saved as `<file>.upstream` so you can merge manually
+
+This means you can safely customize AI docs from your dependencies without
+losing changes on update. Use `shards ai-docs diff <shard>` to compare
+your modifications against upstream, or `shards ai-docs reset <shard>` to
+discard changes and restore the original.
 
 ### MCP Server Distribution & Lifecycle
 
