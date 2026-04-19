@@ -9,6 +9,11 @@ on:
     types: [published]
   workflow_dispatch:
 
+env:
+  # GitHub currently recommends opting JavaScript actions into Node 24 ahead of
+  # the Node 20 runner removal. This keeps the Pages pipeline off the deprecation path.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
   pages: write
