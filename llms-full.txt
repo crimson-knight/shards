@@ -5821,7 +5821,7 @@ Published agent-oriented resources that ship alongside the generated API documen
 
 ## /index.md
 
-# Ashard alpha
+# Ashard 
 
 #   
     
@@ -6390,7 +6390,7 @@ details.
 
 ## /toplevel.md
 
-# Top Level Namespace - Ashard alpha
+# Top Level Namespace - Ashard 
 
 # 
 
