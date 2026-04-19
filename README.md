@@ -56,6 +56,21 @@ Run `shards --help` to list other commands with their options.
 
 Happy Hacking!
 
+## Public Name
+
+The public name for this additive fork is **Ashard**.
+
+For the current release-candidate period, the shipped binary and package names
+remain `shards-alpha` so existing installs and automation keep working. The
+product story we should publish is:
+
+- **Ashard** is the public project name
+- **`shards-alpha`** is the current compatibility-preserving binary/package name
+
+For the docs publishing story, see
+[docs/crystal-docs-gap-analysis.md](docs/crystal-docs-gap-analysis.md). It
+explains what Crystal Docs already provides and what Ashard adds on top.
+
 ## Compatibility Promise
 
 This repository has two operating modes:

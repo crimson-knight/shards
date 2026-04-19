@@ -61,11 +61,21 @@ rebased `alpha` branch and then investigate afterward.
 
 ## Naming guidance
 
-`shards-alpha` is still a working distribution name, not a finalized product
-name. Before renaming, the replacement should satisfy all of these:
+The selected public name is **Ashard**.
 
-- It clearly signals additive tooling rather than a hard fork of core behavior
-- It preserves a clean install story for `shards`-compatible workflows
-- It works consistently across repo names, release assets, and package managers
-- It does not force Amber or Crystal users to learn a different basic command
-  sequence just to install dependencies
+Why this name:
+
+- It reads naturally to an English speaker as "a shard"
+- It keeps the link to Shards obvious
+- It leaves room for the "A" to imply additive, agent-oriented, and alpha-stage
+  tooling without sounding like a separate language or ecosystem
+
+For the transition period:
+
+- The public docs, release narrative, and blog copy should say **Ashard**
+- The current binary and package names can stay `shards-alpha` until we finish
+  the packaging rename without breaking compatibility for existing users
+
+We should avoid a binary name that starts with a numeral. While shells allow
+digits in executable names, a leading-number command is awkward to read, easy to
+mis-hear, and weaker for copy-pasteable installation docs.

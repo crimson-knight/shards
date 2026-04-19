@@ -12,6 +12,8 @@
 ##   $ make test skip_fossil=1
 ## Generate docs
 ##   $ make docs
+## Build the publishable docs site
+##   $ make docs_site
 ## Validate compatibility with amber_cli
 ##   $ make compatibility
 ## Install shards-alpha
@@ -64,6 +66,10 @@ include docs.mk
 
 .PHONY: build
 build: bin/shards-alpha$(EXE)
+
+.PHONY: docs_site
+docs_site: ## Build the publishable docs site
+	./scripts/build_docs_site.sh
 
 .PHONY: compatibility
 compatibility: ## Validate amber_cli compatibility
