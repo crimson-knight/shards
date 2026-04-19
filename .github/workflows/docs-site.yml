@@ -9,27 +9,22 @@ on:
     types: [published]
   workflow_dispatch:
 
-env:
-  # GitHub currently recommends opting JavaScript actions into Node 24 ahead of
-  # the Node 20 runner removal. This keeps the Pages pipeline off the deprecation path.
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: docs-site
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
@@ -48,24 +43,43 @@ jobs:
           DOCS_BASE_PATH: /shards
         run: ./scripts/build_docs_site.sh
 
-      - name: Configure Pages
+      - name: Publish docs to gh-pages
         if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: build
-    runs-on: ubuntu-24.04
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+          temp_dir="$(mktemp -d)"
 
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          if git ls-remote --exit-code origin gh-pages >/dev/null 2>&1; then
+            git worktree add "$temp_dir" origin/gh-pages
+          else
+            git worktree add --detach "$temp_dir"
+            (
+              cd "$temp_dir"
+              git checkout --orphan gh-pages
+            )
+          fi
+
+          find "$temp_dir" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R site/. "$temp_dir"/
+          touch "$temp_dir/.nojekyll"
+
+          (
+            cd "$temp_dir"
+            git add --all
+
+            if git diff --cached --quiet; then
+              echo "No docs changes to publish"
+              exit 0
+            fi
+
+            git commit -m "Deploy docs for ${GITHUB_SHA}"
+            git push origin HEAD:gh-pages
+          )
+
+          git worktree remove "$temp_dir" --force
