@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.19.1">
+<meta name="crystal_docs.project_version" content="alpha">
+<meta name="crystal_docs.project_name" content="Ashard">
+
+
+    <link rel="canonical" href="https://crimson-knight.github.io/shards/Shards/ClaudeConfig.html">
+
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
+
+  <meta name="repository-name" content="Ashard">
+  <title>Shards::ClaudeConfig - Ashard alpha</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../index.html">
+          Ashard
+        </a>
+      </h1>
+
+      <span class="project-version">
+        alpha
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class=" " data-id="Ashard/toplevel" data-name="top level namespace">
+      <a href="../toplevel.html">Top Level Namespace</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="Ashard/Shards" data-name="shards">
+      <a href="../Shards.html">Shards</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="Ashard/Shards/AIDocsInfo" data-name="shards::aidocsinfo">
+      <a href="../Shards/AIDocsInfo.html">AIDocsInfo</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInfo/FileEntry" data-name="shards::aidocsinfo::fileentry">
+      <a href="../Shards/AIDocsInfo/FileEntry.html">FileEntry</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInfo/ShardEntry" data-name="shards::aidocsinfo::shardentry">
+      <a href="../Shards/AIDocsInfo/ShardEntry.html">ShardEntry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInstaller" data-name="shards::aidocsinstaller">
+      <a href="../Shards/AIDocsInstaller.html">AIDocsInstaller</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Any" data-name="shards::any">
+      <a href="../Shards/Any.html">Any</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantConfig" data-name="shards::assistantconfig">
+      <a href="../Shards/AssistantConfig.html">AssistantConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantConfigInfo" data-name="shards::assistantconfiginfo">
+      <a href="../Shards/AssistantConfigInfo.html">AssistantConfigInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantVersions" data-name="shards::assistantversions">
+      <a href="../Shards/AssistantVersions.html">AssistantVersions</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ChangeLogger" data-name="shards::changelogger">
+      <a href="../Shards/ChangeLogger.html">ChangeLogger</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Checksum" data-name="shards::checksum">
+      <a href="../Shards/Checksum.html">Checksum</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ChecksumMismatch" data-name="shards::checksummismatch">
+      <a href="../Shards/ChecksumMismatch.html">ChecksumMismatch</a>
+      
+    </li>
+  
+  <li class=" current" data-id="Ashard/Shards/ClaudeConfig" data-name="shards::claudeconfig">
+      <a href="../Shards/ClaudeConfig.html">ClaudeConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Command" data-name="shards::command">
+      <a href="../Shards/Command.html">Command</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Commands" data-name="shards::commands">
+      <a href="../Shards/Commands.html">Commands</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/AIDocs" data-name="shards::commands::aidocs">
+      <a href="../Shards/Commands/AIDocs.html">AIDocs</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Assistant" data-name="shards::commands::assistant">
+      <a href="../Shards/Commands/Assistant.html">Assistant</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Audit" data-name="shards::commands::audit">
+      <a href="../Shards/Commands/Audit.html">Audit</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Build" data-name="shards::commands::build">
+      <a href="../Shards/Commands/Build.html">Build</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Check" data-name="shards::commands::check">
+      <a href="../Shards/Commands/Check.html">Check</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/ComplianceReport" data-name="shards::commands::compliancereport">
+      <a href="../Shards/Commands/ComplianceReport.html">ComplianceReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Diff" data-name="shards::commands::diff">
+      <a href="../Shards/Commands/Diff.html">Diff</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Commands/Docs" data-name="shards::commands::docs">
+      <a href="../Shards/Commands/Docs.html">Docs</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Docs/AgentFileEntry" data-name="shards::commands::docs::agentfileentry">
+      <a href="../Shards/Commands/Docs/AgentFileEntry.html">AgentFileEntry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Init" data-name="shards::commands::init">
+      <a href="../Shards/Commands/Init.html">Init</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Install" data-name="shards::commands::install">
+      <a href="../Shards/Commands/Install.html">Install</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Licenses" data-name="shards::commands::licenses">
+      <a href="../Shards/Commands/Licenses.html">Licenses</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/List" data-name="shards::commands::list">
+      <a href="../Shards/Commands/List.html">List</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Lock" data-name="shards::commands::lock">
+      <a href="../Shards/Commands/Lock.html">Lock</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/MCP" data-name="shards::commands::mcp">
+      <a href="../Shards/Commands/MCP.html">MCP</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Outdated" data-name="shards::commands::outdated">
+      <a href="../Shards/Commands/Outdated.html">Outdated</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Policy" data-name="shards::commands::policy">
+      <a href="../Shards/Commands/Policy.html">Policy</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Prune" data-name="shards::commands::prune">
+      <a href="../Shards/Commands/Prune.html">Prune</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Run" data-name="shards::commands::run">
+      <a href="../Shards/Commands/Run.html">Run</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/RunScript" data-name="shards::commands::runscript">
+      <a href="../Shards/Commands/RunScript.html">RunScript</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/SBOM" data-name="shards::commands::sbom">
+      <a href="../Shards/Commands/SBOM.html">SBOM</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Update" data-name="shards::commands::update">
+      <a href="../Shards/Commands/Update.html">Update</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Version" data-name="shards::commands::version">
+      <a href="../Shards/Commands/Version.html">Version</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Compliance" data-name="shards::compliance">
+      <a href="../Shards/Compliance.html">Compliance</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/Attestation" data-name="shards::compliance::attestation">
+      <a href="../Shards/Compliance/Attestation.html">Attestation</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/HtmlTemplate" data-name="shards::compliance::htmltemplate">
+      <a href="../Shards/Compliance/HtmlTemplate.html">HtmlTemplate</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ProjectInfo" data-name="shards::compliance::projectinfo">
+      <a href="../Shards/Compliance/ProjectInfo.html">ProjectInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportBuilder" data-name="shards::compliance::reportbuilder">
+      <a href="../Shards/Compliance/ReportBuilder.html">ReportBuilder</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportData" data-name="shards::compliance::reportdata">
+      <a href="../Shards/Compliance/ReportData.html">ReportData</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportFormatter" data-name="shards::compliance::reportformatter">
+      <a href="../Shards/Compliance/ReportFormatter.html">ReportFormatter</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/SectionData" data-name="shards::compliance::sectiondata">
+      <a href="../Shards/Compliance/SectionData.html">SectionData</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/Summary" data-name="shards::compliance::summary">
+      <a href="../Shards/Compliance/Summary.html">Summary</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/VulnerabilityCounts" data-name="shards::compliance::vulnerabilitycounts">
+      <a href="../Shards/Compliance/VulnerabilityCounts.html">VulnerabilityCounts</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ComplianceMCPServer" data-name="shards::compliancemcpserver">
+      <a href="../Shards/ComplianceMCPServer.html">ComplianceMCPServer</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Conflict" data-name="shards::conflict">
+      <a href="../Shards/Conflict.html">Conflict</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/CrystalResolver" data-name="shards::crystalresolver">
+      <a href="../Shards/CrystalResolver.html">CrystalResolver</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Dependency" data-name="shards::dependency">
+      <a href="../Shards/Dependency.html">Dependency</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/DiffReport" data-name="shards::diffreport">
+      <a href="../Shards/DiffReport.html">DiffReport</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Docs" data-name="shards::docs">
+      <a href="../Shards/Docs.html">Docs</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/AIDocumentation" data-name="shards::docs::aidocumentation">
+      <a href="../Shards/Docs/AIDocumentation.html">AIDocumentation</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/CLIReference" data-name="shards::docs::clireference">
+      <a href="../Shards/Docs/CLIReference.html">CLIReference</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/DocsGeneration" data-name="shards::docs::docsgeneration">
+      <a href="../Shards/Docs/DocsGeneration.html">DocsGeneration</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/MCPDistribution" data-name="shards::docs::mcpdistribution">
+      <a href="../Shards/Docs/MCPDistribution.html">MCPDistribution</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/MCPLifecycle" data-name="shards::docs::mcplifecycle">
+      <a href="../Shards/Docs/MCPLifecycle.html">MCPLifecycle</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/PostinstallScripts" data-name="shards::docs::postinstallscripts">
+      <a href="../Shards/Docs/PostinstallScripts.html">PostinstallScripts</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/PublishingGuide" data-name="shards::docs::publishingguide">
+      <a href="../Shards/Docs/PublishingGuide.html">PublishingGuide</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/SBOMGeneration" data-name="shards::docs::sbomgeneration">
+      <a href="../Shards/Docs/SBOMGeneration.html">SBOMGeneration</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/ShardYmlFormat" data-name="shards::docs::shardymlformat">
+      <a href="../Shards/Docs/ShardYmlFormat.html">ShardYmlFormat</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Error" data-name="shards::error">
+      <a href="../Shards/Error.html">Error</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilBranchRef" data-name="shards::fossilbranchref">
+      <a href="../Shards/FossilBranchRef.html">FossilBranchRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilCommitRef" data-name="shards::fossilcommitref">
+      <a href="../Shards/FossilCommitRef.html">FossilCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilRef" data-name="shards::fossilref">
+      <a href="../Shards/FossilRef.html">FossilRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/FossilResolver" data-name="shards::fossilresolver">
+      <a href="../Shards/FossilResolver.html">FossilResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/FossilResolver/FossilVersion" data-name="shards::fossilresolver::fossilversion">
+      <a href="../Shards/FossilResolver/FossilVersion.html">FossilVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilTagRef" data-name="shards::fossiltagref">
+      <a href="../Shards/FossilTagRef.html">FossilTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilTrunkRef" data-name="shards::fossiltrunkref">
+      <a href="../Shards/FossilTrunkRef.html">FossilTrunkRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitBranchRef" data-name="shards::gitbranchref">
+      <a href="../Shards/GitBranchRef.html">GitBranchRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitCommitRef" data-name="shards::gitcommitref">
+      <a href="../Shards/GitCommitRef.html">GitCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitHeadRef" data-name="shards::githeadref">
+      <a href="../Shards/GitHeadRef.html">GitHeadRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitRef" data-name="shards::gitref">
+      <a href="../Shards/GitRef.html">GitRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/GitResolver" data-name="shards::gitresolver">
+      <a href="../Shards/GitResolver.html">GitResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/GitResolver/GitVersion" data-name="shards::gitresolver::gitversion">
+      <a href="../Shards/GitResolver/GitVersion.html">GitVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitTagRef" data-name="shards::gittagref">
+      <a href="../Shards/GitTagRef.html">GitTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Helpers" data-name="shards::helpers">
+      <a href="../Shards/Helpers.html">Helpers</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgBookmarkRef" data-name="shards::hgbookmarkref">
+      <a href="../Shards/HgBookmarkRef.html">HgBookmarkRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgBranchRef" data-name="shards::hgbranchref">
+      <a href="../Shards/HgBranchRef.html">HgBranchRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgCommitRef" data-name="shards::hgcommitref">
+      <a href="../Shards/HgCommitRef.html">HgCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgCurrentRef" data-name="shards::hgcurrentref">
+      <a href="../Shards/HgCurrentRef.html">HgCurrentRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgRef" data-name="shards::hgref">
+      <a href="../Shards/HgRef.html">HgRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/HgResolver" data-name="shards::hgresolver">
+      <a href="../Shards/HgResolver.html">HgResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/HgResolver/HgVersion" data-name="shards::hgresolver::hgversion">
+      <a href="../Shards/HgResolver/HgVersion.html">HgVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgTagRef" data-name="shards::hgtagref">
+      <a href="../Shards/HgTagRef.html">HgTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/IgnoreRule" data-name="shards::ignorerule">
+      <a href="../Shards/IgnoreRule.html">IgnoreRule</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Info" data-name="shards::info">
+      <a href="../Shards/Info.html">Info</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/InvalidLock" data-name="shards::invalidlock">
+      <a href="../Shards/InvalidLock.html">InvalidLock</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LicensePolicy" data-name="shards::licensepolicy">
+      <a href="../Shards/LicensePolicy.html">LicensePolicy</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/DependencyResult" data-name="shards::licensepolicy::dependencyresult">
+      <a href="../Shards/LicensePolicy/DependencyResult.html">DependencyResult</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Override" data-name="shards::licensepolicy::override">
+      <a href="../Shards/LicensePolicy/Override.html">Override</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/PolicyConfig" data-name="shards::licensepolicy::policyconfig">
+      <a href="../Shards/LicensePolicy/PolicyConfig.html">PolicyConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/PolicyReport" data-name="shards::licensepolicy::policyreport">
+      <a href="../Shards/LicensePolicy/PolicyReport.html">PolicyReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Summary" data-name="shards::licensepolicy::summary">
+      <a href="../Shards/LicensePolicy/Summary.html">Summary</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Verdict" data-name="shards::licensepolicy::verdict">
+      <a href="../Shards/LicensePolicy/Verdict.html">Verdict</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LicenseScanner" data-name="shards::licensescanner">
+      <a href="../Shards/LicenseScanner.html">LicenseScanner</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LicenseScanner/ScanResult" data-name="shards::licensescanner::scanresult">
+      <a href="../Shards/LicenseScanner/ScanResult.html">ScanResult</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Lock" data-name="shards::lock">
+      <a href="../Shards/Lock.html">Lock</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LockConflict" data-name="shards::lockconflict">
+      <a href="../Shards/LockConflict.html">LockConflict</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LockfileDiffer" data-name="shards::lockfilediffer">
+      <a href="../Shards/LockfileDiffer.html">LockfileDiffer</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LockfileDiffer/Change" data-name="shards::lockfilediffer::change">
+      <a href="../Shards/LockfileDiffer/Change.html">Change</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LockfileDiffer/Status" data-name="shards::lockfilediffer::status">
+      <a href="../Shards/LockfileDiffer/Status.html">Status</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/MCPManager" data-name="shards::mcpmanager">
+      <a href="../Shards/MCPManager.html">MCPManager</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerConfig" data-name="shards::mcpmanager::serverconfig">
+      <a href="../Shards/MCPManager/ServerConfig.html">ServerConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerState" data-name="shards::mcpmanager::serverstate">
+      <a href="../Shards/MCPManager/ServerState.html">ServerState</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerStatusInfo" data-name="shards::mcpmanager::serverstatusinfo">
+      <a href="../Shards/MCPManager/ServerStatusInfo.html">ServerStatusInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/StateFile" data-name="shards::mcpmanager::statefile">
+      <a href="../Shards/MCPManager/StateFile.html">StateFile</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MolinilloSolver" data-name="shards::molinillosolver">
+      <a href="../Shards/MolinilloSolver.html">MolinilloSolver</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Override" data-name="shards::override">
+      <a href="../Shards/Override.html">Override</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Package" data-name="shards::package">
+      <a href="../Shards/Package.html">Package</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PackageScanResult" data-name="shards::packagescanresult">
+      <a href="../Shards/PackageScanResult.html">PackageScanResult</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ParseError" data-name="shards::parseerror">
+      <a href="../Shards/ParseError.html">ParseError</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PathResolver" data-name="shards::pathresolver">
+      <a href="../Shards/PathResolver.html">PathResolver</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
+      <a href="../Shards/Policy.html">Policy</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/BlockedDep" data-name="shards::policy::blockeddep">
+      <a href="../Shards/Policy/BlockedDep.html">BlockedDep</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/CustomRule" data-name="shards::policy::customrule">
+      <a href="../Shards/Policy/CustomRule.html">CustomRule</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/DependencyRules" data-name="shards::policy::dependencyrules">
+      <a href="../Shards/Policy/DependencyRules.html">DependencyRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/FreshnessRules" data-name="shards::policy::freshnessrules">
+      <a href="../Shards/Policy/FreshnessRules.html">FreshnessRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/SecurityRules" data-name="shards::policy::securityrules">
+      <a href="../Shards/Policy/SecurityRules.html">SecurityRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/SourceRules" data-name="shards::policy::sourcerules">
+      <a href="../Shards/Policy/SourceRules.html">SourceRules</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyChecker" data-name="shards::policychecker">
+      <a href="../Shards/PolicyChecker.html">PolicyChecker</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/PolicyReport" data-name="shards::policyreport">
+      <a href="../Shards/PolicyReport.html">PolicyReport</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyReport/Severity" data-name="shards::policyreport::severity">
+      <a href="../Shards/PolicyReport/Severity.html">Severity</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyReport/Violation" data-name="shards::policyreport::violation">
+      <a href="../Shards/PolicyReport/Violation.html">Violation</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/PostinstallInfo" data-name="shards::postinstallinfo">
+      <a href="../Shards/PostinstallInfo.html">PostinstallInfo</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/PostinstallInfo/Entry" data-name="shards::postinstallinfo::entry">
+      <a href="../Shards/PostinstallInfo/Entry.html">Entry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PurlGenerator" data-name="shards::purlgenerator">
+      <a href="../Shards/PurlGenerator.html">PurlGenerator</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Ref" data-name="shards::ref">
+      <a href="../Shards/Ref.html">Ref</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Requirement" data-name="shards::requirement">
+      <a href="../Shards/Requirement.html">Requirement</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Resolver" data-name="shards::resolver">
+      <a href="../Shards/Resolver.html">Resolver</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Script" data-name="shards::script">
+      <a href="../Shards/Script.html">Script</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Script/Error" data-name="shards::script::error">
+      <a href="../Shards/Script/Error.html">Error</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Severity" data-name="shards::severity">
+      <a href="../Shards/Severity.html">Severity</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/SPDX" data-name="shards::spdx">
+      <a href="../Shards/SPDX.html">SPDX</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/AndExpression" data-name="shards::spdx::andexpression">
+      <a href="../Shards/SPDX/AndExpression.html">AndExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Category" data-name="shards::spdx::category">
+      <a href="../Shards/SPDX/Category.html">Category</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Expression" data-name="shards::spdx::expression">
+      <a href="../Shards/SPDX/Expression.html">Expression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/LicenseInfo" data-name="shards::spdx::licenseinfo">
+      <a href="../Shards/SPDX/LicenseInfo.html">LicenseInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/OrExpression" data-name="shards::spdx::orexpression">
+      <a href="../Shards/SPDX/OrExpression.html">OrExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Parser" data-name="shards::spdx::parser">
+      <a href="../Shards/SPDX/Parser.html">Parser</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/SimpleExpression" data-name="shards::spdx::simpleexpression">
+      <a href="../Shards/SPDX/SimpleExpression.html">SimpleExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/WithExpression" data-name="shards::spdx::withexpression">
+      <a href="../Shards/SPDX/WithExpression.html">WithExpression</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Spec" data-name="shards::spec">
+      <a href="../Shards/Spec.html">Spec</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/AIAssistant" data-name="shards::spec::aiassistant">
+      <a href="../Shards/Spec/AIAssistant.html">AIAssistant</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/AIDocs" data-name="shards::spec::aidocs">
+      <a href="../Shards/Spec/AIDocs.html">AIDocs</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/Author" data-name="shards::spec::author">
+      <a href="../Shards/Spec/Author.html">Author</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/Library" data-name="shards::spec::library">
+      <a href="../Shards/Spec/Library.html">Library</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Target" data-name="shards::target">
+      <a href="../Shards/Target.html">Target</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Version" data-name="shards::version">
+      <a href="../Shards/Version.html">Version</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VersionReq" data-name="shards::versionreq">
+      <a href="../Shards/VersionReq.html">VersionReq</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Versions" data-name="shards::versions">
+      <a href="../Shards/Versions.html">Versions</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Vulnerability" data-name="shards::vulnerability">
+      <a href="../Shards/Vulnerability.html">Vulnerability</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VulnerabilityReport" data-name="shards::vulnerabilityreport">
+      <a href="../Shards/VulnerabilityReport.html">VulnerabilityReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VulnerabilityScanner" data-name="shards::vulnerabilityscanner">
+      <a href="../Shards/VulnerabilityScanner.html">VulnerabilityScanner</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/YAML" data-name="yaml">
+      <a href="../YAML.html">YAML</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/YAML/PullParser" data-name="yaml::pullparser">
+      <a href="../YAML/PullParser.html">PullParser</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<div class="docs-resource-bar">
+  <span class="ai-label">Docs exports:</span>
+  <a class="ai-btn resource-btn" href="../index.json">JSON</a>
+  <a class="ai-btn resource-btn" href="../llms.txt">llms.txt</a>
+  <a class="ai-btn resource-btn" href="../llms-full.txt">llms-full.txt</a>
+  <a class="ai-btn resource-btn" href="../agent-files/index.html">Agent Files</a>
+</div>
+
+<h1 class="type-name">
+
+  <span class="kind">
+    module
+  </span> Shards::<wbr>ClaudeConfig
+
+</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/mcp/claude_config.cr#L2" target="_blank">
+        mcp/claude_config.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+  
+    <h2>
+      <a id="constant-summary" class="anchor" href="#constant-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+      Constant Summary
+    </h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="AGENT_COMPLIANCE_CHECKER">
+        <strong>AGENT_COMPLIANCE_CHECKER</strong> = <code><span class="s">&quot;---\nname: compliance-checker\ndescription: Specialized agent for running comprehensive compliance analysis on Crystal projects. Delegates to this agent when the user asks for a full compliance audit, security review, or pre-release check.\ntools: Bash, Read, Grep, Write\nmodel: sonnet\nmaxTurns: 15\n---\n\n# Compliance Checker Agent\n\nYou are a supply-chain compliance specialist for Crystal projects using shards-alpha. Your job is to run a comprehensive compliance analysis and produce a clear, actionable report.\n\n## Procedure\n\n### Step 1: Verify Project Setup\n\nCheck that `shard.yml` and `shard.lock` exist. If `shard.lock` is missing, run `shards-alpha install`.\n\n### Step 2: Run Vulnerability Audit\n\n```sh\nshards-alpha audit --format=json\n```\n\nRecord total vulnerabilities and breakdown by severity.\n\n### Step 3: Run License Scan\n\n```sh\nshards-alpha licenses --format=json --detect\n```\n\nRecord dependencies with valid SPDX licenses, missing licenses, and copyleft concerns.\n\n### Step 4: Run Policy Check\n\nIf `.shards-policy.yml` exists:\n\n```sh\nshards-alpha policy check --format=json\n```\n\nRecord errors and warnings. If no policy file exists, note the gap.\n\n### Step 5: Generate Compliance Report\n\nCompile findings into:\n\n**Executive Summary**\n- Overall status: PASS, ACTION_REQUIRED, or FAIL\n- Total dependency count\n\n**Vulnerability Findings**\n- List each vulnerability grouped by severity (critical first)\n\n**License Compliance**\n- List all dependencies with their licenses\n- Flag missing or problematic licenses\n\n**Policy Compliance**\n- List violations with remediation steps\n\n**Remediation Steps**\n- Specific version bumps for vulnerable dependencies\n- License additions for unlicensed dependencies\n- Policy file changes for violations\n\n### Step 6: Offer Additional Actions\n\n- Generate formal report: `shards-alpha compliance-report --format=html`\n- Generate SBOM: `shards-alpha sbom`\n- Create policy: `shards-alpha policy init`\n- View changes: `shards-alpha diff`\n\n## Important Notes\n\n- Run all commands from the project root.\n- Present findings in order of severity (most critical first).\n- Be specific in remediation advice.&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="AGENT_SECURITY_REVIEWER">
+        <strong>AGENT_SECURITY_REVIEWER</strong> = <code><span class="s">&quot;---\nname: security-reviewer\ndescription: Security-focused agent that analyzes dependencies for vulnerabilities and recommends patches. Delegates to this when the user asks about security posture or vulnerability remediation.\ntools: Bash, Read, Grep\nmodel: sonnet\nmaxTurns: 10\n---\n\n# Security Reviewer Agent\n\nYou are a dependency security analyst for Crystal projects using shards-alpha. Your focus is identifying vulnerabilities, prioritizing them by risk, and recommending specific remediation actions.\n\n## Procedure\n\n### Step 1: Run Vulnerability Audit\n\n```sh\nshards-alpha audit --format=json\n```\n\nIf exit code 0, report clean. If exit code 1, continue analysis.\n\n### Step 2: Categorize Results\n\nFor each vulnerability, extract: advisory ID, affected dependency, severity, summary, affected version range, fixed version. Group by severity (critical first).\n\n### Step 3: Prioritize by Risk\n\n1. **Critical** — Remote code execution, data exfiltration. Immediate action.\n2. **High** — Privilege escalation, auth bypass. Fix within days.\n3. **Medium** — Limited impact. Fix within a sprint.\n4. **Low** — Informational. Track and fix at convenience.\n\n### Step 4: Research Remediation\n\nCheck `shard.yml` for current version constraints. For each vulnerability determine the minimum fixing version.\n\n### Step 5: Recommend Fixes\n\n**Version Bump**: State the exact version constraint change needed.\n\n**Ignore with Justification**: If not applicable, recommend adding to `.shards-audit-ignore` with reason and 90-day expiry.\n\n**Dependency Replacement**: If unmaintained, recommend alternatives.\n\n### Step 6: Security Summary\n\n**Security Posture: [CLEAN | AT RISK | CRITICAL]**\n\nPresent: findings table, recommended shard.yml changes, ignore recommendations.\n\n## Important Notes\n\n- Never recommend ignoring critical/high vulnerabilities without strong justification.\n- Check if fixes introduce breaking changes before recommending major version bumps.\n- Present findings factually. Do not downplay security risks.&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="CLAUDE_MD">
+        <strong>CLAUDE_MD</strong> = <code><span class="s">&quot;# Shards-Alpha: Supply Chain Compliance for Crystal\n\nThis project uses shards-alpha, a Crystal package manager with built-in supply chain compliance tools.\n\n## Available Commands\n\n| Command | Description |\n|---------|-------------|\n| `shards-alpha install` | Install dependencies from shard.yml |\n| `shards-alpha update` | Update dependencies to latest compatible versions |\n| `shards-alpha audit` | Scan dependencies for known vulnerabilities (OSV database) |\n| `shards-alpha licenses` | List dependency licenses with SPDX compliance checking |\n| `shards-alpha policy check` | Check dependencies against policy rules |\n| `shards-alpha diff` | Show dependency changes between lockfile states |\n| `shards-alpha compliance-report` | Generate unified compliance report |\n| `shards-alpha sbom` | Generate Software Bill of Materials (SPDX/CycloneDX) |\n\n## Quick Compliance Check\n\n```sh\nshards-alpha audit                    # Check for vulnerabilities\nshards-alpha licenses --check         # Verify license compliance\nshards-alpha policy check             # Enforce dependency policies\n```\n\n## Key Files\n\n| File | Purpose |\n|------|---------|\n| `shard.yml` | Dependency specification |\n| `shard.lock` | Locked dependency versions |\n| `.shards-policy.yml` | Dependency policy rules (optional) |\n| `.shards-audit-ignore` | Suppressed vulnerability IDs (optional) |\n\n## MCP Compliance Server\n\nAn MCP server exposes all compliance tools for AI agent integration:\n\n```sh\nshards-alpha mcp-server              # Start stdio MCP server\nshards-alpha mcp-server --interactive # Manual testing mode\n```\n\nSupports MCP protocol versions: 2025-11-25, 2025-06-18, 2025-03-26, 2024-11-05.&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="FILES">
+        <strong>FILES</strong> = <code>{<span class="s">&quot;.claude/CLAUDE.md&quot;</span> <span class="o">=&gt;</span> <span class="t">CLAUDE_MD</span>, <span class="s">&quot;.claude/settings.json&quot;</span> <span class="o">=&gt;</span> <span class="t">SETTINGS_JSON</span>, <span class="s">&quot;.claude/skills/audit/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_AUDIT</span>, <span class="s">&quot;.claude/skills/licenses/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_LICENSES</span>, <span class="s">&quot;.claude/skills/policy-check/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_POLICY_CHECK</span>, <span class="s">&quot;.claude/skills/diff-deps/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_DIFF_DEPS</span>, <span class="s">&quot;.claude/skills/compliance-report/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_COMPLIANCE_REPORT</span>, <span class="s">&quot;.claude/skills/sbom/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_SBOM</span>, <span class="s">&quot;.claude/skills/shards-cli/SKILL.md&quot;</span> <span class="o">=&gt;</span> <span class="t">SKILL_SHARDS_CLI</span>, <span class="s">&quot;.claude/skills/shards-cli/reference/commands.md&quot;</span> <span class="o">=&gt;</span> <span class="t">REF_COMMANDS</span>, <span class="s">&quot;.claude/skills/shards-cli/reference/shard-yml-format.md&quot;</span> <span class="o">=&gt;</span> <span class="t">REF_SHARD_YML</span>, <span class="s">&quot;.claude/skills/shards-cli/reference/ai-docs-guide.md&quot;</span> <span class="o">=&gt;</span> <span class="t">REF_AI_DOCS</span>, <span class="s">&quot;.claude/agents/compliance-checker.md&quot;</span> <span class="o">=&gt;</span> <span class="t">AGENT_COMPLIANCE_CHECKER</span>, <span class="s">&quot;.claude/agents/security-reviewer.md&quot;</span> <span class="o">=&gt;</span> <span class="t">AGENT_SECURITY_REVIEWER</span>}</code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="REF_AI_DOCS">
+        <strong>REF_AI_DOCS</strong> = <code><span class="s">&quot;# AI Documentation Distribution Guide\n\n## Overview\n\nShards can distribute AI coding agent documentation alongside library code. When you run `shards install`, AI docs from dependencies are automatically installed into your project&#39;s `.claude/` directory.\n\n## How It Works\n\nShards automatically detects these locations in dependencies:\n\n| Source in shard | What it is |\n|-----------------|------------|\n| `.claude/skills/&lt;name&gt;/` | Claude Code skills |\n| `.claude/agents/&lt;name&gt;.md` | Agent definitions |\n| `CLAUDE.md` | General AI context |\n| `.mcp.json` | MCP server configs |\n\nFiles are namespaced by shard name to avoid conflicts:\n\n| Source | Destination |\n|--------|-------------|\n| `.claude/skills/&lt;name&gt;/` | `.claude/skills/&lt;shard&gt;--&lt;name&gt;/` |\n| `.claude/agents/&lt;name&gt;.md` | `.claude/agents/&lt;shard&gt;--&lt;name&gt;.md` |\n| `CLAUDE.md` | `.claude/skills/&lt;shard&gt;--docs/SKILL.md` |\n| `.mcp.json` | Merged into `.mcp-shards.json` |\n\n## Publishing AI Docs\n\nCreate `.claude/skills/` in your shard with `SKILL.md` files containing YAML frontmatter:\n\n```markdown\n---\nname: getting-started\ndescription: How to get started with your_shard\nuser-invocable: false\n---\n# Getting Started\n...\n```\n\nOr simply add a `CLAUDE.md` at your shard root for basic documentation.\n\n## User Customization\n\n- **Unmodified files**: Auto-updated on `shards update`\n- **Modified files**: Preserved on update\n- **View changes**: `shards ai-docs diff &lt;shard&gt;`\n- **Reset to upstream**: `shards ai-docs reset &lt;shard&gt;`&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="REF_COMMANDS">
+        <strong>REF_COMMANDS</strong> = <code><span class="s">&quot;# Shards CLI Commands Reference\n\n## shards install\n\nInstall dependencies from `shard.yml`. Creates `shard.lock` if it doesn&#39;t exist.\n\n```\nshards install [options]\n```\n\n## shards update\n\nUpdate dependencies to latest compatible versions.\n\n```\nshards update [shard_names...] [options]\n```\n\n## shards build\n\nBuild targets defined in `shard.yml`.\n\n```\nshards build [targets...] [-- build_options...]\n```\n\n## shards check\n\nVerify all dependencies are installed and match `shard.lock`.\n\n## shards list\n\nList installed dependencies.\n\n```\nshards list [--tree]\n```\n\n## shards lock\n\nLock dependencies without installing.\n\n```\nshards lock [--print] [--update [shards...]]\n```\n\n## shards outdated\n\nShow outdated dependencies.\n\n```\nshards outdated [--pre]\n```\n\n## shards prune\n\nRemove unused dependencies from `lib/`.\n\n## shards init\n\nGenerate a new `shard.yml`.\n\n## shards version\n\nPrint the shard version from `shard.yml`.\n\n```\nshards version [path]\n```\n\n## shards audit\n\nScan dependencies for known vulnerabilities via OSV database.\n\n```\nshards audit [--severity=LEVEL] [--format=FORMAT] [--fail-above=LEVEL] [--offline]\n```\n\n## shards licenses\n\nList dependency licenses with SPDX validation.\n\n```\nshards licenses [--check] [--detect] [--format=FORMAT] [--include-dev]\n```\n\n## shards policy\n\nManage dependency policies.\n\n```\nshards policy check [--strict] [--format=FORMAT]\nshards policy init\nshards policy show\n```\n\n## shards diff\n\nShow dependency changes between lockfile states.\n\n```\nshards diff [--from=REF] [--to=REF] [--format=FORMAT]\n```\n\n## shards compliance-report\n\nGenerate unified compliance report.\n\n```\nshards compliance-report [--format=FORMAT] [--sections=LIST] [--reviewer=EMAIL]\n```\n\n## shards sbom\n\nGenerate Software Bill of Materials.\n\n```\nshards sbom [--format=spdx|cyclonedx] [--output=FILE] [--include-dev]\n```\n\n## shards mcp-server\n\nStart MCP compliance server for AI agent integration.\n\n```\nshards mcp-server              # Start stdio server\nshards mcp-server --interactive # Interactive testing mode\nshards mcp-server init          # Configure .mcp.json and .claude/\nshards mcp-server --help        # Show help\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="REF_SHARD_YML">
+        <strong>REF_SHARD_YML</strong> = <code><span class="s">&quot;# shard.yml Format Reference\n\n## Required Fields\n\n```yaml\nname: my_shard          # Shard name\nversion: 1.0.0          # Semantic version\n```\n\n## Optional Fields\n\n```yaml\ndescription: My shard description\nauthors:\n  - Author Name &lt;email@example.com&gt;\ncrystal: \&quot;&gt;= 1.0.0, &lt; 2.0.0\&quot;\nlicense: MIT\nrepository: https://github.com/user/repo\n```\n\n## Dependencies\n\n```yaml\ndependencies:\n  kemal:\n    github: kemalcr/kemal\n    version: ~&gt; 1.0\n\n  my_lib:\n    git: https://example.com/repo.git\n    branch: main\n\n  local_dep:\n    path: ../local_dep\n\ndevelopment_dependencies:\n  ameba:\n    github: crystal-ameba/ameba\n```\n\n### Dependency Sources\n\n| Key | Description |\n|-----|-------------|\n| `github: user/repo` | GitHub repository |\n| `gitlab: user/repo` | GitLab repository |\n| `bitbucket: user/repo` | Bitbucket repository |\n| `git: &lt;url&gt;` | Any git repository URL |\n| `path: &lt;path&gt;` | Local path dependency |\n\n### Version Constraints\n\n| Pattern | Meaning |\n|---------|---------|\n| `~&gt; 1.0` | &gt;= 1.0.0, &lt; 2.0.0 |\n| `~&gt; 1.0.3` | &gt;= 1.0.3, &lt; 1.1.0 |\n| `&gt;= 1.0, &lt; 2.0` | Range |\n| `1.0.0` | Exact version |\n\n## Build Targets\n\n```yaml\ntargets:\n  my_app:\n    main: src/my_app.cr\n```\n\n## Scripts\n\n```yaml\nscripts:\n  postinstall: make ext\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SETTINGS_JSON">
+        <strong>SETTINGS_JSON</strong> = <code><span class="s">&quot;{\n  \&quot;permissions\&quot;: {\n    \&quot;allow\&quot;: [\n      \&quot;Bash(shards-alpha audit *)\&quot;,\n      \&quot;Bash(shards-alpha licenses *)\&quot;,\n      \&quot;Bash(shards-alpha policy *)\&quot;,\n      \&quot;Bash(shards-alpha diff *)\&quot;,\n      \&quot;Bash(shards-alpha compliance-report *)\&quot;,\n      \&quot;Bash(shards-alpha sbom *)\&quot;,\n      \&quot;Bash(shards-alpha mcp-server *)\&quot;,\n      \&quot;Bash(crystal build *)\&quot;,\n      \&quot;Bash(crystal spec *)\&quot;,\n      \&quot;Bash(crystal tool format *)\&quot;\n    ]\n  }\n}&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_AUDIT">
+        <strong>SKILL_AUDIT</strong> = <code><span class="s">&quot;---\nname: audit\ndescription: Scan project dependencies for known security vulnerabilities using the OSV database. Use when reviewing dependencies for security issues.\nallowed-tools: Bash, Read, Grep\nuser-invocable: true\nargument-hint: [--severity=high] [--offline]\n---\n\n# Audit Dependencies for Vulnerabilities\n\nRun a vulnerability scan against all locked dependencies using the OSV database.\n\n## Steps\n\n1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.\n\n2. Run the audit command with the user&#39;s requested options:\n   ```sh\n   shards-alpha audit [OPTIONS]\n   ```\n\n   Common options to pass through from user arguments:\n   - `--severity=LEVEL` — Filter results to only show vulnerabilities at or above this severity (low, medium, high, critical)\n   - `--format=FORMAT` — Output format: `terminal` (default), `json`, `sarif`\n   - `--fail-above=LEVEL` — Only exit non-zero for vulnerabilities at or above this severity\n   - `--ignore=ID[,ID]` — Comma-separated advisory IDs to suppress\n   - `--ignore-file=PATH` — Path to ignore file (default: `.shards-audit-ignore`)\n   - `--offline` — Use cached vulnerability data only, no network requests\n   - `--update-db` — Force a cache refresh before scanning\n\n3. Interpret the exit code:\n   - Exit 0: No vulnerabilities found (or all filtered/ignored). Report this as a clean scan.\n   - Exit 1: Vulnerabilities found matching the severity threshold.\n\n4. If vulnerabilities are found, summarize the results:\n   - Group findings by severity (critical, high, medium, low)\n   - For each vulnerability, report: advisory ID, affected dependency, affected versions, severity, and summary\n   - Highlight any critical or high severity issues first\n\n5. Provide remediation advice:\n   - Check if newer versions of affected dependencies are available that fix the vulnerability\n   - Suggest specific version bumps in `shard.yml` where applicable\n   - If a vulnerability cannot be fixed by upgrading, suggest adding it to `.shards-audit-ignore` with a reason and expiry date\n   - Mention the `--fail-above` flag for CI pipelines that should only block on critical issues\n\n6. For JSON output (`--format=json`), parse the structured data to provide a more detailed breakdown. For SARIF output (`--format=sarif`), note that this is designed for GitHub Code Scanning integration.\n\n## Example Invocations\n\n```sh\n# Basic scan\nshards-alpha audit\n\n# Only show high and critical vulnerabilities\nshards-alpha audit --severity=high\n\n# CI-friendly: fail only on critical, output SARIF for GitHub\nshards-alpha audit --format=sarif --fail-above=critical\n\n# Offline scan with cached data\nshards-alpha audit --offline\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_COMPLIANCE_REPORT">
+        <strong>SKILL_COMPLIANCE_REPORT</strong> = <code><span class="s">&quot;---\nname: compliance-report\ndescription: Generate comprehensive supply-chain compliance reports. Use before releases or for audit documentation.\nallowed-tools: Bash, Read, Grep, Write\nuser-invocable: true\nargument-hint: [--sections=sbom,audit,licenses] [--reviewer=email]\n---\n\n# Generate Supply-Chain Compliance Report\n\nProduce a unified compliance report combining SBOM, vulnerability audit, license compliance, policy evaluation, integrity verification, and change history into a single document suitable for SOC2 and ISO 27001 auditors.\n\n## Steps\n\n1. Verify prerequisites:\n   - `shard.yml` must exist in the project root\n   - `shard.lock` must exist (run `shards-alpha install` if missing)\n   - For policy sections, `.shards-policy.yml` should exist (optional but recommended)\n\n2. Run the compliance report command with the user&#39;s requested options:\n   ```sh\n   shards-alpha compliance-report [OPTIONS]\n   ```\n\n   Available options:\n   - `--format=FORMAT` — Output format: `json` (default), `html`, `markdown`\n   - `--output=PATH` — Output file path (default: `{project}-compliance-report.{ext}`)\n   - `--sections=LIST` — Comma-separated sections to include (default: `all`)\n   - `--reviewer=EMAIL` — Add reviewer attestation with timestamp to the report\n   - `--since=DATE` — Filter change history to entries after this date\n   - `--sign` — Create a detached GPG signature (`.sig` file)\n\n3. Available sections:\n\n   | Section | Description |\n   |---------|-------------|\n   | `sbom` | SPDX 2.3 dependency inventory |\n   | `audit` | OSV vulnerability scan results |\n   | `licenses` | License inventory and compliance |\n   | `policy` | Policy rule evaluation results |\n   | `integrity` | SHA-256 checksum verification |\n   | `changelog` | Dependency change history |\n\n4. Interpret the overall status:\n   - **PASS** — No vulnerabilities, no policy violations, integrity verified\n   - **ACTION_REQUIRED** — Medium-severity findings or warnings present\n   - **FAIL** — Critical or high vulnerabilities, or policy/license failures\n\n5. Summarize the report for the user:\n   - Overall compliance status\n   - Total dependency count (direct and transitive)\n   - Vulnerability summary by severity\n   - License compliance status\n   - Policy evaluation results\n\n## Example Invocations\n\n```sh\n# Full compliance report in HTML for auditors\nshards-alpha compliance-report --format=html --reviewer=security@company.com\n\n# Quick check with just SBOM and integrity sections\nshards-alpha compliance-report --sections=sbom,integrity\n\n# JSON report for CI artifact archival\nshards-alpha compliance-report --output=compliance-report.json\n\n# Markdown report for documentation\nshards-alpha compliance-report --format=markdown\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_DIFF_DEPS">
+        <strong>SKILL_DIFF_DEPS</strong> = <code><span class="s">&quot;---\nname: diff-deps\ndescription: Show dependency changes between lockfile states. Use when reviewing what changed after updates.\nallowed-tools: Bash, Read, Grep\nuser-invocable: true\nargument-hint: [--from=HEAD --to=current]\n---\n\n# Show Dependency Changes Between Lockfile States\n\nCompare two states of shard.lock to see what dependencies were added, removed, or updated.\n\n## Steps\n\n1. Verify that `shard.lock` exists in the project root. If it does not, inform the user there is nothing to diff.\n\n2. Run the diff command with the user&#39;s requested options:\n   ```sh\n   shards-alpha diff [OPTIONS]\n   ```\n\n   Available options:\n   - `--from=REF` — Starting state (default: `HEAD`). Can be a git ref, file path ending in `.lock`, or `current`\n   - `--to=REF` — Ending state (default: `current`). Same ref types as `--from`\n   - `--format=FORMAT` — Output format: `terminal` (default), `json`, `markdown`\n\n3. Interpret the reference types:\n   - `current` — Reads the current `shard.lock` from disk\n   - A git ref (`HEAD`, `main`, `v1.0.0`, a commit SHA) — Extracts `shard.lock` from that point in git history via `git show`\n   - A file path ending in `.lock` — Reads from an arbitrary lockfile on disk\n\n4. Summarize the changes:\n   - **Added dependencies**: New dependencies not present in the \&quot;from\&quot; state. Report name, version, and source.\n   - **Removed dependencies**: Dependencies present in \&quot;from\&quot; but absent in \&quot;to\&quot;. Report name and previous version.\n   - **Updated dependencies**: Dependencies present in both states but with different versions. Report name, old version, new version, and whether it was an upgrade or downgrade.\n   - **Unchanged count**: How many dependencies remained the same.\n\n5. Provide context for the changes:\n   - For major version bumps, warn about potential breaking changes\n   - For added dependencies, note if they are transitive (pulled in by another dependency)\n   - For removed dependencies, note if the removal might affect other parts of the project\n\n6. For markdown output (`--format=markdown`), mention this format is useful for including in PR descriptions to document dependency changes.\n\n## Example Invocations\n\n```sh\n# What changed since the last commit?\nshards-alpha diff\n\n# What changed since a release tag?\nshards-alpha diff --from=v1.0.0\n\n# Compare two specific lockfiles\nshards-alpha diff --from=before.lock --to=after.lock\n\n# Generate markdown for a PR description\nshards-alpha diff --from=main --format=markdown\n\n# JSON output for tooling\nshards-alpha diff --format=json\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_LICENSES">
+        <strong>SKILL_LICENSES</strong> = <code><span class="s">&quot;---\nname: licenses\ndescription: List and check dependency licenses for SPDX compliance. Use when auditing license compatibility or checking policy.\nallowed-tools: Bash, Read, Grep\nuser-invocable: true\nargument-hint: [--check] [--detect]\n---\n\n# List and Check Dependency Licenses\n\nAudit all locked dependency licenses for SPDX compliance and policy conformance.\n\n## Steps\n\n1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.\n\n2. Run the licenses command with the user&#39;s requested options:\n   ```sh\n   shards-alpha licenses [OPTIONS]\n   ```\n\n   Available options to pass through:\n   - `--format=FORMAT` — Output format: `terminal` (default), `json`, `csv`, `markdown`\n   - `--check` — Exit 1 if any license policy violations are found\n   - `--detect` — Use heuristic detection to identify licenses from LICENSE/COPYING files when shard.yml does not declare one\n   - `--include-dev` — Include development dependencies in the scan\n   - `--policy=PATH` — Path to a license policy YAML file\n\n3. Interpret the output:\n   - Each dependency is listed with its name, version, declared license, and SPDX validity status\n   - SPDX validation checks against 52 common SPDX identifiers and supports compound expressions (AND, OR, WITH operators)\n\n4. Summarize the findings:\n   - Total number of dependencies scanned\n   - Count of dependencies with valid SPDX licenses\n   - Count of dependencies with missing or invalid licenses\n   - Any policy violations if `--check` was used\n\n5. Flag potential issues:\n   - Dependencies with no declared license (legal risk for commercial projects)\n   - Dependencies with non-standard or unrecognized license identifiers\n   - Copyleft licenses (GPL, AGPL) that may be incompatible with proprietary projects\n   - If `--detect` was used, note which licenses were detected heuristically vs declared\n\n6. Provide recommendations:\n   - For missing licenses, suggest the user contact the dependency maintainer or check the repository directly\n   - For policy violations, explain which rule was violated and how to resolve it\n   - For CSV or markdown output, note these formats are useful for legal review or PR descriptions\n\n## Example Invocations\n\n```sh\n# Basic license listing\nshards-alpha licenses\n\n# Check against policy, fail on violations\nshards-alpha licenses --check\n\n# Detect licenses from LICENSE files when not declared\nshards-alpha licenses --detect\n\n# Generate CSV for legal team review\nshards-alpha licenses --format=csv\n\n# Full scan including dev dependencies with detection\nshards-alpha licenses --detect --include-dev --format=json\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_POLICY_CHECK">
+        <strong>SKILL_POLICY_CHECK</strong> = <code><span class="s">&quot;---\nname: policy-check\ndescription: Check dependencies against policy rules in .shards-policy.yml. Use when verifying compliance before releases.\nallowed-tools: Bash, Read, Grep, Write\nuser-invocable: true\nargument-hint: [--strict]\n---\n\n# Check Dependencies Against Policy Rules\n\nEvaluate all locked dependencies against the rules defined in `.shards-policy.yml`.\n\n## Steps\n\n1. Check if `.shards-policy.yml` exists in the project root:\n   - If it exists, read it to understand the active policy rules before running the check.\n   - If it does not exist, ask the user if they want to create one with `shards-alpha policy init`, which generates a starter policy file.\n\n2. Run the policy check with the user&#39;s requested options:\n   ```sh\n   shards-alpha policy check [OPTIONS]\n   ```\n\n   Available options:\n   - `--strict` — Treat warnings as errors (useful for CI gates)\n   - `--format=FORMAT` — Output format: `terminal` (default), `json`\n\n   Other policy subcommands:\n   - `shards-alpha policy init` — Create a starter `.shards-policy.yml`\n   - `shards-alpha policy show` — Display a summary of the current policy\n\n3. Interpret the results:\n   - **Error violations** block installation: blocked dependencies, denied sources, minimum version failures\n   - **Warning violations** are displayed but do not block: missing licenses, postinstall script auditing\n\n4. Summarize the findings:\n   - Total rules evaluated\n   - Number of errors (blocking violations)\n   - Number of warnings (non-blocking violations)\n   - List each violation with the dependency name, rule that was violated, and the reason\n\n5. For each violation, suggest a fix:\n   - **Blocked dependency**: Remove it from shard.yml or update the policy to allow it with a documented reason\n   - **Disallowed source host**: Move the dependency to an allowed host or add the host to `rules.sources.allowed_hosts`\n   - **Disallowed organization**: Add the org to `rules.sources.allowed_orgs` for that host\n   - **Minimum version failure**: Update the dependency version in shard.yml to meet the minimum\n   - **Missing license**: Add a license to the dependency&#39;s shard.yml or set `rules.security.require_license: false`\n   - **Postinstall script warning**: Review the script for safety, then either allow it or set `rules.security.block_postinstall: true` to block\n\n6. If the user wants to modify the policy, offer to edit `.shards-policy.yml` directly with the needed changes.\n\n## Policy File Structure\n\nThe policy file `.shards-policy.yml` supports these rule categories:\n- `rules.sources` — Allowed hosts, allowed organizations, deny path dependencies\n- `rules.dependencies` — Blocked dependencies with reasons, minimum version requirements\n- `rules.security` — Require licenses, block/audit postinstall scripts\n- `rules.custom` — Regex patterns to allow or block dependency names\n\n## Example Invocations\n\n```sh\n# Basic policy check\nshards-alpha policy check\n\n# Strict mode for CI (warnings become errors)\nshards-alpha policy check --strict\n\n# JSON output for tooling\nshards-alpha policy check --format=json\n\n# Create a starter policy\nshards-alpha policy init\n\n# View current policy summary\nshards-alpha policy show\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_SBOM">
+        <strong>SKILL_SBOM</strong> = <code><span class="s">&quot;---\nname: sbom\ndescription: Generate a Software Bill of Materials (SBOM) in SPDX or CycloneDX format. Use for supply-chain transparency.\nallowed-tools: Bash, Read\nuser-invocable: true\nargument-hint: [--format=spdx|cyclonedx]\n---\n\n# Generate Software Bill of Materials (SBOM)\n\nProduce a complete inventory of all project dependencies in an industry-standard SBOM format.\n\n## Steps\n\n1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.\n\n2. Run the SBOM generation command:\n   ```sh\n   shards-alpha sbom [OPTIONS]\n   ```\n\n   Available options:\n   - `--format=FORMAT` — SBOM format: `spdx` (default) or `cyclonedx`\n   - `--output=FILE` — Output file path\n   - `--include-dev` — Include development dependencies in the SBOM\n\n3. Supported formats:\n\n   **SPDX 2.3 (default)**: Linux Foundation standard, required by US EO 14028.\n   **CycloneDX 1.6**: OWASP standard focused on security and risk analysis.\n\n4. Summarize the generated SBOM:\n   - Total number of components listed\n   - Document creation timestamp\n   - Output file location\n   - Whether dev dependencies were included or excluded\n\n## Example Invocations\n\n```sh\n# Generate SPDX SBOM (default)\nshards-alpha sbom\n\n# Generate CycloneDX SBOM\nshards-alpha sbom --format=cyclonedx\n\n# Custom output path\nshards-alpha sbom --output=artifacts/sbom.spdx.json\n\n# Include development dependencies\nshards-alpha sbom --include-dev\n```&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SKILL_SHARDS_CLI">
+        <strong>SKILL_SHARDS_CLI</strong> = <code><span class="s">&quot;---\nname: shards-cli\ndescription: Crystal Shards package manager CLI reference. Provides guidance on shard.yml format, dependency management, installation, building, and AI docs distribution.\nuser-invocable: false\n---\n\n# Crystal Shards CLI\n\nShards is the dependency manager for Crystal. It reads `shard.yml` to resolve, install, and update dependencies from source repositories.\n\n## Common Workflows\n\n### Install dependencies\n```\nshards install                  # Install from shard.yml, using shard.lock if present\nshards install --production     # Frozen + without development dependencies\nshards install --skip-ai-docs   # Skip AI documentation installation\n```\n\n### Update dependencies\n```\nshards update                   # Update all to latest compatible versions\nshards update kemal             # Update only kemal\n```\n\n### Build targets\n```\nshards build                    # Build all targets\nshards build my_app             # Build specific target\nshards build --release          # Build with --release flag\n```\n\n### Supply chain compliance\n```\nshards audit                    # Vulnerability scan\nshards licenses                 # License compliance\nshards policy check             # Policy enforcement\nshards diff                     # Dependency changes\nshards compliance-report        # Full compliance report\nshards sbom                     # Software Bill of Materials\n```\n\n### Other commands\n```\nshards check                    # Verify all dependencies are installed\nshards list                     # List installed dependencies\nshards list --tree              # List with dependency tree\nshards outdated                 # Show outdated dependencies\nshards prune                    # Remove unused dependencies from lib/\nshards version                  # Print shard version\nshards init                     # Generate a new shard.yml\n```\n\n## Key Flags\n\n| Flag | Description |\n|------|-------------|\n| `--frozen` | Strictly install locked versions from shard.lock |\n| `--without-development` | Skip development dependencies |\n| `--production` | Same as `--frozen --without-development` |\n| `--skip-postinstall` | Skip postinstall scripts |\n| `--skip-ai-docs` | Skip AI documentation installation |\n| `--jobs=N` | Parallel downloads (default: 8) |\n\n## Reference\n\n- [shard.yml format](reference/shard-yml-format.md)\n- [All CLI commands](reference/commands.md)\n- [AI docs distribution guide](reference/ai-docs-guide.md)&quot;</span></code>
+      </dt>
+      
+    
+  </dl>
+
+
+
+  
+
+  
+  <h2>
+    <a id="class-method-summary" class="anchor" href="#class-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#install%28path%3AString%29%3AArray%28String%29-class-method" class="signature"><strong>.install</strong>(path : String) : Array(String)</a>
+        
+      </li>
+    
+  </ul>
+
+
+  
+
+  
+
+
+  <div class="methods-inherited">
+    
+  </div>
+
+  
+
+  
+  <h2>
+    <a id="class-method-detail" class="anchor" href="#class-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Class Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="install(path:String):Array(String)-class-method">
+      <div class="signature">
+        
+        def self.<strong>install</strong>(path : String) : Array(String)
+
+        <a class="method-permalink" href="#install%28path%3AString%29%3AArray%28String%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/mcp/claude_config.cr#L25" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+  
+
+  
+
+
+</div>
+
+<script>
+(function() {
+  function getPageMarkdown() {
+    var title = document.querySelector('h1.type-name');
+    var content = document.querySelector('.main-content');
+    if (!content) return '';
+
+    var text = '';
+    if (title) text += '# ' + title.textContent.trim() + '\n\n';
+
+    var sections = content.querySelectorAll('h2, p, pre, dl, .entry-detail');
+    sections.forEach(function(el) {
+      if (el.tagName === 'H2') text += '## ' + el.textContent.trim() + '\n\n';
+      else if (el.tagName === 'P') text += el.textContent.trim() + '\n\n';
+      else if (el.tagName === 'PRE') text += '```\n' + el.textContent.trim() + '\n```\n\n';
+      else if (el.tagName === 'DL') {
+        el.querySelectorAll('dt').forEach(function(dt) {
+          text += '- `' + dt.textContent.trim() + '`\n';
+        });
+        text += '\n';
+      }
+    });
+    return text;
+  }
+
+  function buildPrompt(typeName, projectName) {
+    return 'I\'m working with the ' + projectName + ' Crystal library. ' +
+           'Help me understand and use `' + typeName + '`. ' +
+           'Here is the API documentation:\n\n';
+  }
+
+  function getTypeName() {
+    var el = document.querySelector('h1.type-name');
+    return el ? el.textContent.trim() : document.title;
+  }
+
+  function getProjectName() {
+    var el = document.querySelector('.project-name');
+    return el ? el.textContent.trim() : 'this project';
+  }
+
+  function openInClaude() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://claude.ai/new?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function openInChatGPT() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function openInGemini() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://gemini.google.com/app?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function viewMarkdown() {
+    var mdPath = window.location.pathname.replace(/\.html$/, '.md');
+    if (mdPath === window.location.pathname) mdPath += '.md';
+    window.open(mdPath, '_blank');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var h1 = document.querySelector('h1.type-name');
+    var mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+
+    var bar = document.createElement('div');
+    bar.className = 'ai-assistant-bar';
+    bar.innerHTML =
+      '<span class="ai-label">Discuss with AI:</span>' +
+      '<button class="ai-btn claude-btn" onclick="window.__openInClaude()" title="Open in Claude">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm2.07-7.75l-.9.92C11.45 10.9 11 11.5 11 13H9v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H6c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="currentColor"/></svg>' +
+        'Claude' +
+      '</button>' +
+      '<button class="ai-btn chatgpt-btn" onclick="window.__openInChatGPT()" title="Open in ChatGPT">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="currentColor"/></svg>' +
+        'ChatGPT' +
+      '</button>' +
+      '<button class="ai-btn gemini-btn" onclick="window.__openInGemini()" title="Open in Gemini">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.18 8 12 11.82 4.82 8 12 4.18zM4 9.12l7 3.5V19.5l-7-3.5V9.12zm9 10.38v-6.88l7-3.5v6.88l-7 3.5z" fill="currentColor"/></svg>' +
+        'Gemini' +
+      '</button>' +
+      '<button class="ai-btn md-btn" onclick="window.__viewMarkdown()" title="View as Markdown">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M20.56 18H3.44C2.65 18 2 17.37 2 16.59V7.41C2 6.63 2.65 6 3.44 6h17.12c.79 0 1.44.63 1.44 1.41v9.18c0 .78-.65 1.41-1.44 1.41zM6.81 15.19v-3.68l1.83 2.29 1.83-2.29v3.68h1.83V8.81h-1.83l-1.83 2.29-1.83-2.29H5v6.38h1.81zm10.99-3.19h-1.83V8.81h-1.83V12h-1.84l2.75 3.19L17.8 12z" fill="currentColor"/></svg>' +
+        'Markdown' +
+      '</button>';
+
+    if (h1 && h1.nextSibling) {
+      mainContent.insertBefore(bar, h1.nextSibling);
+    } else {
+      mainContent.insertBefore(bar, mainContent.firstChild);
+    }
+  });
+
+  window.__openInClaude = openInClaude;
+  window.__openInChatGPT = openInChatGPT;
+  window.__openInGemini = openInGemini;
+  window.__viewMarkdown = viewMarkdown;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# class Shards::Script::Error
+

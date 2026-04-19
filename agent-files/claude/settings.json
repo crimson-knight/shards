@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(shards-alpha audit *)",
+      "Bash(shards-alpha licenses *)",
+      "Bash(shards-alpha policy *)",
+      "Bash(shards-alpha diff *)",
+      "Bash(shards-alpha compliance-report *)",
+      "Bash(shards-alpha sbom *)",
+      "Bash(shards-alpha mcp-server *)",
+      "Bash(crystal build *)",
+      "Bash(crystal spec *)",
+      "Bash(crystal tool format *)"
+    ]
+  }
+}

@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Crystal Docs 1.19.1">
+<meta name="crystal_docs.project_version" content="alpha">
+<meta name="crystal_docs.project_name" content="Ashard">
+
+
+    <link rel="canonical" href="https://crimson-knight.github.io/shards/Shards/FossilCommitRef.html">
+
+<link href="../css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../js/doc.js"></script>
+
+  <meta name="repository-name" content="Ashard">
+  <title>Shards::FossilCommitRef - Ashard alpha</title>
+  <script type="text/javascript">
+    CrystalDocs.base_path = "../";
+  </script>
+</head>
+<body>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill="currentColor" fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+<input type="checkbox" id="sidebar-btn">
+<label for="sidebar-btn" id="sidebar-btn-label">
+  <svg class="open" xmlns="http://www.w3.org/2000/svg" height="2em" width="2em" viewBox="0 0 512 512"><title>Open Sidebar</title><path fill="currentColor" d="M80 96v64h352V96H80zm0 112v64h352v-64H80zm0 112v64h352v-64H80z"></path></svg>
+  <svg class="close" xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 512 512"><title>Close Sidebar</title><path fill="currentColor" d="m118.6 73.4-45.2 45.2L210.7 256 73.4 393.4l45.2 45.2L256 301.3l137.4 137.3 45.2-45.2L301.3 256l137.3-137.4-45.2-45.2L256 210.7Z"></path></svg>
+</label>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="project-summary">
+      <h1 class="project-name">
+        <a href="../index.html">
+          Ashard
+        </a>
+      </h1>
+
+      <span class="project-version">
+        alpha
+      </span>
+    </div>
+  </div>
+
+  <div class="search-results hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class=" " data-id="Ashard/toplevel" data-name="top level namespace">
+      <a href="../toplevel.html">Top Level Namespace</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="Ashard/Shards" data-name="shards">
+      <a href="../Shards.html">Shards</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="Ashard/Shards/AIDocsInfo" data-name="shards::aidocsinfo">
+      <a href="../Shards/AIDocsInfo.html">AIDocsInfo</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInfo/FileEntry" data-name="shards::aidocsinfo::fileentry">
+      <a href="../Shards/AIDocsInfo/FileEntry.html">FileEntry</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInfo/ShardEntry" data-name="shards::aidocsinfo::shardentry">
+      <a href="../Shards/AIDocsInfo/ShardEntry.html">ShardEntry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AIDocsInstaller" data-name="shards::aidocsinstaller">
+      <a href="../Shards/AIDocsInstaller.html">AIDocsInstaller</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Any" data-name="shards::any">
+      <a href="../Shards/Any.html">Any</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantConfig" data-name="shards::assistantconfig">
+      <a href="../Shards/AssistantConfig.html">AssistantConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantConfigInfo" data-name="shards::assistantconfiginfo">
+      <a href="../Shards/AssistantConfigInfo.html">AssistantConfigInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/AssistantVersions" data-name="shards::assistantversions">
+      <a href="../Shards/AssistantVersions.html">AssistantVersions</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ChangeLogger" data-name="shards::changelogger">
+      <a href="../Shards/ChangeLogger.html">ChangeLogger</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Checksum" data-name="shards::checksum">
+      <a href="../Shards/Checksum.html">Checksum</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ChecksumMismatch" data-name="shards::checksummismatch">
+      <a href="../Shards/ChecksumMismatch.html">ChecksumMismatch</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ClaudeConfig" data-name="shards::claudeconfig">
+      <a href="../Shards/ClaudeConfig.html">ClaudeConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Command" data-name="shards::command">
+      <a href="../Shards/Command.html">Command</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Commands" data-name="shards::commands">
+      <a href="../Shards/Commands.html">Commands</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/AIDocs" data-name="shards::commands::aidocs">
+      <a href="../Shards/Commands/AIDocs.html">AIDocs</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Assistant" data-name="shards::commands::assistant">
+      <a href="../Shards/Commands/Assistant.html">Assistant</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Audit" data-name="shards::commands::audit">
+      <a href="../Shards/Commands/Audit.html">Audit</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Build" data-name="shards::commands::build">
+      <a href="../Shards/Commands/Build.html">Build</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Check" data-name="shards::commands::check">
+      <a href="../Shards/Commands/Check.html">Check</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/ComplianceReport" data-name="shards::commands::compliancereport">
+      <a href="../Shards/Commands/ComplianceReport.html">ComplianceReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Diff" data-name="shards::commands::diff">
+      <a href="../Shards/Commands/Diff.html">Diff</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Commands/Docs" data-name="shards::commands::docs">
+      <a href="../Shards/Commands/Docs.html">Docs</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Docs/AgentFileEntry" data-name="shards::commands::docs::agentfileentry">
+      <a href="../Shards/Commands/Docs/AgentFileEntry.html">AgentFileEntry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Init" data-name="shards::commands::init">
+      <a href="../Shards/Commands/Init.html">Init</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Install" data-name="shards::commands::install">
+      <a href="../Shards/Commands/Install.html">Install</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Licenses" data-name="shards::commands::licenses">
+      <a href="../Shards/Commands/Licenses.html">Licenses</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/List" data-name="shards::commands::list">
+      <a href="../Shards/Commands/List.html">List</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Lock" data-name="shards::commands::lock">
+      <a href="../Shards/Commands/Lock.html">Lock</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/MCP" data-name="shards::commands::mcp">
+      <a href="../Shards/Commands/MCP.html">MCP</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Outdated" data-name="shards::commands::outdated">
+      <a href="../Shards/Commands/Outdated.html">Outdated</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Policy" data-name="shards::commands::policy">
+      <a href="../Shards/Commands/Policy.html">Policy</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Prune" data-name="shards::commands::prune">
+      <a href="../Shards/Commands/Prune.html">Prune</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Run" data-name="shards::commands::run">
+      <a href="../Shards/Commands/Run.html">Run</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/RunScript" data-name="shards::commands::runscript">
+      <a href="../Shards/Commands/RunScript.html">RunScript</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/SBOM" data-name="shards::commands::sbom">
+      <a href="../Shards/Commands/SBOM.html">SBOM</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Update" data-name="shards::commands::update">
+      <a href="../Shards/Commands/Update.html">Update</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Commands/Version" data-name="shards::commands::version">
+      <a href="../Shards/Commands/Version.html">Version</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Compliance" data-name="shards::compliance">
+      <a href="../Shards/Compliance.html">Compliance</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/Attestation" data-name="shards::compliance::attestation">
+      <a href="../Shards/Compliance/Attestation.html">Attestation</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/HtmlTemplate" data-name="shards::compliance::htmltemplate">
+      <a href="../Shards/Compliance/HtmlTemplate.html">HtmlTemplate</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ProjectInfo" data-name="shards::compliance::projectinfo">
+      <a href="../Shards/Compliance/ProjectInfo.html">ProjectInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportBuilder" data-name="shards::compliance::reportbuilder">
+      <a href="../Shards/Compliance/ReportBuilder.html">ReportBuilder</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportData" data-name="shards::compliance::reportdata">
+      <a href="../Shards/Compliance/ReportData.html">ReportData</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/ReportFormatter" data-name="shards::compliance::reportformatter">
+      <a href="../Shards/Compliance/ReportFormatter.html">ReportFormatter</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/SectionData" data-name="shards::compliance::sectiondata">
+      <a href="../Shards/Compliance/SectionData.html">SectionData</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/Summary" data-name="shards::compliance::summary">
+      <a href="../Shards/Compliance/Summary.html">Summary</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Compliance/VulnerabilityCounts" data-name="shards::compliance::vulnerabilitycounts">
+      <a href="../Shards/Compliance/VulnerabilityCounts.html">VulnerabilityCounts</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ComplianceMCPServer" data-name="shards::compliancemcpserver">
+      <a href="../Shards/ComplianceMCPServer.html">ComplianceMCPServer</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Conflict" data-name="shards::conflict">
+      <a href="../Shards/Conflict.html">Conflict</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/CrystalResolver" data-name="shards::crystalresolver">
+      <a href="../Shards/CrystalResolver.html">CrystalResolver</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Dependency" data-name="shards::dependency">
+      <a href="../Shards/Dependency.html">Dependency</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/DiffReport" data-name="shards::diffreport">
+      <a href="../Shards/DiffReport.html">DiffReport</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Docs" data-name="shards::docs">
+      <a href="../Shards/Docs.html">Docs</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/AIDocumentation" data-name="shards::docs::aidocumentation">
+      <a href="../Shards/Docs/AIDocumentation.html">AIDocumentation</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/CLIReference" data-name="shards::docs::clireference">
+      <a href="../Shards/Docs/CLIReference.html">CLIReference</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/DocsGeneration" data-name="shards::docs::docsgeneration">
+      <a href="../Shards/Docs/DocsGeneration.html">DocsGeneration</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/MCPDistribution" data-name="shards::docs::mcpdistribution">
+      <a href="../Shards/Docs/MCPDistribution.html">MCPDistribution</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/MCPLifecycle" data-name="shards::docs::mcplifecycle">
+      <a href="../Shards/Docs/MCPLifecycle.html">MCPLifecycle</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/PostinstallScripts" data-name="shards::docs::postinstallscripts">
+      <a href="../Shards/Docs/PostinstallScripts.html">PostinstallScripts</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/PublishingGuide" data-name="shards::docs::publishingguide">
+      <a href="../Shards/Docs/PublishingGuide.html">PublishingGuide</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/SBOMGeneration" data-name="shards::docs::sbomgeneration">
+      <a href="../Shards/Docs/SBOMGeneration.html">SBOMGeneration</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Docs/ShardYmlFormat" data-name="shards::docs::shardymlformat">
+      <a href="../Shards/Docs/ShardYmlFormat.html">ShardYmlFormat</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Error" data-name="shards::error">
+      <a href="../Shards/Error.html">Error</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilBranchRef" data-name="shards::fossilbranchref">
+      <a href="../Shards/FossilBranchRef.html">FossilBranchRef</a>
+      
+    </li>
+  
+  <li class=" current" data-id="Ashard/Shards/FossilCommitRef" data-name="shards::fossilcommitref">
+      <a href="../Shards/FossilCommitRef.html">FossilCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilRef" data-name="shards::fossilref">
+      <a href="../Shards/FossilRef.html">FossilRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/FossilResolver" data-name="shards::fossilresolver">
+      <a href="../Shards/FossilResolver.html">FossilResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/FossilResolver/FossilVersion" data-name="shards::fossilresolver::fossilversion">
+      <a href="../Shards/FossilResolver/FossilVersion.html">FossilVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilTagRef" data-name="shards::fossiltagref">
+      <a href="../Shards/FossilTagRef.html">FossilTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/FossilTrunkRef" data-name="shards::fossiltrunkref">
+      <a href="../Shards/FossilTrunkRef.html">FossilTrunkRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitBranchRef" data-name="shards::gitbranchref">
+      <a href="../Shards/GitBranchRef.html">GitBranchRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitCommitRef" data-name="shards::gitcommitref">
+      <a href="../Shards/GitCommitRef.html">GitCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitHeadRef" data-name="shards::githeadref">
+      <a href="../Shards/GitHeadRef.html">GitHeadRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitRef" data-name="shards::gitref">
+      <a href="../Shards/GitRef.html">GitRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/GitResolver" data-name="shards::gitresolver">
+      <a href="../Shards/GitResolver.html">GitResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/GitResolver/GitVersion" data-name="shards::gitresolver::gitversion">
+      <a href="../Shards/GitResolver/GitVersion.html">GitVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/GitTagRef" data-name="shards::gittagref">
+      <a href="../Shards/GitTagRef.html">GitTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Helpers" data-name="shards::helpers">
+      <a href="../Shards/Helpers.html">Helpers</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgBookmarkRef" data-name="shards::hgbookmarkref">
+      <a href="../Shards/HgBookmarkRef.html">HgBookmarkRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgBranchRef" data-name="shards::hgbranchref">
+      <a href="../Shards/HgBranchRef.html">HgBranchRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgCommitRef" data-name="shards::hgcommitref">
+      <a href="../Shards/HgCommitRef.html">HgCommitRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgCurrentRef" data-name="shards::hgcurrentref">
+      <a href="../Shards/HgCurrentRef.html">HgCurrentRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgRef" data-name="shards::hgref">
+      <a href="../Shards/HgRef.html">HgRef</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/HgResolver" data-name="shards::hgresolver">
+      <a href="../Shards/HgResolver.html">HgResolver</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/HgResolver/HgVersion" data-name="shards::hgresolver::hgversion">
+      <a href="../Shards/HgResolver/HgVersion.html">HgVersion</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/HgTagRef" data-name="shards::hgtagref">
+      <a href="../Shards/HgTagRef.html">HgTagRef</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/IgnoreRule" data-name="shards::ignorerule">
+      <a href="../Shards/IgnoreRule.html">IgnoreRule</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Info" data-name="shards::info">
+      <a href="../Shards/Info.html">Info</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/InvalidLock" data-name="shards::invalidlock">
+      <a href="../Shards/InvalidLock.html">InvalidLock</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LicensePolicy" data-name="shards::licensepolicy">
+      <a href="../Shards/LicensePolicy.html">LicensePolicy</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/DependencyResult" data-name="shards::licensepolicy::dependencyresult">
+      <a href="../Shards/LicensePolicy/DependencyResult.html">DependencyResult</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Override" data-name="shards::licensepolicy::override">
+      <a href="../Shards/LicensePolicy/Override.html">Override</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/PolicyConfig" data-name="shards::licensepolicy::policyconfig">
+      <a href="../Shards/LicensePolicy/PolicyConfig.html">PolicyConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/PolicyReport" data-name="shards::licensepolicy::policyreport">
+      <a href="../Shards/LicensePolicy/PolicyReport.html">PolicyReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Summary" data-name="shards::licensepolicy::summary">
+      <a href="../Shards/LicensePolicy/Summary.html">Summary</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LicensePolicy/Verdict" data-name="shards::licensepolicy::verdict">
+      <a href="../Shards/LicensePolicy/Verdict.html">Verdict</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LicenseScanner" data-name="shards::licensescanner">
+      <a href="../Shards/LicenseScanner.html">LicenseScanner</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LicenseScanner/ScanResult" data-name="shards::licensescanner::scanresult">
+      <a href="../Shards/LicenseScanner/ScanResult.html">ScanResult</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Lock" data-name="shards::lock">
+      <a href="../Shards/Lock.html">Lock</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LockConflict" data-name="shards::lockconflict">
+      <a href="../Shards/LockConflict.html">LockConflict</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/LockfileDiffer" data-name="shards::lockfilediffer">
+      <a href="../Shards/LockfileDiffer.html">LockfileDiffer</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/LockfileDiffer/Change" data-name="shards::lockfilediffer::change">
+      <a href="../Shards/LockfileDiffer/Change.html">Change</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/LockfileDiffer/Status" data-name="shards::lockfilediffer::status">
+      <a href="../Shards/LockfileDiffer/Status.html">Status</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/MCPManager" data-name="shards::mcpmanager">
+      <a href="../Shards/MCPManager.html">MCPManager</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerConfig" data-name="shards::mcpmanager::serverconfig">
+      <a href="../Shards/MCPManager/ServerConfig.html">ServerConfig</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerState" data-name="shards::mcpmanager::serverstate">
+      <a href="../Shards/MCPManager/ServerState.html">ServerState</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/ServerStatusInfo" data-name="shards::mcpmanager::serverstatusinfo">
+      <a href="../Shards/MCPManager/ServerStatusInfo.html">ServerStatusInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MCPManager/StateFile" data-name="shards::mcpmanager::statefile">
+      <a href="../Shards/MCPManager/StateFile.html">StateFile</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/MolinilloSolver" data-name="shards::molinillosolver">
+      <a href="../Shards/MolinilloSolver.html">MolinilloSolver</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Override" data-name="shards::override">
+      <a href="../Shards/Override.html">Override</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Package" data-name="shards::package">
+      <a href="../Shards/Package.html">Package</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PackageScanResult" data-name="shards::packagescanresult">
+      <a href="../Shards/PackageScanResult.html">PackageScanResult</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/ParseError" data-name="shards::parseerror">
+      <a href="../Shards/ParseError.html">ParseError</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PathResolver" data-name="shards::pathresolver">
+      <a href="../Shards/PathResolver.html">PathResolver</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
+      <a href="../Shards/Policy.html">Policy</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/BlockedDep" data-name="shards::policy::blockeddep">
+      <a href="../Shards/Policy/BlockedDep.html">BlockedDep</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/CustomRule" data-name="shards::policy::customrule">
+      <a href="../Shards/Policy/CustomRule.html">CustomRule</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/DependencyRules" data-name="shards::policy::dependencyrules">
+      <a href="../Shards/Policy/DependencyRules.html">DependencyRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/FreshnessRules" data-name="shards::policy::freshnessrules">
+      <a href="../Shards/Policy/FreshnessRules.html">FreshnessRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/SecurityRules" data-name="shards::policy::securityrules">
+      <a href="../Shards/Policy/SecurityRules.html">SecurityRules</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Policy/SourceRules" data-name="shards::policy::sourcerules">
+      <a href="../Shards/Policy/SourceRules.html">SourceRules</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyChecker" data-name="shards::policychecker">
+      <a href="../Shards/PolicyChecker.html">PolicyChecker</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/PolicyReport" data-name="shards::policyreport">
+      <a href="../Shards/PolicyReport.html">PolicyReport</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyReport/Severity" data-name="shards::policyreport::severity">
+      <a href="../Shards/PolicyReport/Severity.html">Severity</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PolicyReport/Violation" data-name="shards::policyreport::violation">
+      <a href="../Shards/PolicyReport/Violation.html">Violation</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/PostinstallInfo" data-name="shards::postinstallinfo">
+      <a href="../Shards/PostinstallInfo.html">PostinstallInfo</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/PostinstallInfo/Entry" data-name="shards::postinstallinfo::entry">
+      <a href="../Shards/PostinstallInfo/Entry.html">Entry</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PurlGenerator" data-name="shards::purlgenerator">
+      <a href="../Shards/PurlGenerator.html">PurlGenerator</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Ref" data-name="shards::ref">
+      <a href="../Shards/Ref.html">Ref</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Requirement" data-name="shards::requirement">
+      <a href="../Shards/Requirement.html">Requirement</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Resolver" data-name="shards::resolver">
+      <a href="../Shards/Resolver.html">Resolver</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Script" data-name="shards::script">
+      <a href="../Shards/Script.html">Script</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Script/Error" data-name="shards::script::error">
+      <a href="../Shards/Script/Error.html">Error</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Severity" data-name="shards::severity">
+      <a href="../Shards/Severity.html">Severity</a>
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/SPDX" data-name="shards::spdx">
+      <a href="../Shards/SPDX.html">SPDX</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/AndExpression" data-name="shards::spdx::andexpression">
+      <a href="../Shards/SPDX/AndExpression.html">AndExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Category" data-name="shards::spdx::category">
+      <a href="../Shards/SPDX/Category.html">Category</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Expression" data-name="shards::spdx::expression">
+      <a href="../Shards/SPDX/Expression.html">Expression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/LicenseInfo" data-name="shards::spdx::licenseinfo">
+      <a href="../Shards/SPDX/LicenseInfo.html">LicenseInfo</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/OrExpression" data-name="shards::spdx::orexpression">
+      <a href="../Shards/SPDX/OrExpression.html">OrExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/Parser" data-name="shards::spdx::parser">
+      <a href="../Shards/SPDX/Parser.html">Parser</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/SimpleExpression" data-name="shards::spdx::simpleexpression">
+      <a href="../Shards/SPDX/SimpleExpression.html">SimpleExpression</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/SPDX/WithExpression" data-name="shards::spdx::withexpression">
+      <a href="../Shards/SPDX/WithExpression.html">WithExpression</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/Shards/Spec" data-name="shards::spec">
+      <a href="../Shards/Spec.html">Spec</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/AIAssistant" data-name="shards::spec::aiassistant">
+      <a href="../Shards/Spec/AIAssistant.html">AIAssistant</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/AIDocs" data-name="shards::spec::aidocs">
+      <a href="../Shards/Spec/AIDocs.html">AIDocs</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/Author" data-name="shards::spec::author">
+      <a href="../Shards/Spec/Author.html">Author</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Spec/Library" data-name="shards::spec::library">
+      <a href="../Shards/Spec/Library.html">Library</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Target" data-name="shards::target">
+      <a href="../Shards/Target.html">Target</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Version" data-name="shards::version">
+      <a href="../Shards/Version.html">Version</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VersionReq" data-name="shards::versionreq">
+      <a href="../Shards/VersionReq.html">VersionReq</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Versions" data-name="shards::versions">
+      <a href="../Shards/Versions.html">Versions</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/Vulnerability" data-name="shards::vulnerability">
+      <a href="../Shards/Vulnerability.html">Vulnerability</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VulnerabilityReport" data-name="shards::vulnerabilityreport">
+      <a href="../Shards/VulnerabilityReport.html">VulnerabilityReport</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/VulnerabilityScanner" data-name="shards::vulnerabilityscanner">
+      <a href="../Shards/VulnerabilityScanner.html">VulnerabilityScanner</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="Ashard/YAML" data-name="yaml">
+      <a href="../YAML.html">YAML</a>
+      
+        <ul>
+  
+  <li class=" " data-id="Ashard/YAML/PullParser" data-name="yaml::pullparser">
+      <a href="../YAML/PullParser.html">PullParser</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<div class="docs-resource-bar">
+  <span class="ai-label">Docs exports:</span>
+  <a class="ai-btn resource-btn" href="../index.json">JSON</a>
+  <a class="ai-btn resource-btn" href="../llms.txt">llms.txt</a>
+  <a class="ai-btn resource-btn" href="../llms-full.txt">llms-full.txt</a>
+  <a class="ai-btn resource-btn" href="../agent-files/index.html">Agent Files</a>
+</div>
+
+<h1 class="type-name">
+
+  <span class="kind">
+    struct
+  </span> Shards::<wbr>FossilCommitRef
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../Shards/FossilCommitRef.html">Shards::FossilCommitRef</a></li><li class="superclass"><a href="../Shards/FossilRef.html">Shards::FossilRef</a></li><li class="superclass"><a href="../Shards/Ref.html">Shards::Ref</a></li><li class="superclass">Struct</li><li class="superclass">Value</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L50" target="_blank">
+        resolvers/fossil.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  
+  <h2>
+    <a id="constructors" class="anchor" href="#constructors">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructors
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28commit%3AString%29-class-method" class="signature"><strong>.new</strong>(commit : String)</a>
+        
+      </li>
+    
+  </ul>
+
+
+  
+
+  
+
+  
+  <h2>
+    <a id="instance-method-summary" class="anchor" href="#instance-method-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Summary
+  </h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#%3D~%28other%3AFossilCommitRef%29-instance-method" class="signature"><strong>#=~</strong>(other : FossilCommitRef)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#commit%3AString-instance-method" class="signature"><strong>#commit</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#full_info-instance-method" class="signature"><strong>#full_info</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_fossil_ref%3AString-instance-method" class="signature"><strong>#to_fossil_ref</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_s%28io%29-instance-method" class="signature"><strong>#to_s</strong>(io)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_yaml%28yaml%29-instance-method" class="signature"><strong>#to_yaml</strong>(yaml)</a>
+        
+      </li>
+    
+  </ul>
+
+
+
+  <div class="methods-inherited">
+    
+      
+
+  <h3>Instance methods inherited from struct <code><a href="../Shards/FossilRef.html">Shards::FossilRef</a></code></h3>
+  
+  
+    <a href="../Shards/FossilRef.html#full_info-instance-method" class="tooltip">
+      <span>full_info</span>
+    full_info</a>
+    
+  
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+  <h3>Instance methods inherited from struct <code><a href="../Shards/Ref.html">Shards::Ref</a></code></h3>
+  
+  
+    <a href="../Shards/Ref.html#initialize-instance-method" class="tooltip">
+      <span>initialize</span>
+    initialize</a>
+    
+  
+
+
+      
+
+  <h3>Constructor methods inherited from struct <code><a href="../Shards/Ref.html">Shards::Ref</a></code></h3>
+  
+  
+    <a href="../Shards/Ref.html#new-class-method" class="tooltip">
+      <span>new</span>
+    new</a>
+    
+  
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+      
+
+
+      
+
+
+      
+
+
+      
+
+
+    
+  </div>
+
+  
+  <h2>
+    <a id="constructor-detail" class="anchor" href="#constructor-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Constructor Detail
+  </h2>
+  
+    <div class="entry-detail" id="new(commit:String)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(commit : String)
+
+        <a class="method-permalink" href="#new%28commit%3AString%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L53" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+  
+
+  
+
+  
+  <h2>
+    <a id="instance-method-detail" class="anchor" href="#instance-method-detail">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Instance Method Detail
+  </h2>
+  
+    <div class="entry-detail" id="=~(other:FossilCommitRef)-instance-method">
+      <div class="signature">
+        
+        def <strong>=~</strong>(other : <a href="../Shards/FossilCommitRef.html">FossilCommitRef</a>)
+
+        <a class="method-permalink" href="#%3D~%28other%3AFossilCommitRef%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L56" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="commit:String-instance-method">
+      <div class="signature">
+        
+        def <strong>commit</strong> : String
+
+        <a class="method-permalink" href="#commit%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L51" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="full_info-instance-method">
+      <div class="signature">
+        
+        def <strong>full_info</strong>
+
+        <a class="method-permalink" href="#full_info-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L68" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_fossil_ref:String-instance-method">
+      <div class="signature">
+        
+        def <strong>to_fossil_ref</strong> : String
+
+        <a class="method-permalink" href="#to_fossil_ref%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L60" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_s(io)-instance-method">
+      <div class="signature">
+        
+        def <strong>to_s</strong>(io)
+
+        <a class="method-permalink" href="#to_s%28io%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L64" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_yaml(yaml)-instance-method">
+      <div class="signature">
+        
+        def <strong>to_yaml</strong>(yaml)
+
+        <a class="method-permalink" href="#to_yaml%28yaml%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/resolvers/fossil.cr#L72" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+</div>
+
+<script>
+(function() {
+  function getPageMarkdown() {
+    var title = document.querySelector('h1.type-name');
+    var content = document.querySelector('.main-content');
+    if (!content) return '';
+
+    var text = '';
+    if (title) text += '# ' + title.textContent.trim() + '\n\n';
+
+    var sections = content.querySelectorAll('h2, p, pre, dl, .entry-detail');
+    sections.forEach(function(el) {
+      if (el.tagName === 'H2') text += '## ' + el.textContent.trim() + '\n\n';
+      else if (el.tagName === 'P') text += el.textContent.trim() + '\n\n';
+      else if (el.tagName === 'PRE') text += '```\n' + el.textContent.trim() + '\n```\n\n';
+      else if (el.tagName === 'DL') {
+        el.querySelectorAll('dt').forEach(function(dt) {
+          text += '- `' + dt.textContent.trim() + '`\n';
+        });
+        text += '\n';
+      }
+    });
+    return text;
+  }
+
+  function buildPrompt(typeName, projectName) {
+    return 'I\'m working with the ' + projectName + ' Crystal library. ' +
+           'Help me understand and use `' + typeName + '`. ' +
+           'Here is the API documentation:\n\n';
+  }
+
+  function getTypeName() {
+    var el = document.querySelector('h1.type-name');
+    return el ? el.textContent.trim() : document.title;
+  }
+
+  function getProjectName() {
+    var el = document.querySelector('.project-name');
+    return el ? el.textContent.trim() : 'this project';
+  }
+
+  function openInClaude() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://claude.ai/new?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function openInChatGPT() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function openInGemini() {
+    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();
+    var url = 'https://gemini.google.com/app?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+  }
+
+  function viewMarkdown() {
+    var mdPath = window.location.pathname.replace(/\.html$/, '.md');
+    if (mdPath === window.location.pathname) mdPath += '.md';
+    window.open(mdPath, '_blank');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var h1 = document.querySelector('h1.type-name');
+    var mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+
+    var bar = document.createElement('div');
+    bar.className = 'ai-assistant-bar';
+    bar.innerHTML =
+      '<span class="ai-label">Discuss with AI:</span>' +
+      '<button class="ai-btn claude-btn" onclick="window.__openInClaude()" title="Open in Claude">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm2.07-7.75l-.9.92C11.45 10.9 11 11.5 11 13H9v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H6c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="currentColor"/></svg>' +
+        'Claude' +
+      '</button>' +
+      '<button class="ai-btn chatgpt-btn" onclick="window.__openInChatGPT()" title="Open in ChatGPT">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="currentColor"/></svg>' +
+        'ChatGPT' +
+      '</button>' +
+      '<button class="ai-btn gemini-btn" onclick="window.__openInGemini()" title="Open in Gemini">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.18 8 12 11.82 4.82 8 12 4.18zM4 9.12l7 3.5V19.5l-7-3.5V9.12zm9 10.38v-6.88l7-3.5v6.88l-7 3.5z" fill="currentColor"/></svg>' +
+        'Gemini' +
+      '</button>' +
+      '<button class="ai-btn md-btn" onclick="window.__viewMarkdown()" title="View as Markdown">' +
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M20.56 18H3.44C2.65 18 2 17.37 2 16.59V7.41C2 6.63 2.65 6 3.44 6h17.12c.79 0 1.44.63 1.44 1.41v9.18c0 .78-.65 1.41-1.44 1.41zM6.81 15.19v-3.68l1.83 2.29 1.83-2.29v3.68h1.83V8.81h-1.83l-1.83 2.29-1.83-2.29H5v6.38h1.81zm10.99-3.19h-1.83V8.81h-1.83V12h-1.84l2.75 3.19L17.8 12z" fill="currentColor"/></svg>' +
+        'Markdown' +
+      '</button>';
+
+    if (h1 && h1.nextSibling) {
+      mainContent.insertBefore(bar, h1.nextSibling);
+    } else {
+      mainContent.insertBefore(bar, mainContent.firstChild);
+    }
+  });
+
+  window.__openInClaude = openInClaude;
+  window.__openInChatGPT = openInChatGPT;
+  window.__openInGemini = openInGemini;
+  window.__viewMarkdown = viewMarkdown;
+})();
+</script>
+</body>
+</html>
