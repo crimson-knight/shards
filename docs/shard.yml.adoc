@@ -118,9 +118,8 @@ list of attributes (mapping) that depend on the resolver type.
 [source,yaml]
 ----
 dependencies:
-  minitest:
-    github: ysbaddaden/minitest.cr
-    version: 0.1.0
+  amber_support:
+    path: vendors/amber_support
 ----
 
 *development_dependencies*::
@@ -138,9 +137,8 @@ Development dependencies follow the same scheme as dependencies.
 [source,yaml]
 ----
 development_dependencies:
-  minitest:
-    github: ysbaddaden/minitest.cr
-    version: ~> 0.1.3
+  ashard_spec:
+    path: tools/ashard_spec
 ----
 
 *description*::
@@ -307,7 +305,7 @@ GitHub repository URL as _user/repo_ (string)
 +
 Extends the _git_ resolver, and acts exactly like it.
 +
-*Example:* _github: ysbaddaden/minitest.cr_
+*Example:* _github: your-org/amber-support_
 
 *gitlab*::
 GitLab repository URL as _user/repo_ (string).
@@ -408,12 +406,12 @@ would not install it since only the _.3_ can change but the _2.0_ part is fixed.
 
 == Example:
 
-Here is an example _shard.yml_ for a library named _shards_ at version _1.2.3_
+Here is an example _shard.yml_ for a library named _amberverse_toolkit_ at version _1.2.3_
 with some dependencies:
 
 [source,yaml]
 ----
-name: shards
+name: amberverse_toolkit
 version: 1.2.3
 crystal: '>= 0.35.0'
 
@@ -422,17 +420,15 @@ authors:
 license: MIT
 
 description: |
-  Dependency manager for the Crystal Language
+  Agent-friendly support library for Amberverse projects
 
 dependencies:
-  openssl:
-    github: datanoise/openssl.cr
-    branch: master
+  amber_support:
+    path: vendors/amber_support
 
 development_dependencies:
-  minitest:
-    git: https://github.com/ysbaddaden/minitest.cr.git
-    version: "~> 0.1.0"
+  ashard_spec:
+    path: tools/ashard_spec
 
 libraries:
   libgit2: ~> 0.24
@@ -441,8 +437,8 @@ scripts:
   postinstall: make ext
 
 targets:
-  shards:
-    main: src/shards.cr
+  amberverse_toolkit:
+    main: src/amberverse_toolkit.cr
 ----
 
 == AUTHOR

@@ -28,6 +28,16 @@ We are not choosing a leading-number binary name or a heavily stylized spelling.
 The name needs to be memorable, grammatically readable, and easy to say out
 loud in English.
 
+The intended reading is literally "a shard."
+
+That phrasing matters. The name is supposed to suggest a tool that wraps around
+the familiar shard workflow and makes it more capable for agent-oriented and
+Amber-v2-era work, not a hard break into a brand-new package ecosystem.
+
+We may eventually personify the name more as the Amber v2 tooling family
+develops, especially for people working inside the amberverse, but the current
+public explanation should stay plain and readable to any English speaker.
+
 ## Consequences
 
 - Docs, blog copy, and release notes can become clearer immediately without

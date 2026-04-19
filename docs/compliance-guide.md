@@ -249,8 +249,8 @@ rules:
 
     # Require minimum versions
     minimum_versions:
-      openssl: "1.0.0"
-      http-client: "2.0.0"
+      amber_support: "0.2.0"
+      amber_http: "2.0.0"
 
   security:
     # Require all dependencies to declare a license

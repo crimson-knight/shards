@@ -194,6 +194,39 @@ module Shards
       .docs-resource-bar .resource-btn:hover {
         border-color: var(--accent-secondary, #624288);
       }
+      .ashard-story {
+        margin: 0 0 18px;
+        padding: 16px 18px;
+        border: 1px solid rgba(98, 66, 136, 0.16);
+        border-radius: 14px;
+        background:
+          linear-gradient(135deg, rgba(238, 231, 248, 0.95), rgba(248, 244, 253, 0.95)),
+          radial-gradient(circle at top right, rgba(98, 66, 136, 0.12), transparent 42%);
+        box-shadow: 0 18px 40px rgba(71, 38, 110, 0.08);
+      }
+      .ashard-story h2 {
+        margin: 0 0 10px;
+        padding: 0;
+        border: 0;
+      }
+      .ashard-story p {
+        margin: 0 0 10px;
+      }
+      .ashard-story p:last-child {
+        margin-bottom: 0;
+      }
+      .ashard-story code {
+        font-size: .95em;
+      }
+      @media (prefers-color-scheme: dark) {
+        .ashard-story {
+          border-color: rgba(176, 146, 212, 0.22);
+          background:
+            linear-gradient(135deg, rgba(42, 31, 58, 0.95), rgba(28, 24, 36, 0.96)),
+            radial-gradient(circle at top right, rgba(176, 146, 212, 0.15), transparent 42%);
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        }
+      }
       CSS
 
       AI_BUTTONS_JS = <<-'JS'
@@ -360,6 +393,7 @@ module Shards
         # Generate markdown files from HTML
         generate_markdown_files(output_dir)
         inject_resource_links(output_dir)
+        inject_brand_story(output_dir)
 
         agent_files = [] of AgentFileEntry
         agent_files = copy_agent_files(output_dir) unless skip_agent_files
@@ -426,6 +460,33 @@ module Shards
             content = content.sub("<div class=\"main-content\">", "<div class=\"main-content\">\n#{resource_bar}\n")
           elsif content.includes?("</body>")
             content = content.sub("</body>", "#{resource_bar}\n</body>")
+          end
+
+          File.write(html_path, content)
+        end
+      end
+
+      private def inject_brand_story(output_dir : String)
+        story = <<-HTML
+        <section class="ashard-story">
+          <h2>Ashard Means "A Shard"</h2>
+          <p><strong>Ashard</strong> is the public name for this Shards-compatible fork. The name is meant to read naturally as <em>"a shard"</em>: a tool that wraps around a shard workflow and makes it more helpful for agent-oriented development.</p>
+          <p>The codebase still exposes the <code>Shards</code> namespace because compatibility is the contract. Public-facing copy uses <strong>Ashard</strong> to describe the additive tooling we are building for Amber v2 and for people working inside the amberverse.</p>
+          <p>We may personify the name more over time as the Amber v2 tool family evolves, but today the practical message is simple: if you know Shards, Ashard should still feel familiar.</p>
+        </section>
+        HTML
+
+        %w[index.html Shards.html toplevel.html].each do |relative_path|
+          html_path = File.join(output_dir, relative_path)
+          next unless File.exists?(html_path)
+
+          content = File.read(html_path)
+          next if content.includes?(story)
+
+          if content.includes?("<div class=\"main-content\">")
+            content = content.sub("<div class=\"main-content\">", "<div class=\"main-content\">\n#{story}\n")
+          elsif content.includes?("</body>")
+            content = content.sub("</body>", "#{story}\n</body>")
           end
 
           File.write(html_path, content)

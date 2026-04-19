@@ -140,22 +140,22 @@ module Shards
       name: orm
       version: 1.0.0
       development_dependencies:
-        minitest:
-          github: ysbaddaden/minitest.cr
+        ashard_spec:
+          github: amberframework/ashard-spec
           version: 0.1.4
-        webmock:
-          git: https://github.com/manastech/webcmok-crystal.git
+        amber_mock:
+          git: https://github.com/amberframework/amber-mock.git
           branch: master
       YAML
 
       spec.development_dependencies.size.should eq(2)
 
-      spec.development_dependencies[0].name.should eq("minitest")
-      spec.development_dependencies[0].resolver.should eq(GitResolver.new("minitest", "https://github.com/ysbaddaden/minitest.cr.git"))
+      spec.development_dependencies[0].name.should eq("ashard_spec")
+      spec.development_dependencies[0].resolver.should eq(GitResolver.new("ashard_spec", "https://github.com/amberframework/ashard-spec.git"))
       spec.development_dependencies[0].requirement.should eq(version_req "0.1.4")
 
-      spec.development_dependencies[1].name.should eq("webmock")
-      spec.development_dependencies[1].resolver.should eq(GitResolver.new("webmock", "https://github.com/manastech/webcmok-crystal.git"))
+      spec.development_dependencies[1].name.should eq("amber_mock")
+      spec.development_dependencies[1].resolver.should eq(GitResolver.new("amber_mock", "https://github.com/amberframework/amber-mock.git"))
       spec.development_dependencies[1].requirement.should eq(branch "master")
     end
 
