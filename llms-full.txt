@@ -807,7 +807,7 @@ Wraps `crystal docs` and post-processes the output to:
 
 ## Constants
 
-- `AI_BUTTONS_CSS` = `".ai-assistant-bar {\n  display: flex;\n  gap: 8px;\n  align-items: center;\n  margin: 15px 0;\n  padding: 10px 0;\n  border-top: 1px solid var(--h2-border, #E6E6E6);\n  flex-wrap: wrap;\n}\n.ai-assistant-bar .ai-label {\n  font-size: 13px;\n  color: var(--ai-btn-text, #555);\n  margin-right: 4px;\n}\n.ai-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 5px 12px;\n  border: 1px solid var(--ai-btn-border, #ddd);\n  border-radius: 6px;\n  background: var(--ai-btn-bg, #f0f0f0);\n  color: var(--ai-btn-text, #555);\n  text-decoration: none;\n  font-size: 13px;\n  cursor: pointer;\n  transition: background .15s, border-color .15s;\n}\n.ai-btn:hover {\n  background: var(--ai-btn-hover-bg, #e0e0e0);\n  border-color: var(--ai-btn-border, #ccc);\n}\n.ai-btn:visited {\n  color: var(--ai-btn-text, #555);\n}\n.ai-btn svg {\n  width: 16px;\n  height: 16px;\n  flex-shrink: 0;\n}\n.ai-btn.claude-btn:hover { border-color: #D97706; }\n.ai-btn.chatgpt-btn:hover { border-color: #10A37F; }\n.ai-btn.gemini-btn:hover { border-color: #4285F4; }\n.ai-btn.md-btn:hover { border-color: var(--accent-secondary, #624288); }\n.docs-resource-bar {\n  display: flex;\n  gap: 8px;\n  align-items: center;\n  margin: 0 0 16px;\n  flex-wrap: wrap;\n}\n.docs-resource-bar .resource-btn:hover {\n  border-color: var(--accent-secondary, #624288);\n}"`
+- `AI_BUTTONS_CSS` = `".ai-assistant-bar {\n  display: flex;\n  gap: 8px;\n  align-items: center;\n  margin: 15px 0;\n  padding: 10px 0;\n  border-top: 1px solid var(--h2-border, #E6E6E6);\n  flex-wrap: wrap;\n}\n.ai-assistant-bar .ai-label {\n  font-size: 13px;\n  color: var(--ai-btn-text, #555);\n  margin-right: 4px;\n}\n.ai-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 5px 12px;\n  border: 1px solid var(--ai-btn-border, #ddd);\n  border-radius: 6px;\n  background: var(--ai-btn-bg, #f0f0f0);\n  color: var(--ai-btn-text, #555);\n  text-decoration: none;\n  font-size: 13px;\n  cursor: pointer;\n  transition: background .15s, border-color .15s;\n}\n.ai-btn:hover {\n  background: var(--ai-btn-hover-bg, #e0e0e0);\n  border-color: var(--ai-btn-border, #ccc);\n}\n.ai-btn:visited {\n  color: var(--ai-btn-text, #555);\n}\n.ai-btn svg {\n  width: 16px;\n  height: 16px;\n  flex-shrink: 0;\n}\n.ai-btn.claude-btn:hover { border-color: #D97706; }\n.ai-btn.chatgpt-btn:hover { border-color: #10A37F; }\n.ai-btn.gemini-btn:hover { border-color: #4285F4; }\n.ai-btn.md-btn:hover { border-color: var(--accent-secondary, #624288); }\n.docs-resource-bar {\n  display: flex;\n  gap: 8px;\n  align-items: center;\n  margin: 0 0 16px;\n  flex-wrap: wrap;\n}\n.docs-resource-bar .resource-btn:hover {\n  border-color: var(--accent-secondary, #624288);\n}\n.ashard-story {\n  margin: 0 0 18px;\n  padding: 16px 18px;\n  border: 1px solid rgba(98, 66, 136, 0.16);\n  border-radius: 14px;\n  background:\n    linear-gradient(135deg, rgba(238, 231, 248, 0.95), rgba(248, 244, 253, 0.95)),\n    radial-gradient(circle at top right, rgba(98, 66, 136, 0.12), transparent 42%);\n  box-shadow: 0 18px 40px rgba(71, 38, 110, 0.08);\n}\n.ashard-story h2 {\n  margin: 0 0 10px;\n  padding: 0;\n  border: 0;\n}\n.ashard-story p {\n  margin: 0 0 10px;\n}\n.ashard-story p:last-child {\n  margin-bottom: 0;\n}\n.ashard-story code {\n  font-size: .95em;\n}\n@media (prefers-color-scheme: dark) {\n  .ashard-story {\n    border-color: rgba(176, 146, 212, 0.22);\n    background:\n      linear-gradient(135deg, rgba(42, 31, 58, 0.95), rgba(28, 24, 36, 0.96)),\n      radial-gradient(circle at top right, rgba(176, 146, 212, 0.15), transparent 42%);\n    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);\n  }\n}"`
 - `AI_BUTTONS_JS` = `"<script>\n(function() {\n  function getPageMarkdown() {\n    var title = document.querySelector('h1.type-name');\n    var content = document.querySelector('.main-content');\n    if (!content) return '';\n\n    var text = '';\n    if (title) text += '# ' + title.textContent.trim() + '\\n\\n';\n\n    var sections = content.querySelectorAll('h2, p, pre, dl, .entry-detail');\n    sections.forEach(function(el) {\n      if (el.tagName === 'H2') text += '## ' + el.textContent.trim() + '\\n\\n';\n      else if (el.tagName === 'P') text += el.textContent.trim() + '\\n\\n';\n      else if (el.tagName === 'PRE') text += '```\\n' + el.textContent.trim() + '\\n```\\n\\n';\n      else if (el.tagName === 'DL') {\n        el.querySelectorAll('dt').forEach(function(dt) {\n          text += '- `' + dt.textContent.trim() + '`\\n';\n        });\n        text += '\\n';\n      }\n    });\n    return text;\n  }\n\n  function buildPrompt(typeName, projectName) {\n    return 'I\\'m working with the ' + projectName + ' Crystal library. ' +\n           'Help me understand and use `' + typeName + '`. ' +\n           'Here is the API documentation:\\n\\n';\n  }\n\n  function getTypeName() {\n    var el = document.querySelector('h1.type-name');\n    return el ? el.textContent.trim() : document.title;\n  }\n\n  function getProjectName() {\n    var el = document.querySelector('.project-name');\n    return el ? el.textContent.trim() : 'this project';\n  }\n\n  function openInClaude() {\n    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();\n    var url = 'https://claude.ai/new?q=' + encodeURIComponent(prompt);\n    window.open(url, '_blank');\n  }\n\n  function openInChatGPT() {\n    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();\n    var url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);\n    window.open(url, '_blank');\n  }\n\n  function openInGemini() {\n    var prompt = buildPrompt(getTypeName(), getProjectName()) + getPageMarkdown();\n    var url = 'https://gemini.google.com/app?q=' + encodeURIComponent(prompt);\n    window.open(url, '_blank');\n  }\n\n  function viewMarkdown() {\n    var mdPath = window.location.pathname.replace(/\\.html$/, '.md');\n    if (mdPath === window.location.pathname) mdPath += '.md';\n    window.open(mdPath, '_blank');\n  }\n\n  document.addEventListener('DOMContentLoaded', function() {\n    var h1 = document.querySelector('h1.type-name');\n    var mainContent = document.querySelector('.main-content');\n    if (!mainContent) return;\n\n    var bar = document.createElement('div');\n    bar.className = 'ai-assistant-bar';\n    bar.innerHTML =\n      '<span class=\"ai-label\">Discuss with AI:</span>' +\n      '<button class=\"ai-btn claude-btn\" onclick=\"window.__openInClaude()\" title=\"Open in Claude\">' +\n        '<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm2.07-7.75l-.9.92C11.45 10.9 11 11.5 11 13H9v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H6c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z\" fill=\"currentColor\"/></svg>' +\n        'Claude' +\n      '</button>' +\n      '<button class=\"ai-btn chatgpt-btn\" onclick=\"window.__openInChatGPT()\" title=\"Open in ChatGPT\">' +\n        '<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z\" fill=\"currentColor\"/></svg>' +\n        'ChatGPT' +\n      '</button>' +\n      '<button class=\"ai-btn gemini-btn\" onclick=\"window.__openInGemini()\" title=\"Open in Gemini\">' +\n        '<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.18 8 12 11.82 4.82 8 12 4.18zM4 9.12l7 3.5V19.5l-7-3.5V9.12zm9 10.38v-6.88l7-3.5v6.88l-7 3.5z\" fill=\"currentColor\"/></svg>' +\n        'Gemini' +\n      '</button>' +\n      '<button class=\"ai-btn md-btn\" onclick=\"window.__viewMarkdown()\" title=\"View as Markdown\">' +\n        '<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M20.56 18H3.44C2.65 18 2 17.37 2 16.59V7.41C2 6.63 2.65 6 3.44 6h17.12c.79 0 1.44.63 1.44 1.41v9.18c0 .78-.65 1.41-1.44 1.41zM6.81 15.19v-3.68l1.83 2.29 1.83-2.29v3.68h1.83V8.81h-1.83l-1.83 2.29-1.83-2.29H5v6.38h1.81zm10.99-3.19h-1.83V8.81h-1.83V12h-1.84l2.75 3.19L17.8 12z\" fill=\"currentColor\"/></svg>' +\n        'Markdown' +\n      '</button>';\n\n    if (h1 && h1.nextSibling) {\n      mainContent.insertBefore(bar, h1.nextSibling);\n    } else {\n      mainContent.insertBefore(bar, mainContent.firstChild);\n    }\n  });\n\n  window.__openInClaude = openInClaude;\n  window.__openInChatGPT = openInChatGPT;\n  window.__openInGemini = openInGemini;\n  window.__viewMarkdown = viewMarkdown;\n})();\n</script>"`
 - `CSS_VARIABLES` = `":root {\n  /* Sidebar */\n  --sidebar-bg: #2E1052;\n  --sidebar-text: #F8F4FD;\n  --sidebar-link-hover: #866BA6;\n  --sidebar-shadow: rgba(0,0,0,.35);\n  --sidebar-input-shadow: rgba(0,0,0,.25);\n  --sidebar-input-focus-shadow: rgba(0,0,0,.5);\n  --sidebar-focus-outline: #D1B7F1;\n  --sidebar-width: 30em;\n\n  /* Project header */\n  --project-name-color: #f4f4f4;\n\n  /* Main content */\n  --body-bg: #FFFFFF;\n  --body-text: #333;\n  --body-font: \"Avenir\", \"Tahoma\", \"Lucida Sans\", \"Lucida Grande\", Verdana, Arial, sans-serif;\n  --link-color: #263F6C;\n  --link-visited: #112750;\n  --heading-color: #444444;\n\n  /* Type name banner */\n  --type-name-color: #47266E;\n  --type-name-bg: #F8F8F8;\n  --type-name-border: #EBEBEB;\n\n  /* Code and signatures */\n  --code-font: Menlo, Monaco, Consolas, 'Courier New', Courier, monospace;\n  --code-bg: rgba(40,35,30,0.05);\n  --pre-bg: #fdfdfd;\n  --pre-border: #eee;\n  --pre-text: #333;\n  --signature-bg: #f8f8f8;\n  --signature-color: #47266E;\n  --signature-border: #f0f0f0;\n  --signature-hover-bg: #D5CAE3;\n  --signature-hover-border: #624288;\n\n  /* Accent colors */\n  --accent-primary: #47266E;\n  --accent-secondary: #624288;\n  --accent-highlight: #D5CAE3;\n  --kind-color: #866BA6;\n\n  /* Inherited methods */\n  --inherited-link: #47266E;\n  --inherited-link-hover: #6C518B;\n  --inherited-tooltip-bg: #D5CAE3;\n\n  /* Syntax highlighting */\n  --syntax-comment: #969896;\n  --syntax-number: #0086b3;\n  --syntax-type: #0086b3;\n  --syntax-string: #183691;\n  --syntax-interpolation: #7f5030;\n  --syntax-keyword: #a71d5d;\n  --syntax-operator: #a71d5d;\n  --syntax-method: #795da3;\n\n  /* Borders */\n  --h2-border: #E6E6E6;\n  --table-border: #eee;\n\n  /* Search results */\n  --search-current-border: #ddd;\n  --search-current-bg: rgba(200,200,200,0.4);\n  --search-args-color: #dddddd;\n\n  /* Permalink */\n  --permalink-color: #624288;\n\n  /* AI buttons */\n  --ai-btn-bg: #f0f0f0;\n  --ai-btn-border: #ddd;\n  --ai-btn-text: #555;\n  --ai-btn-hover-bg: #e0e0e0;\n}\n\n@media (prefers-color-scheme: dark) {\n  :root {\n    --body-bg: #1b1b1b;\n    --body-text: white;\n    --link-color: #8cb4ff;\n    --link-visited: #5f8de3;\n    --heading-color: white;\n    --type-name-color: white;\n    --type-name-bg: #202020;\n    --type-name-border: #353535;\n    --code-bg: #202020;\n    --pre-bg: #202020;\n    --pre-border: #353535;\n    --pre-text: white;\n    --signature-bg: #202020;\n    --signature-color: white;\n    --signature-border: #353535;\n    --signature-hover-bg: #443d4d;\n    --signature-hover-border: #b092d4;\n    --accent-primary: white;\n    --accent-highlight: #443d4d;\n    --kind-color: #b092d4;\n    --inherited-link: #B290D9;\n    --inherited-link-hover: #D4B7F4;\n    --inherited-tooltip-bg: #443d4d;\n    --syntax-comment: #a1a1a1;\n    --syntax-number: #00ade6;\n    --syntax-type: #00ade6;\n    --syntax-string: #7799ff;\n    --syntax-interpolation: #b38668;\n    --syntax-keyword: #ff66ae;\n    --syntax-operator: #ff66ae;\n    --syntax-method: #b9a5d6;\n    --h2-border: #353535;\n    --table-border: #353535;\n    --permalink-color: #b092d4;\n    --ai-btn-bg: #2a2a2a;\n    --ai-btn-border: #444;\n    --ai-btn-text: #ccc;\n    --ai-btn-hover-bg: #3a3a3a;\n  }\n}"`
 
@@ -5826,11 +5826,19 @@ Published agent-oriented resources that ship alongside the generated API documen
 #   
     
   
-Shards
+Ashard
 
 [](https://github.com/crystal-lang/shards/actions?query=workflow:CI+event:push+branch:master)
 
-Dependency manager for the [Crystal language](https://crystal-lang.org).
+Ashard is the public name for this Shards-compatible fork of the
+[Crystal language](https://crystal-lang.org) dependency manager.
+
+The name is meant to read naturally as &quot;a shard&quot;: tooling that wraps around a
+shard, stays compatible with the `Shards` ecosystem, and adds the agent-first
+workflows we want for Amber v2 and the broader amberverse. We may personify the
+name more in the future as the Amber v2 tool family takes shape, but the
+current promise is simple: Ashard should still feel like home to anyone who
+already knows Shards.
 
 ## 
   
@@ -5842,18 +5850,16 @@ Crystal applications and libraries are expected to have a `shard.yml` file
 at their root looking like this:
 
 ```
-name: shards
+name: amberverse_app
 version: 0.1.0
 
 dependencies:
-  openssl:
-    github: datanoise/openssl.cr
-    branch: master
+  amber_support:
+    path: vendors/amber_support
 
 development_dependencies:
-  minitest:
-    git: https://github.com/ysbaddaden/minitest.cr.git
-    version: ~> 0.3.1
+  ashard_spec:
+    path: tools/ashard_spec
 
 license: MIT
 ```
@@ -5871,23 +5877,24 @@ Please see the [SPEC](docs/shard.yml.adoc) for more details about the
   
 Install
 
-Shards is usually distributed with Crystal itself (e.g. Homebrew and Debian
-packages). Alternatively, a `shards` package may be available for your system.
+Upstream Shards is usually distributed with Crystal itself. This fork is
+currently distributed as `shards-alpha` while the public product name remains
+Ashard.
 
 You can download a source tarball from the same page (or clone the repository)
-then run `make release=1`and copy `bin/shards` into your `PATH`. For
+then run `make release=1`and copy `bin/shards-alpha` into your `PATH`. For
 example `/usr/local/bin`.
 
 You are now ready to create a `shard.yml` for your projects (see details in
-[SPEC](docs/shard.yml.adoc)). You can type `shards init` to have an example
+[SPEC](docs/shard.yml.adoc)). You can type `shards-alpha init` to have an example
 `shard.yml` file created for your project.
 
-Run `shards install` to install your dependencies, which will lock your
+Run `shards-alpha install` to install your dependencies, which will lock your
 dependencies into a `shard.lock` file. You should check both `shard.yml` and
-`shard.lock` into version control, so further `shards install` will always
+`shard.lock` into version control, so further `shards-alpha install` will always
 install locked versions, achieving reproducible installations across computers.
 
-Run `shards --help` to list other commands with their options.
+Run `shards-alpha --help` to list other commands with their options.
 
 Happy Hacking!
 
@@ -5906,6 +5913,19 @@ product story we should publish is:
 - Ashard is the public project name
 
 - `shards-alpha` is the current compatibility-preserving binary/package name
+
+More specifically:
+
+- Ashard is intended to read as &quot;a shard&quot; in ordinary English
+
+- The name signals tooling that sits around a shard instead of replacing the
+shard ecosystem with a separate one
+
+- The codebase still exposes the `Shards` namespace because compatibility is
+the contract
+
+- Over time we may personify the name more, alongside the rest of the Amber v2
+tooling family, for people building inside the amberverse
 
 For the docs publishing story, see
 [docs/crystal-docs-gap-analysis.md](docs/crystal-docs-gap-analysis.md). It
@@ -5936,12 +5956,13 @@ and CI workflow, including `make compatibility`.
   
     
   
-Shards-Alpha Features
+Ashard Features
 
-Shards-alpha extends the standard Crystal dependency manager with features
+Ashard currently ships as the `shards-alpha` binary and extends the standard
+Crystal dependency manager with features
 for AI-assisted development. It distributes AI documentation and MCP server
 configurations alongside library code, so consuming projects get everything
-they need from `shards install`.
+they need from `shards-alpha install`.
 
 ### 
   
@@ -5954,8 +5975,8 @@ commands) that are automatically installed into the consumer's `.claude/`
 directory with shard-namespaced paths.
 
 ```
-shards install          # AI docs are installed alongside dependencies
-shards ai-docs          # Check status of installed AI documentation
+shards-alpha install          # AI docs are installed alongside dependencies
+shards-alpha ai-docs          # Check status of installed AI documentation
 ```
 
 Auto-detected locations in each dependency:
@@ -5988,8 +6009,8 @@ When you run `shards update` and a dependency version changes:
 - Locally modified files (checksums differ) are preserved — the new upstream version is saved as `&lt;file&gt;.upstream` so you can merge manually
 
 This means you can safely customize AI docs from your dependencies without
-losing changes on update. Use `shards ai-docs diff &lt;shard&gt;` to compare
-your modifications against upstream, or `shards ai-docs reset &lt;shard&gt;` to
+losing changes on update. Use `shards-alpha ai-docs diff &lt;shard&gt;` to compare
+your modifications against upstream, or `shards-alpha ai-docs reset &lt;shard&gt;` to
 discard changes and restore the original.
 
 ### 
@@ -6004,11 +6025,11 @@ names are namespaced as `&lt;shard&gt;/&lt;server&gt;` and paths are rewritten
 automatically.
 
 ```
-shards mcp              # Show server status
-shards mcp start        # Start all MCP servers
-shards mcp stop         # Stop all MCP servers
-shards mcp restart      # Restart servers
-shards mcp logs   # Tail server logs
+shards-alpha mcp              # Show server status
+shards-alpha mcp start        # Start all MCP servers
+shards-alpha mcp stop         # Stop all MCP servers
+shards-alpha mcp restart      # Restart servers
+shards-alpha mcp logs   # Tail server logs
 ```
 
 ### 
@@ -6021,8 +6042,8 @@ Postinstall scripts are tracked by content hash. Changed scripts emit a
 warning instead of running automatically, requiring explicit approval:
 
 ```
-shards run-script              # Run all pending postinstall scripts
-shards run-script       # Run for a specific shard
+shards-alpha run-script              # Run all pending postinstall scripts
+shards-alpha run-script       # Run for a specific shard
 ```
 
 ### 
@@ -6034,8 +6055,8 @@ SBOM Generation
 Generate a Software Bill of Materials for your project's dependency tree:
 
 ```
-shards sbom                      # SPDX 2.3 JSON (default)
-shards sbom --format=cyclonedx   # CycloneDX 1.6 JSON
+shards-alpha sbom                      # SPDX 2.3 JSON (default)
+shards-alpha sbom --format=cyclonedx   # CycloneDX 1.6 JSON
 ```
 
 ### 
@@ -6047,7 +6068,7 @@ Documentation Generation
 Generate Crystal API documentation with optional theming:
 
 ```
-shards docs
+shards-alpha docs
 ```
 
 ### 
@@ -6131,14 +6152,14 @@ shards-alpha assistant init --no-settings  # Skip settings.json and CLAUDE.md
 Automatic setup via shard.yml
 
 Projects can opt in to automatic assistant configuration during
-`shards install` by adding an `ai_assistant` section to `shard.yml`:
+`shards-alpha install` by adding an `ai_assistant` section to `shard.yml`:
 
 ```
 ai_assistant:
   auto_install: true
 ```
 
-When enabled, `shards install` will:
+When enabled, `shards-alpha install` will:
 
 - Run `assistant init` if no assistant config exists
 
@@ -6163,7 +6184,8 @@ local modifications are preserved.
   
 Supply Chain Compliance
 
-Shards-alpha includes a suite of supply chain security tools designed for
+Ashard includes a suite of supply chain security tools, currently distributed
+through `shards-alpha`, designed for
 SOC2 and ISO 27001 compliance. These commands can be used individually or
 combined into a unified compliance report.
 
@@ -6180,13 +6202,13 @@ Scan locked dependencies against the [OSV](https://osv.dev/) vulnerability
 database:
 
 ```
-shards audit                        # Colored terminal output
-shards audit --format=json          # Machine-readable JSON
-shards audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
-shards audit --severity=high        # Only show high/critical
-shards audit --fail-above=critical  # Exit 1 only for critical vulns
-shards audit --ignore=GHSA-xxxx    # Suppress specific advisories
-shards audit --offline              # Use cached data only
+shards-alpha audit                        # Colored terminal output
+shards-alpha audit --format=json          # Machine-readable JSON
+shards-alpha audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
+shards-alpha audit --severity=high        # Only show high/critical
+shards-alpha audit --fail-above=critical  # Exit 1 only for critical vulns
+shards-alpha audit --ignore=GHSA-xxxx     # Suppress specific advisories
+shards-alpha audit --offline              # Use cached data only
 ```
 
 Suppressions can be managed in `.shards-audit-ignore`:
@@ -6203,12 +6225,12 @@ Suppressions can be managed in `.shards-audit-ignore`:
   
 Integrity Verification
 
-Every `shards install` and `shards update` records SHA-256 checksums in
+Every `shards-alpha install` and `shards-alpha update` records SHA-256 checksums in
 `shard.lock`. Subsequent installs verify that installed files match.
 
 ```
-shards install              # Checksums computed and verified automatically
-shards install --skip-verify # Bypass verification (logs a warning)
+shards-alpha install               # Checksums computed and verified automatically
+shards-alpha install --skip-verify # Bypass verification (logs a warning)
 ```
 
 Tampered dependencies produce a clear error:
@@ -6226,13 +6248,13 @@ License Compliance
 List licenses for all locked dependencies with optional policy enforcement:
 
 ```
-shards licenses                     # Colored table
-shards licenses --format=json       # Machine-readable JSON
-shards licenses --format=csv        # CSV export
-shards licenses --format=markdown   # Markdown table
-shards licenses --detect            # Heuristic detection from LICENSE files
-shards licenses --check             # Exit 1 on policy violations
-shards licenses --policy=path.yml   # Use custom license policy
+shards-alpha licenses                     # Colored table
+shards-alpha licenses --format=json       # Machine-readable JSON
+shards-alpha licenses --format=csv        # CSV export
+shards-alpha licenses --format=markdown   # Markdown table
+shards-alpha licenses --detect            # Heuristic detection from LICENSE files
+shards-alpha licenses --check             # Exit 1 on policy violations
+shards-alpha licenses --policy=path.yml   # Use custom license policy
 ```
 
 ### 
@@ -6245,14 +6267,14 @@ Define and enforce rules about what dependencies are allowed in your
 project. Create a `.shards-policy.yml` file:
 
 ```
-shards policy init    # Create a starter policy file
-shards policy check   # Check dependencies against policy
-shards policy show    # Display current policy summary
+shards-alpha policy init    # Create a starter policy file
+shards-alpha policy check   # Check dependencies against policy
+shards-alpha policy show    # Display current policy summary
 ```
 
 Policy rules include source host restrictions, blocked dependencies,
 minimum version requirements, and postinstall script controls. Policies
-are automatically enforced during `shards install` and `shards update`
+are automatically enforced during `shards-alpha install` and `shards-alpha update`
 when a `.shards-policy.yml` file is present.
 
 ### 
@@ -6264,12 +6286,12 @@ Change Audit Trail
 Compare dependency states between lockfile versions:
 
 ```
-shards diff                              # Compare HEAD vs current shard.lock
-shards diff --from=HEAD --to=current     # Same as above (explicit)
-shards diff --from=v1.0.0                # Compare against a git tag
-shards diff --from=old.lock              # Compare against a saved lockfile
-shards diff --format=json                # Machine-readable output
-shards diff --format=markdown            # Markdown table for PR descriptions
+shards-alpha diff                              # Compare HEAD vs current shard.lock
+shards-alpha diff --from=HEAD --to=current     # Same as above (explicit)
+shards-alpha diff --from=v1.0.0                # Compare against a git tag
+shards-alpha diff --from=old.lock              # Compare against a saved lockfile
+shards-alpha diff --format=json                # Machine-readable output
+shards-alpha diff --format=markdown            # Markdown table for PR descriptions
 ```
 
 An audit log is automatically maintained at `.shards/audit/changelog.json`
@@ -6286,12 +6308,12 @@ Generate a unified report combining all compliance data into a single
 document suitable for auditors:
 
 ```
-shards compliance-report                         # JSON (default)
-shards compliance-report --format=html           # Professional HTML report
-shards compliance-report --format=markdown       # Markdown report
-shards compliance-report --output=report.json    # Custom output path
-shards compliance-report --sections=sbom,integrity # Only specific sections
-shards compliance-report --reviewer=security@co.com # Add attestation
+shards-alpha compliance-report                           # JSON (default)
+shards-alpha compliance-report --format=html             # Professional HTML report
+shards-alpha compliance-report --format=markdown         # Markdown report
+shards-alpha compliance-report --output=report.json      # Custom output path
+shards-alpha compliance-report --sections=sbom,integrity # Only specific sections
+shards-alpha compliance-report --reviewer=security@co.com # Add attestation
 ```
 
 The report aggregates SBOM data, vulnerability findings, license inventory,
@@ -6311,7 +6333,7 @@ Developers
   
 Requirements
 
-These requirements are only necessary for compiling Shards.
+These requirements are only necessary for compiling Ashard.
 
 - 
 Crystal
@@ -6340,10 +6362,10 @@ Needed for building manpages.
   
 Getting started
 
-It is strongly recommended to use `make` for building shards and developing it.
+It is strongly recommended to use `make` for building Ashard and developing it.
 The [`Makefile`](./Makefile) contains recipes for compiling and testing.
 
-Run `make bin/shards` to build the binary.
+Run `make bin/shards-alpha` to build the binary.
 
 - `release=1` for a release build (applies optimizations)
 
@@ -6357,7 +6379,7 @@ Run `make test` to run the test suites:
 
 - `make test_unit` runs unit tests (`./spec/unit`)
 
-- `make test_integration` runs integration tests (`./spec/integration`) on `bin/shards`
+- `make test_integration` runs integration tests (`./spec/integration`) on `bin/shards-alpha`
 
 Run `make docs` to build the manpages.
 

@@ -960,6 +960,13 @@
 
 
 <div class="main-content">
+<section class="ashard-story">
+  <h2>Ashard Means "A Shard"</h2>
+  <p><strong>Ashard</strong> is the public name for this Shards-compatible fork. The name is meant to read naturally as <em>"a shard"</em>: a tool that wraps around a shard workflow and makes it more helpful for agent-oriented development.</p>
+  <p>The codebase still exposes the <code>Shards</code> namespace because compatibility is the contract. Public-facing copy uses <strong>Ashard</strong> to describe the additive tooling we are building for Amber v2 and for people working inside the amberverse.</p>
+  <p>We may personify the name more over time as the Amber v2 tool family evolves, but today the practical message is simple: if you know Shards, Ashard should still feel familiar.</p>
+</section>
+
 <div class="docs-resource-bar">
   <span class="ai-label">Docs exports:</span>
   <a class="ai-btn resource-btn" href="index.json">JSON</a>
@@ -968,12 +975,19 @@
   <a class="ai-btn resource-btn" href="agent-files/index.html">Agent Files</a>
 </div>
 
-<h1><a id="shards" class="anchor" href="#shards">  <svg class="octicon-link" aria-hidden="true">
+<h1><a id="ashard" class="anchor" href="#ashard">  <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
-</a>Shards</h1>
+</a>Ashard</h1>
 <p><a href="https://github.com/crystal-lang/shards/actions?query=workflow:CI+event:push+branch:master"><img src="https://github.com/crystal-lang/shards/workflows/CI/badge.svg" alt="CI" /></a></p>
-<p>Dependency manager for the <a href="https://crystal-lang.org">Crystal language</a>.</p>
+<p>Ashard is the public name for this Shards-compatible fork of the
+<a href="https://crystal-lang.org">Crystal language</a> dependency manager.</p>
+<p>The name is meant to read naturally as &quot;a shard&quot;: tooling that wraps around a
+shard, stays compatible with the <code><a href="Shards.html">Shards</a></code> ecosystem, and adds the agent-first
+workflows we want for Amber v2 and the broader amberverse. We may personify the
+name more in the future as the Amber v2 tool family takes shape, but the
+current promise is simple: Ashard should still feel like home to anyone who
+already knows Shards.</p>
 <h2><a id="usage" class="anchor" href="#usage">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -981,18 +995,16 @@
 </a>Usage</h2>
 <p>Crystal applications and libraries are expected to have a <code>shard.yml</code> file
 at their root looking like this:</p>
-<pre><code class="language-yaml">name: shards
+<pre><code class="language-yaml">name: amberverse_app
 version: 0.1.0
 
 dependencies:
-  openssl:
-    github: datanoise/openssl.cr
-    branch: master
+  amber_support:
+    path: vendors/amber_support
 
 development_dependencies:
-  minitest:
-    git: https://github.com/ysbaddaden/minitest.cr.git
-    version: ~&gt; 0.3.1
+  ashard_spec:
+    path: tools/ashard_spec
 
 license: MIT</code></pre>
 <p>When libraries are installed from Git repositories, the repository is expected
@@ -1005,19 +1017,20 @@ prefixed with a <code>v</code>. Examples: <code>v1.2.3</code>, <code>v2.0.0-rc1<
     <use href="#octicon-link"/>
   </svg>
 </a>Install</h2>
-<p>Shards is usually distributed with Crystal itself (e.g. Homebrew and Debian
-packages). Alternatively, a <code>shards</code> package may be available for your system.</p>
+<p>Upstream Shards is usually distributed with Crystal itself. This fork is
+currently distributed as <code>shards-alpha</code> while the public product name remains
+<strong>Ashard</strong>.</p>
 <p>You can download a source tarball from the same page (or clone the repository)
-then run <code>make release=1</code>and copy <code>bin/shards</code> into your <code>PATH</code>. For
+then run <code>make release=1</code>and copy <code>bin/shards-alpha</code> into your <code>PATH</code>. For
 example <code>/usr/local/bin</code>.</p>
 <p>You are now ready to create a <code>shard.yml</code> for your projects (see details in
-<a href="docs/shard.yml.adoc">SPEC</a>). You can type <code>shards init</code> to have an example
+<a href="docs/shard.yml.adoc">SPEC</a>). You can type <code>shards-alpha init</code> to have an example
 <code>shard.yml</code> file created for your project.</p>
-<p>Run <code>shards install</code> to install your dependencies, which will lock your
+<p>Run <code>shards-alpha install</code> to install your dependencies, which will lock your
 dependencies into a <code>shard.lock</code> file. You should check both <code>shard.yml</code> and
-<code>shard.lock</code> into version control, so further <code>shards install</code> will always
+<code>shard.lock</code> into version control, so further <code>shards-alpha install</code> will always
 install locked versions, achieving reproducible installations across computers.</p>
-<p>Run <code>shards --help</code> to list other commands with their options.</p>
+<p>Run <code>shards-alpha --help</code> to list other commands with their options.</p>
 <p>Happy Hacking!</p>
 <h2><a id="public-name" class="anchor" href="#public-name">
   <svg class="octicon-link" aria-hidden="true">
@@ -1031,6 +1044,16 @@ product story we should publish is:</p>
 <ul>
 <li><strong>Ashard</strong> is the public project name</li>
 <li><strong><code>shards-alpha</code></strong> is the current compatibility-preserving binary/package name</li>
+</ul>
+<p>More specifically:</p>
+<ul>
+<li><strong>Ashard</strong> is intended to read as &quot;a shard&quot; in ordinary English</li>
+<li>The name signals tooling that sits around a shard instead of replacing the
+shard ecosystem with a separate one</li>
+<li>The codebase still exposes the <code><a href="Shards.html">Shards</a></code> namespace because compatibility is
+the contract</li>
+<li>Over time we may personify the name more, alongside the rest of the Amber v2
+tooling family, for people building inside the amberverse</li>
 </ul>
 <p>For the docs publishing story, see
 <a href="docs/crystal-docs-gap-analysis.md">docs/crystal-docs-gap-analysis.md</a>. It
@@ -1052,15 +1075,16 @@ additional tooling on top.</p>
 or release-facing changes as safe. See
 <a href="docs/upstream-compatibility.md">docs/upstream-compatibility.md</a> for the local
 and CI workflow, including <code>make compatibility</code>.</p>
-<h2><a id="shards-alpha-features" class="anchor" href="#shards-alpha-features">
+<h2><a id="ashard-features" class="anchor" href="#ashard-features">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
-</a>Shards-Alpha Features</h2>
-<p>Shards-alpha extends the standard Crystal dependency manager with features
+</a>Ashard Features</h2>
+<p>Ashard currently ships as the <code>shards-alpha</code> binary and extends the standard
+Crystal dependency manager with features
 for AI-assisted development. It distributes AI documentation and MCP server
 configurations alongside library code, so consuming projects get everything
-they need from <code>shards install</code>.</p>
+they need from <code>shards-alpha install</code>.</p>
 <h3><a id="ai-documentation-distribution" class="anchor" href="#ai-documentation-distribution">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1069,8 +1093,8 @@ they need from <code>shards install</code>.</p>
 <p>Shard authors can ship AI context files (<code>CLAUDE.md</code>, skills, agents,
 commands) that are automatically installed into the consumer's <code>.claude/</code>
 directory with shard-namespaced paths.</p>
-<pre><code class="language-sh">shards install          # AI docs are installed alongside dependencies
-shards ai-docs          # Check status of installed AI documentation</code></pre>
+<pre><code class="language-sh">shards-alpha install          # AI docs are installed alongside dependencies
+shards-alpha ai-docs          # Check status of installed AI documentation</code></pre>
 <p>Auto-detected locations in each dependency:</p>
 <p>| Shard path | Installed as |
 |---|---|
@@ -1096,8 +1120,8 @@ shards ai-docs          # Check status of installed AI documentation</code></pre
 <li><strong>Locally modified files</strong> (checksums differ) are preserved — the new upstream version is saved as <code>&lt;file&gt;.upstream</code> so you can merge manually</li>
 </ul>
 <p>This means you can safely customize AI docs from your dependencies without
-losing changes on update. Use <code>shards ai-docs diff &lt;shard&gt;</code> to compare
-your modifications against upstream, or <code>shards ai-docs reset &lt;shard&gt;</code> to
+losing changes on update. Use <code>shards-alpha ai-docs diff &lt;shard&gt;</code> to compare
+your modifications against upstream, or <code>shards-alpha ai-docs reset &lt;shard&gt;</code> to
 discard changes and restore the original.</p>
 <h3><a id="mcp-server-distribution-lifecycle" class="anchor" href="#mcp-server-distribution-lifecycle">
   <svg class="octicon-link" aria-hidden="true">
@@ -1108,11 +1132,11 @@ discard changes and restore the original.</p>
 merged into a project-level <code>.mcp-shards.json</code> during install. Server
 names are namespaced as <code>&lt;shard&gt;/&lt;server&gt;</code> and paths are rewritten
 automatically.</p>
-<pre><code class="language-sh">shards mcp              # Show server status
-shards mcp start        # Start all MCP servers
-shards mcp stop         # Stop all MCP servers
-shards mcp restart      # Restart servers
-shards mcp logs &lt;name&gt;  # Tail server logs</code></pre>
+<pre><code class="language-sh">shards-alpha mcp              # Show server status
+shards-alpha mcp start        # Start all MCP servers
+shards-alpha mcp stop         # Stop all MCP servers
+shards-alpha mcp restart      # Restart servers
+shards-alpha mcp logs &lt;name&gt;  # Tail server logs</code></pre>
 <h3><a id="postinstall-script-tracking" class="anchor" href="#postinstall-script-tracking">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1120,23 +1144,23 @@ shards mcp logs &lt;name&gt;  # Tail server logs</code></pre>
 </a>Postinstall Script Tracking</h3>
 <p>Postinstall scripts are tracked by content hash. Changed scripts emit a
 warning instead of running automatically, requiring explicit approval:</p>
-<pre><code class="language-sh">shards run-script              # Run all pending postinstall scripts
-shards run-script &lt;shard&gt;      # Run for a specific shard</code></pre>
+<pre><code class="language-sh">shards-alpha run-script              # Run all pending postinstall scripts
+shards-alpha run-script &lt;shard&gt;      # Run for a specific shard</code></pre>
 <h3><a id="sbom-generation" class="anchor" href="#sbom-generation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>SBOM Generation</h3>
 <p>Generate a Software Bill of Materials for your project's dependency tree:</p>
-<pre><code class="language-sh">shards sbom                      # SPDX 2.3 JSON (default)
-shards sbom --format=cyclonedx   # CycloneDX 1.6 JSON</code></pre>
+<pre><code class="language-sh">shards-alpha sbom                      # SPDX 2.3 JSON (default)
+shards-alpha sbom --format=cyclonedx   # CycloneDX 1.6 JSON</code></pre>
 <h3><a id="documentation-generation" class="anchor" href="#documentation-generation">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
   </svg>
 </a>Documentation Generation</h3>
 <p>Generate Crystal API documentation with optional theming:</p>
-<pre><code class="language-sh">shards docs</code></pre>
+<pre><code class="language-sh">shards-alpha docs</code></pre>
 <h3><a id="for-shard-authors" class="anchor" href="#for-shard-authors">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1195,10 +1219,10 @@ shards-alpha assistant init --no-settings  # Skip settings.json and CLAUDE.md</c
   </svg>
 </a>Automatic setup via shard.yml</h4>
 <p>Projects can opt in to automatic assistant configuration during
-<code>shards install</code> by adding an <code>ai_assistant</code> section to <code>shard.yml</code>:</p>
+<code>shards-alpha install</code> by adding an <code>ai_assistant</code> section to <code>shard.yml</code>:</p>
 <pre><code class="language-yaml">ai_assistant:
   auto_install: true</code></pre>
-<p>When enabled, <code>shards install</code> will:</p>
+<p>When enabled, <code>shards-alpha install</code> will:</p>
 <ul>
 <li>Run <code>assistant init</code> if no assistant config exists</li>
 <li>Run <code>assistant update</code> if the installed version is older than the binary</li>
@@ -1218,7 +1242,8 @@ local modifications are preserved.</p>
     <use href="#octicon-link"/>
   </svg>
 </a>Supply Chain Compliance</h2>
-<p>Shards-alpha includes a suite of supply chain security tools designed for
+<p>Ashard includes a suite of supply chain security tools, currently distributed
+through <code>shards-alpha</code>, designed for
 SOC2 and ISO 27001 compliance. These commands can be used individually or
 combined into a unified compliance report.</p>
 <p>For detailed usage, examples, and CI/CD integration patterns, see the
@@ -1230,13 +1255,13 @@ combined into a unified compliance report.</p>
 </a>Vulnerability Audit</h3>
 <p>Scan locked dependencies against the <a href="https://osv.dev/">OSV</a> vulnerability
 database:</p>
-<pre><code class="language-sh">shards audit                        # Colored terminal output
-shards audit --format=json          # Machine-readable JSON
-shards audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
-shards audit --severity=high        # Only show high/critical
-shards audit --fail-above=critical  # Exit 1 only for critical vulns
-shards audit --ignore=GHSA-xxxx    # Suppress specific advisories
-shards audit --offline              # Use cached data only</code></pre>
+<pre><code class="language-sh">shards-alpha audit                        # Colored terminal output
+shards-alpha audit --format=json          # Machine-readable JSON
+shards-alpha audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
+shards-alpha audit --severity=high        # Only show high/critical
+shards-alpha audit --fail-above=critical  # Exit 1 only for critical vulns
+shards-alpha audit --ignore=GHSA-xxxx     # Suppress specific advisories
+shards-alpha audit --offline              # Use cached data only</code></pre>
 <p>Suppressions can be managed in <code>.shards-audit-ignore</code>:</p>
 <pre><code class="language-yaml">- id: GHSA-xxxx-yyyy-zzzz
   reason: &quot;Not applicable: we don't use the affected code path&quot;
@@ -1246,10 +1271,10 @@ shards audit --offline              # Use cached data only</code></pre>
     <use href="#octicon-link"/>
   </svg>
 </a>Integrity Verification</h3>
-<p>Every <code>shards install</code> and <code>shards update</code> records SHA-256 checksums in
+<p>Every <code>shards-alpha install</code> and <code>shards-alpha update</code> records SHA-256 checksums in
 <code>shard.lock</code>. Subsequent installs verify that installed files match.</p>
-<pre><code class="language-sh">shards install              # Checksums computed and verified automatically
-shards install --skip-verify # Bypass verification (logs a warning)</code></pre>
+<pre><code class="language-sh">shards-alpha install               # Checksums computed and verified automatically
+shards-alpha install --skip-verify # Bypass verification (logs a warning)</code></pre>
 <p>Tampered dependencies produce a clear error:</p>
 <pre><code class="language-crystal"><span class="t">E</span>: <span class="t">Checksum</span> mismatch <span class="k">for</span> web: expected sha256<span class="n">:abc123</span>... got sha256<span class="n">:def456</span>...</code></pre>
 <h3><a id="license-compliance" class="anchor" href="#license-compliance">
@@ -1258,13 +1283,13 @@ shards install --skip-verify # Bypass verification (logs a warning)</code></pre>
   </svg>
 </a>License Compliance</h3>
 <p>List licenses for all locked dependencies with optional policy enforcement:</p>
-<pre><code class="language-sh">shards licenses                     # Colored table
-shards licenses --format=json       # Machine-readable JSON
-shards licenses --format=csv        # CSV export
-shards licenses --format=markdown   # Markdown table
-shards licenses --detect            # Heuristic detection from LICENSE files
-shards licenses --check             # Exit 1 on policy violations
-shards licenses --policy=path.yml   # Use custom license policy</code></pre>
+<pre><code class="language-sh">shards-alpha licenses                     # Colored table
+shards-alpha licenses --format=json       # Machine-readable JSON
+shards-alpha licenses --format=csv        # CSV export
+shards-alpha licenses --format=markdown   # Markdown table
+shards-alpha licenses --detect            # Heuristic detection from LICENSE files
+shards-alpha licenses --check             # Exit 1 on policy violations
+shards-alpha licenses --policy=path.yml   # Use custom license policy</code></pre>
 <h3><a id="dependency-policy" class="anchor" href="#dependency-policy">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1272,12 +1297,12 @@ shards licenses --policy=path.yml   # Use custom license policy</code></pre>
 </a>Dependency Policy</h3>
 <p>Define and enforce rules about what dependencies are allowed in your
 project. Create a <code>.shards-policy.yml</code> file:</p>
-<pre><code class="language-sh">shards policy init    # Create a starter policy file
-shards policy check   # Check dependencies against policy
-shards policy show    # Display current policy summary</code></pre>
+<pre><code class="language-sh">shards-alpha policy init    # Create a starter policy file
+shards-alpha policy check   # Check dependencies against policy
+shards-alpha policy show    # Display current policy summary</code></pre>
 <p>Policy rules include source host restrictions, blocked dependencies,
 minimum version requirements, and postinstall script controls. Policies
-are automatically enforced during <code>shards install</code> and <code>shards update</code>
+are automatically enforced during <code>shards-alpha install</code> and <code>shards-alpha update</code>
 when a <code>.shards-policy.yml</code> file is present.</p>
 <h3><a id="change-audit-trail" class="anchor" href="#change-audit-trail">
   <svg class="octicon-link" aria-hidden="true">
@@ -1285,12 +1310,12 @@ when a <code>.shards-policy.yml</code> file is present.</p>
   </svg>
 </a>Change Audit Trail</h3>
 <p>Compare dependency states between lockfile versions:</p>
-<pre><code class="language-sh">shards diff                              # Compare HEAD vs current shard.lock
-shards diff --from=HEAD --to=current     # Same as above (explicit)
-shards diff --from=v1.0.0                # Compare against a git tag
-shards diff --from=old.lock              # Compare against a saved lockfile
-shards diff --format=json                # Machine-readable output
-shards diff --format=markdown            # Markdown table for PR descriptions</code></pre>
+<pre><code class="language-sh">shards-alpha diff                              # Compare HEAD vs current shard.lock
+shards-alpha diff --from=HEAD --to=current     # Same as above (explicit)
+shards-alpha diff --from=v1.0.0                # Compare against a git tag
+shards-alpha diff --from=old.lock              # Compare against a saved lockfile
+shards-alpha diff --format=json                # Machine-readable output
+shards-alpha diff --format=markdown            # Markdown table for PR descriptions</code></pre>
 <p>An audit log is automatically maintained at <code>.shards/audit/changelog.json</code>
 with timestamped entries for every <code>install</code> and <code>update</code> that modifies
 the lock file.</p>
@@ -1301,12 +1326,12 @@ the lock file.</p>
 </a>Compliance Report</h3>
 <p>Generate a unified report combining all compliance data into a single
 document suitable for auditors:</p>
-<pre><code class="language-sh">shards compliance-report                         # JSON (default)
-shards compliance-report --format=html           # Professional HTML report
-shards compliance-report --format=markdown       # Markdown report
-shards compliance-report --output=report.json    # Custom output path
-shards compliance-report --sections=sbom,integrity # Only specific sections
-shards compliance-report --reviewer=security@co.com # Add attestation</code></pre>
+<pre><code class="language-sh">shards-alpha compliance-report                           # JSON (default)
+shards-alpha compliance-report --format=html             # Professional HTML report
+shards-alpha compliance-report --format=markdown         # Markdown report
+shards-alpha compliance-report --output=report.json      # Custom output path
+shards-alpha compliance-report --sections=sbom,integrity # Only specific sections
+shards-alpha compliance-report --reviewer=security@co.com # Add attestation</code></pre>
 <p>The report aggregates SBOM data, vulnerability findings, license inventory,
 policy compliance status, integrity verification, and change history into a
 single document with an executive summary and overall pass/fail status.
@@ -1321,7 +1346,7 @@ Reports are automatically archived to <code>.shards/audit/reports/</code>.</p>
     <use href="#octicon-link"/>
   </svg>
 </a>Requirements</h3>
-<p>These requirements are only necessary for compiling Shards.</p>
+<p>These requirements are only necessary for compiling Ashard.</p>
 <ul>
 <li>
 <p>Crystal</p>
@@ -1346,9 +1371,9 @@ Please adjust the path per your Homebrew installation.</p>
     <use href="#octicon-link"/>
   </svg>
 </a>Getting started</h3>
-<p>It is strongly recommended to use <code>make</code> for building shards and developing it.
+<p>It is strongly recommended to use <code>make</code> for building Ashard and developing it.
 The <a href="./Makefile"><code>Makefile</code></a> contains recipes for compiling and testing.</p>
-<p>Run <code>make bin/shards</code> to build the binary.</p>
+<p>Run <code>make bin/shards-alpha</code> to build the binary.</p>
 <ul>
 <li><code>release=1</code> for a release build (applies optimizations)</li>
 <li><code>static=1</code> for static linking (only works with musl-libc)</li>
@@ -1358,7 +1383,7 @@ The <a href="./Makefile"><code>Makefile</code></a> contains recipes for compilin
 <p>Run <code>make test</code> to run the test suites:</p>
 <ul>
 <li><code>make test_unit</code> runs unit tests (<code>./spec/unit</code>)</li>
-<li><code>make test_integration</code> runs integration tests (<code>./spec/integration</code>) on <code>bin/shards</code></li>
+<li><code>make test_integration</code> runs integration tests (<code>./spec/integration</code>) on <code>bin/shards-alpha</code></li>
 </ul>
 <p>Run <code>make docs</code> to build the manpages.</p>
 <h3><a id="devenv" class="anchor" href="#devenv">
