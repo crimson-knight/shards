@@ -37,7 +37,6 @@ jobs:
       - name: Build docs site
         env:
           DOCS_PROJECT_NAME: Ashard
-          DOCS_PROJECT_VERSION: ${{ github.event_name == 'release' && github.ref_name || 'alpha' }}
           DOCS_SOURCE_REFNAME: ${{ github.ref_name }}
           DOCS_CANONICAL_BASE_URL: https://crimson-knight.github.io/shards
           DOCS_BASE_PATH: /shards
