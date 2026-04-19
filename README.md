@@ -56,6 +56,22 @@ Run `shards --help` to list other commands with their options.
 
 Happy Hacking!
 
+## Compatibility Promise
+
+This repository has two operating modes:
+
+- `master` mirrors upstream `crystal-lang/shards`
+- `alpha` carries additive tooling currently distributed as `shards-alpha`
+
+The goal is not to replace core Shards behavior. The goal is to stay
+compatible with normal `shards` dependency-management workflows while layering
+additional tooling on top.
+
+We now validate that promise against `amber_cli` before treating upstream syncs
+or release-facing changes as safe. See
+[docs/upstream-compatibility.md](docs/upstream-compatibility.md) for the local
+and CI workflow, including `make compatibility`.
+
 ## Shards-Alpha Features
 
 Shards-alpha extends the standard Crystal dependency manager with features

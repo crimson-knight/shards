@@ -12,6 +12,8 @@
 ##   $ make test skip_fossil=1
 ## Generate docs
 ##   $ make docs
+## Validate compatibility with amber_cli
+##   $ make compatibility
 ## Install shards-alpha
 ##   $ make install
 ## Uninstall shards-alpha
@@ -62,6 +64,10 @@ include docs.mk
 
 .PHONY: build
 build: bin/shards-alpha$(EXE)
+
+.PHONY: compatibility
+compatibility: ## Validate amber_cli compatibility
+	./scripts/validate_amber_cli_compatibility.sh
 
 .PHONY: clean
 clean: ## Remove build artifacts
