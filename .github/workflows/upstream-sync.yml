@@ -241,9 +241,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          # Download the new alpha tarball and compute SHA
-          curl -sL "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz" \
-            -o /tmp/alpha.tar.gz
+          # Pin the formula to the exact pushed commit so Homebrew never sees a
+          # moving branch archive with a fixed SHA.
+          ARCHIVE_URL="https://github.com/crimson-knight/shards/archive/${{ steps.push_alpha.outputs.new_head }}.tar.gz"
+          curl -sL "$ARCHIVE_URL" -o /tmp/alpha.tar.gz
           NEW_SHA256=$(sha256sum /tmp/alpha.tar.gz | awk '{print $1}')
           VERSION=${{ steps.push_alpha.outputs.version }}
 
@@ -256,7 +257,7 @@ jobs:
           class ShardsAlpha < Formula
             desc "Crystal Shards fork with supply chain compliance, AI assistant config, and AI docs"
             homepage "https://github.com/crimson-knight/shards"
-            url "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz"
+            url "$ARCHIVE_URL"
             version "$VERSION"
             sha256 "$NEW_SHA256"
             license "Apache-2.0"
@@ -278,12 +279,12 @@ jobs:
           ENCODED=$(echo -n "$FORMULA" | base64 -w 0)
 
           gh api -X PUT repos/crimson-knight/homebrew-tap/contents/Formula/shards-alpha.rb \
-            -f message="Update formula to alpha branch (v$VERSION)" \
+            -f message="Update formula to alpha commit ${{ steps.push_alpha.outputs.new_head }} (v$VERSION)" \
             -f content="$ENCODED" \
             -f sha="$FORMULA_SHA" \
             --silent
 
-          echo "Homebrew formula updated to alpha branch v$VERSION (sha256: $NEW_SHA256)"
+          echo "Homebrew formula updated to alpha commit ${{ steps.push_alpha.outputs.new_head }} v$VERSION (sha256: $NEW_SHA256)"
 
       # ── Step 7: Notification ────────────────────────────────────────
       - name: Post success notification
