@@ -23,11 +23,6 @@ license: MIT
 homepage: https://github.com/nobodywasishere/mcprotocol
 repository: https://github.com/nobodywasishere/mcprotocol
 
-development_dependencies:
-  crygen:
-    github: tamdaz/crygen
-    branch: main
-
 targets:
   mcprotocol:
     main: src/mcprotocol.cr

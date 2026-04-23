@@ -1,0 +1,120 @@
+:root {
+  --sidebar-bg: #0b1f33;
+  --sidebar-text: #eef6ff;
+  --sidebar-link-hover: #66c7c0;
+  --sidebar-focus-outline: #f4b860;
+  --sidebar-shadow: rgba(3, 10, 18, 0.5);
+
+  --project-name-color: #fff7ea;
+
+  --body-bg: #fcfaf4;
+  --body-text: #203040;
+  --body-font: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --link-color: #0c6b74;
+  --link-visited: #0b5260;
+  --heading-color: #13202b;
+
+  --type-name-color: #8f4d17;
+  --type-name-bg: #fff4df;
+  --type-name-border: #f0d4ad;
+
+  --code-font: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --code-bg: rgba(12, 107, 116, 0.08);
+  --pre-bg: #fffdf8;
+  --pre-border: #eadfcf;
+  --pre-text: #243442;
+  --signature-bg: #fff7ea;
+  --signature-color: #8f4d17;
+  --signature-border: #ecd8b8;
+  --signature-hover-bg: #ffe4bf;
+  --signature-hover-border: #cc7a2f;
+
+  --accent-primary: #8f4d17;
+  --accent-secondary: #0c6b74;
+  --accent-highlight: #ffe4bf;
+  --kind-color: #1b7f87;
+
+  --inherited-link: #8f4d17;
+  --inherited-link-hover: #b66419;
+  --inherited-tooltip-bg: #ffe9c8;
+
+  --syntax-comment: #7d8b95;
+  --syntax-number: #0c6b74;
+  --syntax-type: #06616a;
+  --syntax-string: #8f4d17;
+  --syntax-interpolation: #a23d32;
+  --syntax-keyword: #8a2c54;
+  --syntax-operator: #8a2c54;
+  --syntax-method: #245a92;
+
+  --h2-border: #e8dfd1;
+  --table-border: #e8dfd1;
+  --permalink-color: #cc7a2f;
+
+  --ai-btn-bg: #fff7ea;
+  --ai-btn-border: #ecd8b8;
+  --ai-btn-text: #203040;
+  --ai-btn-hover-bg: #ffe4bf;
+}
+
+body {
+  letter-spacing: 0.01em;
+}
+
+.sidebar {
+  background-image:
+    radial-gradient(circle at top, rgba(102, 199, 192, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(244, 184, 96, 0.12), transparent 24%);
+}
+
+.main-content {
+  background-image: linear-gradient(180deg, rgba(255, 244, 223, 0.45), transparent 22%);
+}
+
+.project-summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body-bg: #11161b;
+    --body-text: #ebf1f5;
+    --heading-color: #f8fbff;
+    --link-color: #7dd9d0;
+    --link-visited: #63bbb6;
+    --type-name-color: #ffd49b;
+    --type-name-bg: #1c2630;
+    --type-name-border: #32404c;
+    --code-bg: #172028;
+    --pre-bg: #151d25;
+    --pre-border: #32404c;
+    --pre-text: #edf5fa;
+    --signature-bg: #172028;
+    --signature-color: #ffd49b;
+    --signature-border: #32404c;
+    --signature-hover-bg: #253443;
+    --signature-hover-border: #f4b860;
+    --accent-primary: #ffd49b;
+    --accent-secondary: #7dd9d0;
+    --accent-highlight: #253443;
+    --kind-color: #7dd9d0;
+    --inherited-link: #ffd49b;
+    --inherited-link-hover: #ffbf72;
+    --inherited-tooltip-bg: #253443;
+    --syntax-comment: #8ba0ae;
+    --syntax-number: #7dd9d0;
+    --syntax-type: #63bbb6;
+    --syntax-string: #ffbf72;
+    --syntax-interpolation: #ff8f70;
+    --syntax-keyword: #ff8fc1;
+    --syntax-operator: #ff8fc1;
+    --syntax-method: #94c8ff;
+    --h2-border: #32404c;
+    --table-border: #32404c;
+    --permalink-color: #f4b860;
+    --ai-btn-bg: #172028;
+    --ai-btn-border: #32404c;
+    --ai-btn-text: #ebf1f5;
+    --ai-btn-hover-bg: #253443;
+  }
+}

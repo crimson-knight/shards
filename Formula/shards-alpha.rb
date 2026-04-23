@@ -1,8 +1,9 @@
 class ShardsAlpha < Formula
   desc "Crystal Shards fork with supply chain compliance, MCP server, and AI docs"
   homepage "https://github.com/crimson-knight/shards"
-  url "https://github.com/crimson-knight/shards/archive/refs/tags/v2025.11.25.2.tar.gz"
-  sha256 "8514e3cac54a07a8c8eeecf3af996bb5c81b65f266f2e4da4512d0d659a870c2"
+  url "https://github.com/crimson-knight/shards/archive/refs/tags/v2025.11.25.4.tar.gz"
+  version "2025.11.25.4"
+  sha256 "13a347c8b5462ef70f7c30770e13e694dd0e00fad4954d06d3d288ad52657b9b"
   license "Apache-2.0"
 
   depends_on "crystal"
@@ -13,6 +14,6 @@ class ShardsAlpha < Formula
   end
 
   test do
-    assert_match "shards-alpha", shell_output("#{bin}/shards-alpha --version")
+    assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
   end
 end

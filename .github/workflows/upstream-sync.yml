@@ -203,9 +203,27 @@ jobs:
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOFREP" >> $GITHUB_OUTPUT
 
+      - name: Install Crystal
+        if: steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true'
+        uses: oprypin/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Validate amber_cli compatibility
+        if: steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true'
+        id: compatibility
+        continue-on-error: true
+        env:
+          AMBER_CLI_REF: main
+        run: |
+          set -o pipefail
+          ./scripts/validate_amber_cli_compatibility.sh | tee /tmp/compatibility.log
+
       # ── Step 5: Push rebased alpha ──────────────────────────────────
       - name: Push alpha
-        if: steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true'
+        if: >-
+          (steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true') &&
+          steps.compatibility.outcome == 'success'
         id: push_alpha
         run: |
           git push origin alpha --force-with-lease
@@ -223,9 +241,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          # Download the new alpha tarball and compute SHA
-          curl -sL "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz" \
-            -o /tmp/alpha.tar.gz
+          # Pin the formula to the exact pushed commit so Homebrew never sees a
+          # moving branch archive with a fixed SHA.
+          ARCHIVE_URL="https://github.com/crimson-knight/shards/archive/${{ steps.push_alpha.outputs.new_head }}.tar.gz"
+          curl -sL "$ARCHIVE_URL" -o /tmp/alpha.tar.gz
           NEW_SHA256=$(sha256sum /tmp/alpha.tar.gz | awk '{print $1}')
           VERSION=${{ steps.push_alpha.outputs.version }}
 
@@ -238,7 +257,7 @@ jobs:
           class ShardsAlpha < Formula
             desc "Crystal Shards fork with supply chain compliance, AI assistant config, and AI docs"
             homepage "https://github.com/crimson-knight/shards"
-            url "https://github.com/crimson-knight/shards/archive/refs/heads/alpha.tar.gz"
+            url "$ARCHIVE_URL"
             version "$VERSION"
             sha256 "$NEW_SHA256"
             license "Apache-2.0"
@@ -251,7 +270,7 @@ jobs:
             end
 
             test do
-              assert_match "shards-alpha", shell_output("#{bin}/shards-alpha --version")
+              assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
             end
           end
           FORMULA_EOF
@@ -260,18 +279,19 @@ jobs:
           ENCODED=$(echo -n "$FORMULA" | base64 -w 0)
 
           gh api -X PUT repos/crimson-knight/homebrew-tap/contents/Formula/shards-alpha.rb \
-            -f message="Update formula to alpha branch (v$VERSION)" \
+            -f message="Update formula to alpha commit ${{ steps.push_alpha.outputs.new_head }} (v$VERSION)" \
             -f content="$ENCODED" \
             -f sha="$FORMULA_SHA" \
             --silent
 
-          echo "Homebrew formula updated to alpha branch v$VERSION (sha256: $NEW_SHA256)"
+          echo "Homebrew formula updated to alpha commit ${{ steps.push_alpha.outputs.new_head }} v$VERSION (sha256: $NEW_SHA256)"
 
       # ── Step 7: Notification ────────────────────────────────────────
       - name: Post success notification
         if: >-
           steps.check.outputs.has_changes == 'true' &&
-          (steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true')
+          (steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true') &&
+          steps.compatibility.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -303,11 +323,13 @@ jobs:
           ### What happened
           1. Master was fast-forwarded to upstream crystal-lang/shards
           2. Alpha branch was rebased onto the updated master
-          3. All changes pushed and Homebrew formula updated
+          3. amber_cli compatibility validation passed
+          4. All changes pushed and Homebrew formula updated
 
           RESOLUTION_DETAILS_PLACEHOLDER
 
           ### Verification
+          - [x] `./scripts/validate_amber_cli_compatibility.sh`
           - [ ] `brew upgrade shards-alpha` installs the new version
           - [ ] `shards-alpha assistant status` works correctly
           - [ ] `shards-alpha audit` works correctly
@@ -317,6 +339,45 @@ jobs:
           ISSUE_EOF
           )" | sed "s/RESOLUTION_METHOD_PLACEHOLDER/$RESOLUTION_METHOD/" \
              | sed "s|RESOLUTION_DETAILS_PLACEHOLDER|$RESOLUTION_DETAILS|"
+
+      - name: Post compatibility failure notification
+        if: >-
+          steps.check.outputs.has_changes == 'true' &&
+          (steps.rebase.outputs.clean == 'true' || steps.claude_resolve.outputs.resolved == 'true') &&
+          steps.compatibility.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Upstream sync BLOCKED: amber_cli compatibility failed" \
+            --label "upstream-sync,needs-intervention" \
+            --assignee "crimson-knight" \
+            --body "$(cat <<'ISSUE_EOF'
+          ## Upstream Sync — Compatibility Gate Failed
+
+          **Status:** Blocked before push
+          **Upstream commits:** ${{ steps.check.outputs.commit_count }}
+
+          ### Upstream changes
+          ```
+          ${{ steps.check.outputs.summary }}
+          ```
+
+          ### What happened
+          1. Master was fast-forwarded to upstream crystal-lang/shards
+          2. Alpha was rebased successfully
+          3. `./scripts/validate_amber_cli_compatibility.sh` failed
+          4. Alpha was **not** pushed and the Homebrew formula was **not** updated
+
+          ### Manual follow-up
+          - Inspect the workflow logs for the compatibility step
+          - Reproduce locally with `AMBER_CLI_PATH=../amber_cli make compatibility`
+          - Fix the regression before re-running upstream sync
+
+          ---
+          *Automated by upstream-sync workflow*
+          ISSUE_EOF
+          )"
 
       - name: Post failure notification
         if: >-

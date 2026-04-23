@@ -1,4 +1,5 @@
 require "json"
+require "file_utils"
 require "./command"
 require "../helpers"
 
@@ -12,6 +13,8 @@ module Shards
     # - Add "Open in AI" buttons (Claude, ChatGPT, Gemini) to each page
     # - Generate parallel Markdown files for AI consumption
     class Docs < Command
+      alias AgentFileEntry = NamedTuple(source: String, output: String, category: String, title: String)
+
       CSS_VARIABLES = <<-CSS
       :root {
         /* Sidebar */
@@ -181,6 +184,49 @@ module Shards
       .ai-btn.chatgpt-btn:hover { border-color: #10A37F; }
       .ai-btn.gemini-btn:hover { border-color: #4285F4; }
       .ai-btn.md-btn:hover { border-color: var(--accent-secondary, #624288); }
+      .docs-resource-bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 0 0 16px;
+        flex-wrap: wrap;
+      }
+      .docs-resource-bar .resource-btn:hover {
+        border-color: var(--accent-secondary, #624288);
+      }
+      .ashard-story {
+        margin: 0 0 18px;
+        padding: 16px 18px;
+        border: 1px solid rgba(98, 66, 136, 0.16);
+        border-radius: 14px;
+        background:
+          linear-gradient(135deg, rgba(238, 231, 248, 0.95), rgba(248, 244, 253, 0.95)),
+          radial-gradient(circle at top right, rgba(98, 66, 136, 0.12), transparent 42%);
+        box-shadow: 0 18px 40px rgba(71, 38, 110, 0.08);
+      }
+      .ashard-story h2 {
+        margin: 0 0 10px;
+        padding: 0;
+        border: 0;
+      }
+      .ashard-story p {
+        margin: 0 0 10px;
+      }
+      .ashard-story p:last-child {
+        margin-bottom: 0;
+      }
+      .ashard-story code {
+        font-size: .95em;
+      }
+      @media (prefers-color-scheme: dark) {
+        .ashard-story {
+          border-color: rgba(176, 146, 212, 0.22);
+          background:
+            linear-gradient(135deg, rgba(42, 31, 58, 0.95), rgba(28, 24, 36, 0.96)),
+            radial-gradient(circle at top right, rgba(176, 146, 212, 0.15), transparent 42%);
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+        }
+      }
       CSS
 
       AI_BUTTONS_JS = <<-'JS'
@@ -293,6 +339,8 @@ module Shards
       def run(args : Array(String))
         output_dir = "docs"
         skip_ai_buttons = false
+        skip_agent_files = false
+        skip_llms = false
         crystal_args = [] of String
 
         args.each do |arg|
@@ -300,8 +348,18 @@ module Shards
           when "--output", "-o"
             # handled by next arg via crystal docs passthrough
             crystal_args << arg
+          when .starts_with?("--output=")
+            output_dir = arg.lchop("--output=")
+            crystal_args << arg
+          when .starts_with?("-o")
+            output_dir = arg.lchop("-o")
+            crystal_args << arg
           when "--skip-ai-buttons"
             skip_ai_buttons = true
+          when "--skip-agent-files"
+            skip_agent_files = true
+          when "--skip-llms"
+            skip_llms = true
           else
             if crystal_args.last? == "--output" || crystal_args.last? == "-o"
               output_dir = arg
@@ -334,6 +392,12 @@ module Shards
 
         # Generate markdown files from HTML
         generate_markdown_files(output_dir)
+        inject_resource_links(output_dir)
+        inject_brand_story(output_dir)
+
+        agent_files = [] of AgentFileEntry
+        agent_files = copy_agent_files(output_dir) unless skip_agent_files
+        generate_llms_exports(output_dir, agent_files) unless skip_llms
 
         Log.info { "Documentation generated in #{output_dir}/" }
       end
@@ -376,6 +440,59 @@ module Shards
         end
       end
 
+      private def inject_resource_links(output_dir : String)
+        Dir.glob(File.join(output_dir, "**", "*.html")).each do |html_path|
+          content = File.read(html_path)
+          relative_prefix = relative_root_prefix(output_dir, html_path)
+          resource_bar = <<-HTML
+          <div class="docs-resource-bar">
+            <span class="ai-label">Docs exports:</span>
+            <a class="ai-btn resource-btn" href="#{relative_prefix}index.json">JSON</a>
+            <a class="ai-btn resource-btn" href="#{relative_prefix}llms.txt">llms.txt</a>
+            <a class="ai-btn resource-btn" href="#{relative_prefix}llms-full.txt">llms-full.txt</a>
+            <a class="ai-btn resource-btn" href="#{relative_prefix}agent-files/index.html">Agent Files</a>
+          </div>
+          HTML
+
+          if content.includes?(resource_bar)
+            next
+          elsif content.includes?("<div class=\"main-content\">")
+            content = content.sub("<div class=\"main-content\">", "<div class=\"main-content\">\n#{resource_bar}\n")
+          elsif content.includes?("</body>")
+            content = content.sub("</body>", "#{resource_bar}\n</body>")
+          end
+
+          File.write(html_path, content)
+        end
+      end
+
+      private def inject_brand_story(output_dir : String)
+        story = <<-HTML
+        <section class="ashard-story">
+          <h2>Ashard Means "A Shard"</h2>
+          <p><strong>Ashard</strong> is the public name for this Shards-compatible fork. The name is meant to read naturally as <em>"a shard"</em>: a tool that wraps around a shard workflow and makes it more helpful for agent-oriented development.</p>
+          <p>The codebase still exposes the <code>Shards</code> namespace because compatibility is the contract. Public-facing copy uses <strong>Ashard</strong> to describe the additive tooling we are building for Amber v2 and for people working inside the amberverse.</p>
+          <p>We may personify the name more over time as the Amber v2 tool family evolves, but today the practical message is simple: if you know Shards, Ashard should still feel familiar.</p>
+        </section>
+        HTML
+
+        %w[index.html Shards.html toplevel.html].each do |relative_path|
+          html_path = File.join(output_dir, relative_path)
+          next unless File.exists?(html_path)
+
+          content = File.read(html_path)
+          next if content.includes?(story)
+
+          if content.includes?("<div class=\"main-content\">")
+            content = content.sub("<div class=\"main-content\">", "<div class=\"main-content\">\n#{story}\n")
+          elsif content.includes?("</body>")
+            content = content.sub("</body>", "#{story}\n</body>")
+          end
+
+          File.write(html_path, content)
+        end
+      end
+
       private def generate_markdown_files(output_dir : String)
         # Read the JSON index for type info
         json_path = File.join(output_dir, "index.json")
@@ -408,6 +525,200 @@ module Shards
 
         md_count = Dir.glob(File.join(output_dir, "**", "*.md")).size
         Log.info { "Generated #{md_count} markdown files for AI consumption" }
+      end
+
+      private def copy_agent_files(output_dir : String)
+        agent_output_dir = File.join(output_dir, "agent-files")
+        entries = [] of AgentFileEntry
+
+        copy_agent_path(entries, File.join(path, ".claude", "CLAUDE.md"), agent_output_dir, "claude/CLAUDE.md", "context")
+        copy_agent_tree(entries, File.join(path, ".claude", "agents"), agent_output_dir, "claude/agents", "agent")
+        copy_agent_tree(entries, File.join(path, ".claude", "skills"), agent_output_dir, "claude/skills", "skill")
+        copy_agent_tree(entries, File.join(path, ".claude", "commands"), agent_output_dir, "claude/commands", "command")
+        copy_agent_path(entries, File.join(path, ".claude", "settings.json"), agent_output_dir, "claude/settings.json", "settings")
+        copy_agent_path(entries, File.join(path, ".mcp.json"), agent_output_dir, "mcp.json", "mcp_config")
+
+        if entries.empty?
+          Log.info { "No agent resource files found to publish" }
+        else
+          generate_agent_indexes(agent_output_dir, entries)
+          Log.info { "Copied #{entries.size} agent resource files" }
+        end
+
+        entries
+      end
+
+      private def copy_agent_tree(entries, source_root : String, output_dir : String, destination_root : String, category : String)
+        return unless Dir.exists?(source_root)
+
+        Dir.glob(File.join(source_root, "**", "*")).sort.each do |source|
+          next unless File.file?(source)
+
+          relative = relative_to(source_root, source)
+          next if relative.empty?
+
+          copy_agent_path(entries, source, output_dir, File.join(destination_root, relative), category)
+        end
+      end
+
+      private def copy_agent_path(entries, source : String, output_dir : String, destination_relative : String, category : String)
+        return unless File.exists?(source)
+
+        destination = File.join(output_dir, destination_relative)
+        Dir.mkdir_p(File.dirname(destination))
+        FileUtils.cp(source, destination)
+
+        entries << {
+          source:   source,
+          output:   normalize_path(destination_relative),
+          category: category,
+          title:    File.basename(destination_relative),
+        }
+      end
+
+      private def generate_agent_indexes(agent_output_dir : String, entries)
+        project_name = read_project_name(File.dirname(agent_output_dir))
+        sorted_entries = entries.sort_by { |entry| {entry[:category], entry[:output]} }
+
+        File.write(File.join(agent_output_dir, "index.json"), JSON.build do |json|
+          json.object do
+            json.field "project_name", project_name
+            json.field "generated_at", Time.utc.to_s("%FT%TZ")
+            json.field "files" do
+              json.array do
+                sorted_entries.each do |entry|
+                  json.object do
+                    json.field "category", entry[:category]
+                    json.field "title", entry[:title]
+                    json.field "path", entry[:output]
+                    json.field "source", normalize_path(relative_to(path, entry[:source]))
+                  end
+                end
+              end
+            end
+          end
+        end)
+
+        markdown = String.build do |md|
+          md << "# Agent Files\n\n"
+          md << "Published agent-oriented resources that ship alongside the generated API documentation.\n\n"
+          sorted_entries.each do |entry|
+            md << "- **#{entry[:category]}**: [#{entry[:output]}](#{entry[:output]})\n"
+          end
+        end
+        File.write(File.join(agent_output_dir, "index.md"), markdown)
+
+        html = String.build do |io|
+          io << <<-HTML
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Agent Files - #{project_name}</title>
+            <link rel="stylesheet" href="../css/style.css">
+          </head>
+          <body>
+            <div class="main-content">
+              <div class="docs-resource-bar">
+                <a class="ai-btn resource-btn" href="../index.html">Back to Docs</a>
+                <a class="ai-btn resource-btn" href="index.json">JSON Manifest</a>
+                <a class="ai-btn resource-btn" href="index.md">Markdown Index</a>
+              </div>
+              <h1 class="type-name">Agent Files</h1>
+              <p>Published agent-oriented resources that ship alongside the generated API documentation.</p>
+              <ul>
+          HTML
+
+          sorted_entries.each do |entry|
+            io << %(<li><strong>#{entry[:category]}</strong>: <a href="#{entry[:output]}">#{entry[:output]}</a></li>\n)
+          end
+
+          io << <<-HTML
+              </ul>
+            </div>
+          </body>
+          </html>
+          HTML
+        end
+        File.write(File.join(agent_output_dir, "index.html"), html)
+      end
+
+      private def generate_llms_exports(output_dir : String, agent_files)
+        project_name = read_project_name(output_dir)
+        markdown_files = Dir.glob(File.join(output_dir, "**", "*.md"))
+          .map { |path| normalize_path(relative_to(output_dir, path)) }
+          .reject { |path| path.in?({"llms.txt", "llms-full.txt", "llms.json"}) }
+          .sort
+
+        llms_json = JSON.build do |json|
+          json.object do
+            json.field "project_name", project_name
+            json.field "generated_at", Time.utc.to_s("%FT%TZ")
+            json.field "html_entrypoint", "index.html"
+            json.field "json_entrypoint", "index.json"
+            json.field "markdown_entrypoints" do
+              json.array do
+                %w[index.md Shards.md toplevel.md agent-files/index.md].each do |entrypoint|
+                  json.string entrypoint if markdown_files.includes?(entrypoint)
+                end
+              end
+            end
+            json.field "markdown_files" do
+              json.array do
+                markdown_files.each { |file| json.string file }
+              end
+            end
+            json.field "agent_files" do
+              json.array do
+                agent_files.each do |entry|
+                  json.object do
+                    json.field "category", entry[:category]
+                    json.field "title", entry[:title]
+                    json.field "path", entry[:output]
+                  end
+                end
+              end
+            end
+          end
+        end
+        File.write(File.join(output_dir, "llms.json"), llms_json)
+
+        llms_index = String.build do |txt|
+          txt << "# #{project_name}\n\n"
+          txt << "Machine-readable documentation generated from Crystal Docs.\n\n"
+          txt << "Primary files:\n"
+          txt << "- /index.html\n"
+          txt << "- /index.json\n"
+          txt << "- /llms.json\n"
+          txt << "- /llms-full.txt\n"
+          txt << "- /agent-files/index.html\n" unless agent_files.empty?
+          txt << "\nPrimary markdown entry points:\n"
+          %w[index.md Shards.md toplevel.md agent-files/index.md].each do |entrypoint|
+            txt << "- /#{entrypoint}\n" if markdown_files.includes?(entrypoint)
+          end
+          txt << "\nAdditional markdown pages:\n"
+          markdown_files.each do |file|
+            next if file.in?({"index.md", "Shards.md", "toplevel.md", "agent-files/index.md"})
+            txt << "- /#{file}\n"
+          end
+        end
+        File.write(File.join(output_dir, "llms.txt"), llms_index)
+
+        llms_full = String.build do |txt|
+          txt << "# #{project_name} documentation export\n\n"
+          txt << "Generated from Crystal Docs HTML/JSON plus the parallel markdown files emitted by `shards docs`.\n"
+          txt << "Source manifest: /llms.json\n\n"
+
+          markdown_files.each do |file|
+            txt << "## /#{file}\n\n"
+            txt << File.read(File.join(output_dir, file))
+            txt << "\n\n"
+          end
+        end
+        File.write(File.join(output_dir, "llms-full.txt"), llms_full)
+
+        Log.info { "Generated llms.txt, llms-full.txt, and llms.json" }
       end
 
       private def generate_type_markdown(type_json : JSON::Any, output_dir : String, project_name : String)
@@ -546,6 +857,38 @@ module Shards
           .gsub("&gt;", ">")
           .gsub("&quot;", "\"")
           .gsub("&#39;", "'")
+      end
+
+      private def read_project_name(output_dir : String) : String
+        json_path = File.join(output_dir, "index.json")
+        return "project" unless File.exists?(json_path)
+
+        JSON.parse(File.read(json_path))["repository_name"]?.try(&.as_s?) || "project"
+      rescue
+        "project"
+      end
+
+      private def relative_to(base : String, target : String) : String
+        normalized_base = normalize_path(base).rchop("/")
+        normalized_target = normalize_path(target)
+
+        if normalized_target.starts_with?("#{normalized_base}/")
+          normalized_target.byte_slice(normalized_base.bytesize + 1, normalized_target.bytesize - normalized_base.bytesize - 1)
+        else
+          normalized_target
+        end
+      end
+
+      private def normalize_path(path : String) : String
+        path.gsub('\\', '/')
+      end
+
+      private def relative_root_prefix(output_dir : String, file_path : String) : String
+        dirname = File.dirname(relative_to(output_dir, file_path))
+        return "" if dirname == "."
+
+        segments = normalize_path(dirname).split('/').reject(&.empty?)
+        "#{"../" * segments.size}"
       end
     end
   end

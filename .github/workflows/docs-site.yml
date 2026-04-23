@@ -1,0 +1,84 @@
+name: Docs Site
+
+on:
+  push:
+    branches: [alpha]
+  pull_request:
+    branches: [alpha]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-site
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Build docs site
+        env:
+          DOCS_PROJECT_NAME: Ashard
+          DOCS_SOURCE_REFNAME: ${{ github.ref_name }}
+          DOCS_CANONICAL_BASE_URL: https://crimson-knight.github.io/shards
+          DOCS_BASE_PATH: /shards
+        run: ./scripts/build_docs_site.sh
+
+      - name: Publish docs to gh-pages
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          temp_dir="$(mktemp -d)"
+
+          if git ls-remote --exit-code origin gh-pages >/dev/null 2>&1; then
+            git worktree add "$temp_dir" origin/gh-pages
+          else
+            git worktree add --detach "$temp_dir"
+            (
+              cd "$temp_dir"
+              git checkout --orphan gh-pages
+            )
+          fi
+
+          find "$temp_dir" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R site/. "$temp_dir"/
+          touch "$temp_dir/.nojekyll"
+
+          (
+            cd "$temp_dir"
+            git add --all
+
+            if git diff --cached --quiet; then
+              echo "No docs changes to publish"
+              exit 0
+            fi
+
+            git commit -m "Deploy docs for ${GITHUB_SHA}"
+            git push origin HEAD:gh-pages
+          )
+
+          git worktree remove "$temp_dir" --force
