@@ -14,6 +14,6 @@ class ShardsAlpha < Formula
   end
 
   test do
-    assert_match "shards-alpha", shell_output("#{bin}/shards-alpha --version")
+    assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
   end
 end
