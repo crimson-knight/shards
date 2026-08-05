@@ -125,6 +125,7 @@ module Shards
   class_property? skip_ai_docs = false
   class_property? skip_ai_assistant = false
   class_property? skip_verify = false
+  class_property? checksum_warn = false
 
   class_property jobs : Int32 = 8
 

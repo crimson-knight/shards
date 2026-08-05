@@ -97,6 +97,9 @@ module Shards
       opts.on("--skip-verify", "Skip checksum verification during install.") do
         self.skip_verify = true
       end
+      opts.on("--checksum-warn", "Warn instead of failing when an installed dependency's checksum differs from shard.lock.") do
+        self.checksum_warn = true
+      end
       opts.on("--local", "Don't update remote repositories, use the local cache only.") { self.local = true }
       opts.on("--jobs=N", "Number of repository downloads to perform in parallel (default: 8). Currently only for git.") { |n| self.jobs = n.to_i }
       # TODO: remove in the future

@@ -73,6 +73,54 @@ describe "checksum pinning" do
     end
   end
 
+  # Ordering matters more than the check itself. Verification used to run after
+  # `install(packages)`, which is the loop that executes every dependency's
+  # postinstall script. A mismatch was therefore reported only after the
+  # attacker's code had already run. These specs pin the ordering, not just the
+  # outcome: `made.txt` is the marker that the `post` fixture's script ran, so
+  # its ABSENCE is the actual assertion.
+  it "fails BEFORE running a dependency's postinstall script when the checksum does not match" do
+    with_shard({dependencies: {post: "*"}}) do
+      run "shards install"
+      File.exists?(install_path("post", "made.txt")).should be_true
+
+      # Force a mismatch and a reinstall.
+      lock_content = File.read("shard.lock")
+      File.write("shard.lock", lock_content.gsub(/checksum: sha256:[0-9a-f]+/,
+        "checksum: sha256:#{"0" * 64}"))
+      Shards::Helpers.rm_rf(File.join("lib", "post"))
+      File.delete(File.join("lib", ".shards.info")) if File.exists?(File.join("lib", ".shards.info"))
+
+      ex = expect_raises(FailedCommand) { run "shards install --no-color" }
+      (ex.stdout + ex.stderr).should contain("Checksum verification failed")
+
+      # The whole point: the script must NOT have run.
+      File.exists?(install_path("post", "made.txt")).should be_false
+    end
+  end
+
+  it "--checksum-warn downgrades a mismatch to a warning and proceeds" do
+    with_shard({dependencies: {post: "*"}}) do
+      run "shards install"
+
+      lock_content = File.read("shard.lock")
+      File.write("shard.lock", lock_content.gsub(/checksum: sha256:[0-9a-f]+/,
+        "checksum: sha256:#{"0" * 64}"))
+      Shards::Helpers.rm_rf(File.join("lib", "post"))
+      File.delete(File.join("lib", ".shards.info")) if File.exists?(File.join("lib", ".shards.info"))
+      # `.shards.postinstall` records that this script already ran for this
+      # package; without clearing it the reinstall skips the script and the
+      # marker below would be missing for a reason unrelated to checksums.
+      postinstall_info = File.join("lib", ".shards.postinstall")
+      File.delete(postinstall_info) if File.exists?(postinstall_info)
+
+      output = run "shards install --no-color --checksum-warn"
+      output.should contain("Checksum mismatch for post")
+      assert_installed "post", "0.1.0"
+      File.exists?(install_path("post", "made.txt")).should be_true
+    end
+  end
+
   it "old lockfile without checksums gets upgraded" do
     metadata = {
       dependencies: {web: "*"},
