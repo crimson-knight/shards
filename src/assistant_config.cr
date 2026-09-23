@@ -106,7 +106,13 @@ module Shards
       end
 
       latest = AssistantVersions.latest_version
-      if info.installed_version == latest && !force
+      current_files = AssistantVersions.current_files
+      obsolete_files = info.files.keys.select do |relative_path|
+        !current_files.has_key?(relative_path) &&
+          info.components.fetch(component_for(relative_path), true)
+      end
+
+      if info.installed_version == latest && !force && obsolete_files.empty?
         puts "Assistant config is up to date (version #{latest})."
         return
       end
@@ -119,14 +125,11 @@ module Shards
 
       files_to_write = filter_by_components(changed_files, info.components)
 
-      if files_to_write.empty?
-        puts "No files to update."
-        return
-      end
-
       updated = [] of String
       skipped = [] of String
       upstream_saved = [] of String
+      removed = [] of String
+      obsolete_kept = [] of String
 
       files_to_write.each do |relative_path, content|
         full_path = File.join(path, relative_path)
@@ -170,6 +173,26 @@ module Shards
         updated << relative_path
       end
 
+      obsolete_files.each do |relative_path|
+        full_path = File.join(path, relative_path)
+        next unless File.exists?(full_path)
+
+        tracked_checksum = info.files[relative_path]?
+        disk_checksum = AIDocsInfo.checksum_file(full_path)
+        if tracked_checksum && tracked_checksum == disk_checksum
+          if dry_run
+            puts "  remove: #{relative_path}"
+          else
+            File.delete(full_path)
+            cleanup_empty_parent_dirs(full_path, File.expand_path(File.join(path, ".claude")))
+          end
+          removed << relative_path
+        else
+          Log.warn { "Keeping locally modified obsolete assistant file #{relative_path}; it is no longer shipped. Remove it manually when ready." }
+          obsolete_kept << relative_path
+        end
+      end
+
       unless dry_run
         # Update MCP config if component is enabled
         if info.components.fetch("mcp", true)
@@ -177,9 +200,8 @@ module Shards
         end
 
         # Rebuild all checksums from current state
-        all_files = AssistantVersions.current_files
         file_checksums = {} of String => String
-        filter_by_components(all_files, info.components).each do |relative_path, content|
+        filter_by_components(current_files, info.components).each do |relative_path, content|
           full_path = File.join(path, relative_path)
           if File.exists?(full_path)
             # Use the expected content checksum for files we wrote,
@@ -202,9 +224,10 @@ module Shards
 
       if dry_run
         puts ""
-        puts "Dry run: #{updated.size} file(s) would be updated, #{skipped.size} skipped (modified locally)."
+        puts "Dry run: #{updated.size} file(s) would be updated, #{removed.size} obsolete file(s) would be removed, #{skipped.size + obsolete_kept.size} skipped (modified locally)."
       else
         puts "Updated #{updated.size} file(s) to version #{latest}."
+        puts "Removed #{removed.size} obsolete file(s)." unless removed.empty?
         unless skipped.empty?
           puts "Skipped #{skipped.size} locally modified file(s):"
           skipped.each { |f| puts "  #{f}" }
@@ -432,6 +455,16 @@ module Shards
         end
       end
       Dir.delete(dir) if Dir.exists?(dir) && Dir.empty?(dir)
+    end
+
+    private def self.cleanup_empty_parent_dirs(path : String, root : String)
+      current = File.dirname(File.expand_path(path))
+      root = File.expand_path(root)
+      while current != root && current.starts_with?(root + File::SEPARATOR)
+        break unless Dir.exists?(current) && Dir.empty?(current)
+        Dir.delete(current)
+        current = File.dirname(current)
+      end
     end
 
     private def self.print_install_summary(installed : Array(String), components : Hash(String, Bool))
