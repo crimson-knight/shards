@@ -78,4 +78,4 @@
       
       
         
-          [[View source](https://github.com/crimson-knight/shards/blob/codex/upstream-compatibility-guardrails/src/build_assistant_versions.cr#L5)]
+          [[View source](https://github.com/crimson-knight/shards/blob/alpha/src/build_assistant_versions.cr#L5)]
