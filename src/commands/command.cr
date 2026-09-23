@@ -4,6 +4,7 @@ require "../override"
 require "../policy"
 require "../policy_checker"
 require "../policy_report"
+require "../pinning"
 
 module Shards
   abstract class Command
@@ -55,7 +56,7 @@ module Shards
       @locks ||= if lockfile?
                    Shards::Lock.from_file(lockfile_path)
                  else
-                   raise Error.new("Missing #{LOCK_FILENAME}. Please run 'shards install'")
+                   raise Error.new("Missing #{LOCK_FILENAME}. Please run 'minecart install'")
                  end
     end
 
@@ -113,7 +114,7 @@ module Shards
     end
 
     protected def check_policy(packages : Array(Package))
-      policy_path = File.join(path, POLICY_FILENAME)
+      policy_path = Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
       return unless File.exists?(policy_path)
 
       Log.info { "Checking dependency policies" }
@@ -127,7 +128,69 @@ module Shards
       end
 
       if report.has_errors?
-        raise Error.new("Policy violations found. Use 'shards policy check' for details.")
+        raise Error.new("Policy violations found. Use 'minecart policy check' for details.")
+      end
+    end
+
+    protected def check_pinning
+      PinningChecker.new(path, spec, Shards.strict_pinning?).check
+    end
+
+    protected def copy_matching_locked_checksums(packages : Array(Package))
+      return unless lockfile?
+
+      previous_packages = locks.shards.to_h { |package| {package.name, package} }
+      packages.each do |package|
+        previous = previous_packages[package.name]?
+        next unless previous
+        next unless previous.resolver == package.resolver && previous.version == package.version
+
+        package.checksum = previous.checksum
+      end
+    end
+
+    protected def verify_checksum_before_scripts(package : Package)
+      return if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+
+      if expected = package.checksum
+        actual = package.compute_checksum
+        unless actual && actual == expected
+          raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
+        end
+        Log.debug { "Checksum verified for #{package.name} before scripts" }
+      else
+        if Shards.frozen?
+          Log.warn { "Dependency '#{package.name}' has no checksum in shard.lock; re-run minecart update (this will become an error next release)" }
+        end
+        if computed = package.computed_checksum
+          package.checksum = computed
+          Log.debug { "Computed checksum for #{package.name}: #{computed}" }
+        end
+      end
+    end
+
+    protected def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new)
+      packages.each do |package|
+        next unless package.installed?
+        next if already_verified.includes?(package.name)
+
+        if Shards.frozen? && package.checksum.nil?
+          Log.warn { "Dependency '#{package.name}' has no checksum in shard.lock; re-run minecart update (this will become an error next release)" }
+        end
+
+        next if !package.spec.scripts["postinstall"]?.nil?
+        next if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+
+        if expected = package.checksum
+          actual = package.compute_checksum
+          unless actual && actual == expected
+            raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
+          end
+          Log.debug { "Checksum verified for #{package.name}" }
+        elsif computed = package.computed_checksum
+          package.checksum = computed
+          Log.debug { "Computed checksum for #{package.name}: #{computed}" }
+        end
       end
     end
   end

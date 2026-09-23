@@ -33,13 +33,13 @@ module Shards
       end
 
       private def policy_file_path : String
-        @policy_path || File.join(path, POLICY_FILENAME)
+        @policy_path || Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
       end
 
       private def load_policy : ::Shards::Policy
         ppath = policy_file_path
         unless File.exists?(ppath)
-          raise Error.new("No policy file found at #{ppath}. Run 'shards policy init' to create one.")
+          raise Error.new("No policy file found at #{ppath}. Run 'minecart policy init' to create one.")
         end
         ::Shards::Policy.from_file(ppath)
       end
@@ -55,7 +55,7 @@ module Shards
       end
 
       private def run_init
-        target = policy_file_path
+        target = @policy_path || Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
         if File.exists?(target)
           raise Error.new("Policy file already exists: #{target}")
         end
@@ -103,6 +103,7 @@ module Shards
         dependencies:
           blocked: []
           minimum_versions: {}
+          require_exact: warn
 
         security:
           require_license: false

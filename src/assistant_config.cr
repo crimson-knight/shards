@@ -412,13 +412,16 @@ module Shards
     end
 
     private def self.find_executable : String
+      if Process.find_executable("minecart")
+        return "minecart"
+      end
       if Process.find_executable("shards-alpha")
         return "shards-alpha"
       end
       if path = Process.executable_path
         return path
       end
-      "shards-alpha"
+      "minecart"
     end
 
     private def self.cleanup_empty_dirs(dir : String)

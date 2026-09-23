@@ -1,6 +1,6 @@
 # 0002. Public Name: Ashard
 
-- Status: Accepted
+- Status: Superseded by [ADR 0003: Public Name: Minecart](0003-public-name-minecart.md)
 - Date: 2026-04-19
 
 ## Context

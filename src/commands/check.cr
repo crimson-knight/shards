@@ -23,7 +23,7 @@ module Shards
           Log.debug { "#{dependency.name}: checking..." }
 
           unless installed?(dependency)
-            raise Error.new("Dependencies aren't satisfied. Install them with 'shards install'")
+            raise Error.new("Dependencies aren't satisfied. Install them with 'minecart install'")
           end
         end
       end

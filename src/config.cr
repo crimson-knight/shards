@@ -6,7 +6,10 @@ module Shards
   SPEC_FILENAME             = "shard.yml"
   LOCK_FILENAME             = "shard.lock"
   OVERRIDE_FILENAME         = "shard.override.yml"
+  MINECART_POLICY_FILENAME  = ".minecart-policy.yml"
   POLICY_FILENAME           = ".shards-policy.yml"
+  MINECART_STATE_DIRECTORY  = ".minecart"
+  LEGACY_STATE_DIRECTORY    = ".shards"
   INSTALL_DIR               = "lib"
   AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
@@ -25,7 +28,41 @@ module Shards
     @@cache_path ||= find_or_create_cache_path
   end
 
+  # Prefer Minecart-owned files when both names exist, while retaining reads
+  # from the legacy shards-alpha filename.
+  def self.config_file_path(directory : String, minecart_name : String, legacy_name : String) : String
+    minecart_path = File.join(directory, minecart_name)
+    return minecart_path if File.exists?(minecart_path)
+
+    legacy_path = File.join(directory, legacy_name)
+    return legacy_path if File.exists?(legacy_path)
+
+    minecart_path
+  end
+
+  # Existing project state stays in `.shards` until a `.minecart` directory is
+  # present. A new project starts in `.minecart`; it wins if both exist.
+  def self.state_directory_path(directory : String) : String
+    minecart_path = File.join(directory, MINECART_STATE_DIRECTORY)
+    return minecart_path if File.exists?(minecart_path)
+
+    legacy_path = File.join(directory, LEGACY_STATE_DIRECTORY)
+    return legacy_path if File.exists?(legacy_path)
+
+    minecart_path
+  end
+
   private def self.find_or_create_cache_path
+    minecart_local_cache = File.join(Dir.current, MINECART_STATE_DIRECTORY)
+    legacy_local_cache = File.join(Dir.current, LEGACY_STATE_DIRECTORY)
+    local_cache = if File.exists?(minecart_local_cache)
+                    minecart_local_cache
+                  elsif File.exists?(legacy_local_cache)
+                    legacy_local_cache
+                  else
+                    minecart_local_cache
+                  end
+
     candidates = {% begin %}
       [
         ENV["SHARDS_CACHE_PATH"]?,
@@ -38,7 +75,7 @@ module Shards
           ENV["HOME"]?.try { |home| File.join(home, ".cache", "shards") },
           ENV["HOME"]?.try { |home| File.join(home, ".cache", ".shards") },
         {% end %}
-        File.join(Dir.current, ".shards"),
+        local_cache,
       ]
     {% end %}
 
@@ -124,8 +161,7 @@ module Shards
   class_property? skip_executables = false
   class_property? skip_ai_docs = false
   class_property? skip_ai_assistant = false
-  class_property? skip_verify = false
-  class_property? checksum_warn = false
+  class_property? strict_pinning = false
 
   class_property jobs : Int32 = 8
 

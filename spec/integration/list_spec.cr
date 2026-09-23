@@ -76,7 +76,7 @@ describe "list" do
     }
     with_shard(metadata) do
       ex = expect_raises(FailedCommand) { run "shards list --no-color" }
-      ex.stdout.should contain("Dependencies aren't satisfied. Install them with 'shards install'")
+      ex.stdout.should contain("Dependencies aren't satisfied. Install them with 'minecart install'")
     end
   end
 

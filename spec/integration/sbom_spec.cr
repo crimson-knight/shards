@@ -20,7 +20,7 @@ describe "sbom" do
       json["documentNamespace"].as_s.should start_with("https://spdx.org/spdxdocs/test-")
 
       # Creation info
-      json["creationInfo"]["creators"].as_a.first.as_s.should start_with("Tool: shards-")
+      json["creationInfo"]["creators"].as_a.first.as_s.should start_with("Tool: minecart-")
       json["creationInfo"]["licenseListVersion"].should eq("3.25")
 
       # Packages

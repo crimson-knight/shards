@@ -120,6 +120,29 @@ module Shards
       Spec.from_file(install_path("library", "shard.yml")).version.should eq(version "0.2.0")
     end
 
+    it "uses the same tree checksum in independent Git caches" do
+      original_cache = Shards.cache_path
+      first_cache = File.join(tmp_path, "tree-cache-one")
+      second_cache = File.join(tmp_path, "tree-cache-two")
+
+      begin
+        target_version = version "0.2.0"
+
+        Shards.cache_path = first_cache
+        first_checksum = GitResolver.new("library", git_url("library")).checksum_for(target_version)
+
+        Shards.cache_path = second_cache
+        second_checksum = GitResolver.new("library", git_url("library")).checksum_for(target_version)
+
+        first_checksum.should eq(second_checksum)
+        first_checksum.should start_with("git-tree:")
+      ensure
+        Shards::Helpers.rm_rf(first_cache)
+        Shards::Helpers.rm_rf(second_cache)
+        Shards.cache_path = original_cache
+      end
+    end
+
     it "origin changed" do
       library = GitResolver.new("library", git_url("library"))
       library.install_sources(version("0.1.2"), install_path("library"))

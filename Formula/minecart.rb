@@ -1,4 +1,4 @@
-class ShardsAlpha < Formula
+class Minecart < Formula
   desc "Crystal Shards fork with supply chain compliance, MCP server, and AI docs"
   homepage "https://github.com/crimson-knight/shards"
   url "https://github.com/crimson-knight/shards/archive/refs/tags/v2025.11.25.4.tar.gz"

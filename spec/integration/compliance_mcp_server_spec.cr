@@ -1,7 +1,7 @@
 require "./spec_helper"
 require "json"
 
-private SHARDS_BIN = File.expand_path("../../bin/shards-alpha", __DIR__)
+private SHARDS_BIN = File.expand_path("../../bin/minecart", __DIR__)
 
 private def send_mcp_messages(messages : Array(String), *, chdir : String = application_path) : Array(JSON::Any)
   input = IO::Memory.new
@@ -61,7 +61,7 @@ end
 describe "MCP compliance server" do
   it "responds to initialize with correct protocol version" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([init_message])
       responses.size.should eq(1)
       result = responses[0]["result"]
@@ -73,7 +73,7 @@ describe "MCP compliance server" do
 
   it "negotiates to client-requested version when supported" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([init_message(version: "2024-11-05")])
       responses.size.should eq(1)
       result = responses[0]["result"]
@@ -83,7 +83,7 @@ describe "MCP compliance server" do
 
   it "negotiates to latest when client requests unknown newer version" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([init_message(version: "2099-01-01")])
       responses.size.should eq(1)
       result = responses[0]["result"]
@@ -93,7 +93,7 @@ describe "MCP compliance server" do
 
   it "returns all 6 tools from tools/list" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([init_message, tools_list_message])
       responses.size.should eq(2)
 
@@ -111,7 +111,7 @@ describe "MCP compliance server" do
 
   it "returns tool schemas with correct structure" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([init_message, tools_list_message])
       tools = responses[1]["result"]["tools"].as_a
 
@@ -125,7 +125,7 @@ describe "MCP compliance server" do
 
   it "executes licenses tool and returns JSON content" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([
         init_message,
         tool_call_message("licenses"),
@@ -148,7 +148,7 @@ describe "MCP compliance server" do
 
   it "executes sbom tool and returns SPDX output" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([
         init_message,
         tool_call_message("sbom"),
@@ -165,7 +165,7 @@ describe "MCP compliance server" do
 
   it "returns error for unknown tool" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([
         init_message,
         tool_call_message("nonexistent_tool"),
@@ -180,7 +180,7 @@ describe "MCP compliance server" do
 
   it "returns error for unknown method" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       msg = {jsonrpc: "2.0", id: 1, method: "resources/list", params: {} of String => String}.to_json
       responses = send_mcp_messages([msg])
       responses.size.should eq(1)
@@ -193,7 +193,7 @@ describe "MCP compliance server" do
 
   it "responds to ping" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       msg = {jsonrpc: "2.0", id: 1, method: "ping", params: nil}.to_json
       responses = send_mcp_messages([msg])
       responses.size.should eq(1)
@@ -203,7 +203,7 @@ describe "MCP compliance server" do
 
   it "includes structuredContent for JSON tool output" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([
         init_message,
         tool_call_message("licenses"),
@@ -218,7 +218,7 @@ describe "MCP compliance server" do
 
   it "includes exit_code in _meta" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages([
         init_message,
         tool_call_message("licenses"),
@@ -230,10 +230,10 @@ describe "MCP compliance server" do
 
   it "shows help with --help flag" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       stdout, _stderr, exit_code = run_mcp_server(["--help"])
       exit_code.should eq(0)
-      stdout.should contain("shards-alpha mcp-server")
+      stdout.should contain("minecart mcp-server")
       stdout.should contain("--interactive")
       stdout.should contain("init")
       stdout.should contain("audit")
@@ -243,7 +243,7 @@ describe "MCP compliance server" do
 
   it "prints startup banner to stderr in stdio mode" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       _stdout, stderr, _exit_code = run_mcp_server([] of String)
       stderr.should contain("shards-compliance MCP server")
       stderr.should contain("Supported MCP versions:")
@@ -254,7 +254,7 @@ describe "MCP compliance server" do
 
   it "returns JSON-RPC parse error for invalid input" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages(["not valid json"])
       responses.size.should eq(1)
 
@@ -266,7 +266,7 @@ describe "MCP compliance server" do
 
   it "returns parse error with null id for malformed JSON" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       responses = send_mcp_messages(["{ broken"])
       responses.size.should eq(1)
       responses[0]["id"].raw.should be_nil
@@ -275,7 +275,7 @@ describe "MCP compliance server" do
 
   it "init creates .mcp.json when none exists" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       File.delete(".mcp.json") if File.exists?(".mcp.json")
 
       stdout, _stderr, exit_code = run_mcp_server(["init"])
@@ -290,7 +290,7 @@ describe "MCP compliance server" do
 
   it "init merges into existing .mcp.json" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       File.write(".mcp.json", %({"mcpServers":{"other":{"command":"node","args":["x"]}}}))
 
       stdout, _stderr, exit_code = run_mcp_server(["init"])
@@ -305,7 +305,7 @@ describe "MCP compliance server" do
 
   it "init is idempotent" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       File.delete(".mcp.json") if File.exists?(".mcp.json")
 
       run_mcp_server(["init"])

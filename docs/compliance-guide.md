@@ -1,6 +1,6 @@
 # Supply Chain Compliance Guide
 
-Shards-alpha provides six supply chain security features that address
+Minecart, formerly distributed as shards-alpha, provides six supply chain security features that address
 SOC2 and ISO 27001 audit requirements. This guide covers each feature
 in detail with usage examples, configuration references, and CI/CD
 integration patterns.
@@ -26,7 +26,7 @@ database. Requires a `shard.lock` file.
 ### Usage
 
 ```sh
-shards audit [options]
+minecart audit [options]
 ```
 
 ### Options
@@ -36,7 +36,7 @@ shards audit [options]
 | `--format=FORMAT` | Output format: `terminal` (default), `json`, `sarif` |
 | `--severity=LEVEL` | Filter by minimum severity: `low`, `medium`, `high`, `critical` |
 | `--ignore=ID[,ID]` | Comma-separated advisory IDs to suppress |
-| `--ignore-file=PATH` | Path to ignore file (default: `.shards-audit-ignore`) |
+| `--ignore-file=PATH` | Path to ignore file (default: `.minecart-audit-ignore`) |
 | `--fail-above=LEVEL` | Only exit 1 for vulnerabilities at or above this severity |
 | `--offline` | Use cached vulnerability data only (no network requests) |
 | `--update-db` | Force a cache refresh before scanning |
@@ -48,7 +48,7 @@ shards audit [options]
 
 ### Ignore File Format
 
-Create `.shards-audit-ignore` in your project root:
+Create `.minecart-audit-ignore` in your project root:
 
 ```yaml
 - id: GHSA-xxxx-yyyy-zzzz
@@ -76,29 +76,27 @@ and other static analysis platforms.
 
 ```sh
 # CI pipeline: fail only on critical vulnerabilities
-shards audit --format=sarif --fail-above=critical > results.sarif
+minecart audit --format=sarif --fail-above=critical > results.sarif
 ```
 
 ---
 
 ## 2. Integrity Verification
 
-SHA-256 checksums are automatically computed and stored in `shard.lock`
-for every installed dependency. This ensures that installed files match
-what was originally locked, protecting against supply chain tampering.
+Minecart stores source checksums in `shard.lock` and verifies them before a
+dependency's postinstall script runs. Git dependencies use the root tree hash
+from the resolved commit's Git object database (`git-tree:<hash>`), so the
+checksum is independent of the installed directory. Path, Mercurial, and Fossil
+dependencies continue to use a deterministic directory `sha256:<hash>`.
 
-### How It Works
+Existing `sha256:` lock entries remain valid. `minecart update` and
+`minecart lock --rekey` convert Git entries to tree checksums. Stock `shards`
+ignores the additive `checksum:` field. In this release,
+`minecart install --frozen` warns when a lock entry has no checksum; a later
+release will make that an error.
 
-1. On `shards install` or `shards update`, a deterministic SHA-256 hash
-   is computed over all source files in each dependency (sorted
-   lexicographically, excluding `.git`, `.hg`, `.fossil`, and `lib`
-   directories).
-2. The checksum is written to `shard.lock` as a `checksum:` field on each
-   dependency entry.
-3. On subsequent `shards install`, the installed files are verified
-   against the stored checksum. A mismatch raises an error.
-4. Old lock files without checksums are transparently upgraded — the first
-   install computes and stores the checksums.
+A mismatch stops installation before postinstall scripts run. Verification
+bypasses are not supported.
 
 ### Lock File Format
 
@@ -108,34 +106,24 @@ shards:
   web:
     git: https://github.com/example/web.git
     version: 1.2.0
-    checksum: sha256:a1b2c3d4e5f6...
+    checksum: git-tree:0123456789abcdef0123456789abcdef01234567
 
-  pg:
-    git: https://github.com/example/pg.git
+  local_tool:
+    path: tools/local_tool
     version: 0.3.0
-    checksum: sha256:f6e5d4c3b2a1...
+    checksum: sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
 ```
-
-### Skipping Verification
-
-```sh
-shards install --skip-verify
-```
-
-This logs a warning and proceeds without checking checksums. Useful for
-development when you've intentionally modified files in `lib/`.
 
 ### Error Output
 
 When a checksum mismatch is detected:
 
 ```
-E: Checksum mismatch for web: expected sha256:a1b2c3... got sha256:x9y8z7...
+E: Checksum verification failed for web
 ```
 
-This indicates the installed files differ from what was originally locked.
-Delete the `lib/` directory and re-run `shards install` to resolve, or
-investigate whether the dependency was tampered with.
+Investigate whether the dependency source or the lock entry changed. For a
+force-pushed Git tag, regenerate the lock only after reviewing the new source.
 
 ---
 
@@ -147,7 +135,7 @@ detection from LICENSE files and policy-based enforcement.
 ### Usage
 
 ```sh
-shards licenses [options]
+minecart licenses [options]
 ```
 
 ### Options
@@ -194,10 +182,10 @@ to identify the license when the `shard.yml` doesn't declare one.
 
 ```sh
 # Generate a license inventory for legal review
-shards licenses --format=csv > licenses.csv
+minecart licenses --format=csv > licenses.csv
 
 # CI check: fail if policy violations are found
-shards licenses --check --policy=.shards-license-policy.yml
+minecart licenses --check --policy=.minecart-license-policy.yml
 ```
 
 ---
@@ -205,22 +193,22 @@ shards licenses --check --policy=.shards-license-policy.yml
 ## 4. Dependency Policy
 
 Define and enforce rules about what dependencies are allowed in your
-project. Policies are automatically checked during `shards install`
-and `shards update` when a `.shards-policy.yml` file exists.
+project. Policies are automatically checked during `minecart install`
+and `minecart update` when a `.minecart-policy.yml` file exists.
 
 ### Usage
 
 ```sh
-shards policy init                  # Create a starter policy file
-shards policy check                 # Check current dependencies
-shards policy check --strict        # Treat warnings as errors
-shards policy check --format=json   # JSON output
-shards policy show                  # Display policy summary
+minecart policy init                  # Create a starter policy file
+minecart policy check                 # Check current dependencies
+minecart policy check --strict        # Treat warnings as errors
+minecart policy check --format=json   # JSON output
+minecart policy show                  # Display policy summary
 ```
 
 ### Policy File Format
 
-The policy file is `.shards-policy.yml` in your project root:
+The policy file is `.minecart-policy.yml` in your project root:
 
 ```yaml
 version: 1
@@ -271,13 +259,13 @@ rules:
 
 ### Policy Enforcement Behavior
 
-- **During install/update**: If `.shards-policy.yml` exists, the policy
+- **During install/update**: If `.minecart-policy.yml` exists, the policy
   is checked after dependency resolution but before installation. Error
   violations block the install. Warning violations are displayed but
   don't block.
 - **No policy file**: Install and update proceed normally with no checks.
   The policy is fully opt-in.
-- **Standalone check**: `shards policy check` evaluates the policy
+- **Standalone check**: `minecart policy check` evaluates the policy
   against the current `shard.lock` without installing anything.
 
 ### Violation Severities
@@ -285,6 +273,26 @@ rules:
 - **Error** — blocks installation (blocked dependencies, denied sources)
 - **Warning** — displayed but doesn't block (missing licenses, postinstall
   script auditing)
+
+---
+
+### Root Dependency Pinning
+
+`minecart install` and `minecart update` warn once for each unpinned runtime
+dependency in the root manifest. They skip development, path, and transitive
+dependencies. Pin an exact version or commit. Exact versions are accepted, with
+an advisory that a commit plus the lock checksum is stronger.
+
+Use `--strict-pinning` to make the warning an error now. A policy file can set
+`rules.dependencies.require_exact` to `true`, `warn`, or `false`; the default is
+`warn` in this release and can be changed to `true` in a later release. A
+library that publishes ranges can set top-level `pinning: library` in
+`shard.yml`; Minecart then warns if `shard.lock` is missing, gitignored, or not
+committed. Stock `shards` ignores the additive key.
+
+Minecart prefers `.minecart-policy.yml`, `.minecart-audit-ignore`,
+`.minecart-license-policy.yml`, and `.minecart/` when both new and legacy
+`.shards-*`/`.shards/` names are present.
 
 ---
 
@@ -297,7 +305,7 @@ maintaining an audit history.
 ### Usage
 
 ```sh
-shards diff [options]
+minecart diff [options]
 ```
 
 ### Options
@@ -348,8 +356,8 @@ Summary: 1 added, 1 updated, 1 removed
 
 ### Automatic Audit Log
 
-Every `shards install` and `shards update` that modifies `shard.lock`
-appends an entry to `.shards/audit/changelog.json`:
+Every `minecart install` and `minecart update` that modifies `shard.lock`
+appends an entry to `.minecart/audit/changelog.json`:
 
 ```json
 {
@@ -376,15 +384,15 @@ The user is detected from `git config user.email`, falling back to the
 
 ```sh
 # What changed since the last release tag?
-shards diff --from=v1.0.0
+minecart diff --from=v1.0.0
 
 # Save current state, make changes, then compare
 cp shard.lock before.lock
-# ... modify shard.yml, run shards install ...
-shards diff --from=before.lock --to=current
+# ... modify shard.yml, run minecart install ...
+minecart diff --from=before.lock --to=current
 
 # Generate a markdown summary for a PR
-shards diff --from=main --format=markdown
+minecart diff --from=main --format=markdown
 ```
 
 ---
@@ -398,7 +406,7 @@ and includes an executive summary with an overall pass/fail status.
 ### Usage
 
 ```sh
-shards compliance-report [options]
+minecart compliance-report [options]
 ```
 
 ### Options
@@ -450,7 +458,7 @@ The report computes an aggregate status:
   "report": {
     "version": "1.0",
     "generated_at": "2026-02-15T10:30:00Z",
-    "generator": "shards-alpha 0.18.0",
+    "generator": "minecart 0.18.0",
     "project": {"name": "my-app", "version": "1.0.0", ...},
     "summary": {
       "total_dependencies": 12,
@@ -483,20 +491,20 @@ systems or PR descriptions.
 ### Report Archiving
 
 Every generated report is automatically copied to
-`.shards/audit/reports/` with a timestamp in the filename, creating
+`.minecart/audit/reports/` with a timestamp in the filename, creating
 a historical record of compliance checks.
 
 ### Examples
 
 ```sh
 # Full compliance report for auditors
-shards compliance-report --format=html --reviewer=security@company.com
+minecart compliance-report --format=html --reviewer=security@company.com
 
 # Minimal report with just SBOM and integrity for a quick check
-shards compliance-report --sections=sbom,integrity
+minecart compliance-report --sections=sbom,integrity
 
 # CI: generate JSON report and archive it as a build artifact
-shards compliance-report --output=compliance-report.json
+minecart compliance-report --output=compliance-report.json
 ```
 
 ---
@@ -516,19 +524,19 @@ jobs:
       - uses: crystal-lang/install-crystal@v1
 
       - name: Install dependencies
-        run: shards install
+        run: minecart install
 
       - name: Vulnerability audit
-        run: shards audit --format=sarif --fail-above=high > audit.sarif
+        run: minecart audit --format=sarif --fail-above=high > audit.sarif
 
       - name: License check
-        run: shards licenses --check
+        run: minecart licenses --check
 
       - name: Policy check
-        run: shards policy check
+        run: minecart policy check
 
       - name: Compliance report
-        run: shards compliance-report --output=compliance-report.json
+        run: minecart compliance-report --output=compliance-report.json
 
       - name: Upload SARIF
         if: always()
@@ -549,7 +557,7 @@ jobs:
 Add dependency change summaries to pull request descriptions:
 
 ```sh
-shards diff --from=main --format=markdown >> pr-body.md
+minecart diff --from=main --format=markdown >> pr-body.md
 ```
 
 ---
@@ -557,35 +565,36 @@ shards diff --from=main --format=markdown >> pr-body.md
 ## Auditor FAQ
 
 **Q: What third-party dependencies do you use?**
-A: Run `shards compliance-report` — the SBOM section lists every
+A: Run `minecart compliance-report` — the SBOM section lists every
 dependency with name, version, license, and source URL in SPDX 2.3
 format.
 
 **Q: Are any of them vulnerable?**
 A: The vulnerability audit section scans all dependencies against
-the OSV database. Run `shards audit --format=json` for detailed
+the OSV database. Run `minecart audit --format=json` for detailed
 findings.
 
 **Q: Are they all properly licensed?**
-A: Run `shards licenses --format=json` for a complete license
+A: Run `minecart licenses --format=json` for a complete license
 inventory. Use `--check` with a policy file for automated compliance
 verification.
 
 **Q: How do you control what enters the codebase?**
-A: The `.shards-policy.yml` file defines allowed sources, blocked
+A: The `.minecart-policy.yml` file defines allowed sources, blocked
 dependencies, and other constraints. Policies are enforced
-automatically during `shards install` and `shards update`.
+automatically during `minecart install` and `minecart update`.
 
 **Q: How do you track dependency changes?**
-A: Every install/update is recorded in `.shards/audit/changelog.json`
-with timestamp, user, and detailed change list. Run `shards diff`
+A: Every install/update is recorded in `.minecart/audit/changelog.json`
+with timestamp, user, and detailed change list. Run `minecart diff`
 to compare any two lockfile states.
 
 **Q: Can you prove dependency integrity?**
-A: SHA-256 checksums in `shard.lock` are verified on every install.
-The compliance report's integrity section shows verification status
-for each dependency.
+A: Git dependencies use the commit's `git-tree:` checksum, and path,
+Mercurial, and Fossil dependencies use directory SHA-256 checksums. Minecart
+verifies them before postinstall scripts. The compliance report's integrity
+section shows verification status for each dependency.
 
 **Q: When was this last reviewed?**
-A: Use `shards compliance-report --reviewer=NAME` to add a timestamped
+A: Use `minecart compliance-report --reviewer=NAME` to add a timestamped
 attestation to the report.

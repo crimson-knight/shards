@@ -8,7 +8,7 @@ module Shards
     # names, runs only those specific scripts.
     #
     # This command exists because postinstall scripts only auto-run on first
-    # install. If a script changes during `shards update`, the user must
+    # install. If a script changes during `minecart update`, the user must
     # explicitly run it with this command.
     class RunScript < Command
       # Runs postinstall scripts for the specified shards, or all pending if none given.

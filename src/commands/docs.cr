@@ -468,11 +468,10 @@ module Shards
 
       private def inject_brand_story(output_dir : String)
         story = <<-HTML
-        <section class="ashard-story">
-          <h2>Ashard Means "A Shard"</h2>
-          <p><strong>Ashard</strong> is the public name for this Shards-compatible fork. The name is meant to read naturally as <em>"a shard"</em>: a tool that wraps around a shard workflow and makes it more helpful for agent-oriented development.</p>
-          <p>The codebase still exposes the <code>Shards</code> namespace because compatibility is the contract. Public-facing copy uses <strong>Ashard</strong> to describe the additive tooling we are building for Amber v2 and for people working inside the amberverse.</p>
-          <p>We may personify the name more over time as the Amber v2 tool family evolves, but today the practical message is simple: if you know Shards, Ashard should still feel familiar.</p>
+        <section class="minecart-story">
+          <h2>Minecart</h2>
+          <p><strong>Minecart</strong> is a drop-in compatible fork of Crystal Shards with additional supply-chain and developer tooling.</p>
+          <p>Minecart was formerly distributed as <code>shards-alpha</code>. The project keeps the upstream Shards workflow and remains compatible with stock <code>shards</code> for dependency management.</p>
         </section>
         HTML
 
@@ -707,7 +706,7 @@ module Shards
 
         llms_full = String.build do |txt|
           txt << "# #{project_name} documentation export\n\n"
-          txt << "Generated from Crystal Docs HTML/JSON plus the parallel markdown files emitted by `shards docs`.\n"
+          txt << "Generated from Crystal Docs HTML/JSON plus the parallel markdown files emitted by `minecart docs`.\n"
           txt << "Source manifest: /llms.json\n\n"
 
           markdown_files.each do |file|

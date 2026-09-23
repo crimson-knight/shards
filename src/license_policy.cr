@@ -1,10 +1,12 @@
 require "yaml"
+require "./config"
 require "./spdx"
 require "./license_scanner"
 
 module Shards
   class LicensePolicy
-    DEFAULT_POLICY_FILENAME = ".shards-license-policy.yml"
+    MINECART_POLICY_FILENAME = ".minecart-license-policy.yml"
+    DEFAULT_POLICY_FILENAME  = ".shards-license-policy.yml"
 
     record PolicyConfig,
       allowed : Set(String),
@@ -54,7 +56,7 @@ module Shards
       overridden : Int32
 
     def self.load_policy(path : String?) : PolicyConfig?
-      actual_path = path || DEFAULT_POLICY_FILENAME
+      actual_path = path || Shards.config_file_path(Dir.current, MINECART_POLICY_FILENAME, DEFAULT_POLICY_FILENAME)
       return nil unless File.exists?(actual_path)
       yaml = YAML.parse(File.read(actual_path))
       policy = yaml["policy"]?
