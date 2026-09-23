@@ -154,6 +154,42 @@ module Shards
         end
       end
 
+      it "does not crash on a broken symlink and hashes its link text" do
+        path = File.tempname("checksum", "test")
+        Dir.mkdir_p(path)
+        begin
+          File.write(File.join(path, "file.txt"), "content")
+          File.symlink("does/not/exist", File.join(path, "dangling"))
+          checksum1 = Checksum.compute(path)
+          checksum1.should start_with("sha256:")
+
+          File.delete(File.join(path, "dangling"))
+          File.symlink("somewhere/else", File.join(path, "dangling"))
+          Checksum.compute(path).should_not eq(checksum1)
+        ensure
+          Shards::Helpers.rm_rf(path)
+        end
+      end
+
+      it "keeps hashing a live symlink by its target content" do
+        path = File.tempname("checksum", "test")
+        linked = File.tempname("checksum", "test")
+        Dir.mkdir_p(path)
+        Dir.mkdir_p(linked)
+        begin
+          File.write(File.join(linked, "real.txt"), "shared content")
+          File.write(File.join(path, "copy.txt"), "shared content")
+          copy_checksum = Checksum.compute(path)
+
+          File.delete(File.join(path, "copy.txt"))
+          File.symlink(File.join(linked, "real.txt"), File.join(path, "copy.txt"))
+          Checksum.compute(path).should eq(copy_checksum)
+        ensure
+          Shards::Helpers.rm_rf(path)
+          Shards::Helpers.rm_rf(linked)
+        end
+      end
+
       it "produces consistent hash for empty directory" do
         path = File.tempname("checksum", "test")
         Dir.mkdir_p(path)

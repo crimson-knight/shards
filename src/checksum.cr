@@ -14,7 +14,7 @@ module Shards
 
       files.each do |relative_path|
         full_path = File.join(path, relative_path)
-        content = File.read(full_path)
+        content = file_content_for_checksum(full_path)
         # Hash: relative_path + NUL + file_size + NUL + content
         digest.update(relative_path)
         digest.update("\0")
@@ -24,6 +24,19 @@ module Shards
       end
 
       "#{ALGORITHM_PREFIX}:#{digest.final.hexstring}"
+    end
+
+    # A symlink whose target is missing cannot be read, and some shards ship
+    # them (sample apps pointing at paths that only exist in the author's
+    # checkout). Hash the link text for those instead of crashing. Symlinks with
+    # a live target keep hashing their content, so existing checksums are
+    # unchanged.
+    private def self.file_content_for_checksum(full_path : String) : String
+      if File.symlink?(full_path) && !File.exists?(full_path)
+        "symlink:#{File.readlink(full_path)}"
+      else
+        File.read(full_path)
+      end
     end
 
     # Verify a checksum against a directory.

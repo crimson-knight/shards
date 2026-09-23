@@ -21,6 +21,12 @@ def create_git_repository(project, *versions)
 
       run "git config user.email author@example.com"
       run "git config user.name Author"
+      # Fixture repos deliberately contain unpinned/ranged dependencies, which
+      # is the whole point of the resolver specs. A developer with a global
+      # core.hooksPath (dependency-pinning or secret-scanning gates) would
+      # otherwise have every fixture commit refused, and the suite would abort
+      # before running a single example.
+      run "git config core.hooksPath #{Process.quote(File.join(git_path(project), ".git", "no-hooks"))}"
     end
   end
 
