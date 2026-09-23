@@ -1,4 +1,4 @@
-require "crygen"
+require "./crygen"
 require "json"
 
 schema = ARGV[0]? || "#{__DIR__}/../schema.json"
@@ -149,7 +149,7 @@ def initialize_method(klass, obj)
     next if prop[:name].in?(required) && !prop[:value]?
 
     prop_name = "@#{prop[:name]}"
-    method.add_arg(prop_name, prop[:type] || "Nil", prop[:value]? || "Nil")
+    method.add_arg(prop_name, prop[:type] || "Nil", prop[:value]? || "nil")
   end
 
   klass.add_method(method)

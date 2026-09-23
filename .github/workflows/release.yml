@@ -83,9 +83,12 @@ jobs:
           fi
 
           cat > release_notes.md <<EOF
-          ## Shards Alpha $VERSION
+          ## Ashard $VERSION
 
-          A fork of [Crystal's Shards](https://github.com/crystal-lang/shards) with alpha features.
+          Ashard is the public name for this
+          [Crystal Shards](https://github.com/crystal-lang/shards)-compatible fork.
+          The current release artifacts and package names still ship as
+          \`shards-alpha\` during the transition.
 
           ### Alpha Features
           - **AI docs distribution**: \`shards install\` copies AI docs from dependencies
@@ -99,6 +102,9 @@ jobs:
           brew tap crimson-knight/tap
           brew install shards-alpha
           \`\`\`
+
+          ### Documentation
+          [https://crimson-knight.github.io/shards](https://crimson-knight.github.io/shards)
 
           ### Install from binary
           Download the archive for your platform and extract \`shards-alpha\` to your PATH.

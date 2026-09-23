@@ -387,15 +387,18 @@ module Shards
 
     # ## Documentation Generation and Theming
     #
-    # The `shards docs` command wraps `crystal docs` to add theming support
-    # and AI assistant integration buttons.
+    # The `shards docs` command wraps `crystal docs` to add theming support,
+    # AI assistant integration buttons, LLM-oriented text exports, and
+    # publishable copies of project agent files.
     #
     # ### Usage
     #
     # ```
-    # shards docs                      # Generate docs with defaults
-    # shards docs --skip-ai-buttons    # No AI buttons
-    # shards docs -o my_docs           # Custom output directory
+    # shards docs                       # Generate docs with defaults
+    # shards docs --skip-ai-buttons     # No AI buttons
+    # shards docs --skip-agent-files    # Do not copy .claude/.mcp resources
+    # shards docs --skip-llms           # Do not generate llms.txt exports
+    # shards docs -o my_docs            # Custom output directory
     # ```
     #
     # All standard `crystal docs` options are passed through.
@@ -437,6 +440,15 @@ module Shards
     # Parallel `.md` files are generated for every HTML page, making
     # the documentation easily consumable by AI coding assistants,
     # CLI tools, and any system that prefers plain text.
+    #
+    # `shards docs` also emits:
+    # - `llms.txt` — concise machine-oriented index of the generated docs
+    # - `llms-full.txt` — concatenated markdown export of the docs set
+    # - `llms.json` — manifest of markdown and agent resources
+    #
+    # If the project contains `.claude/` files or `.mcp.json`, they are copied
+    # into `agent-files/` inside the docs output with HTML/JSON/Markdown indexes
+    # so the published docs site can distribute them directly.
     #
     # See `Commands::Docs`.
     module DocsGeneration

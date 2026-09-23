@@ -29,6 +29,7 @@
 *.exe
 /docs/*.html
 /man/*.gz
+/site/
 
 # CI
 /coverage/
