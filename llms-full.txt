@@ -69,6 +69,10 @@ end`
 
 ### `check_and_install_dependencies(path)`
 
+### `checksum_warn=(checksum_warn)`
+
+### `checksum_warn?`
+
 ### `cli_options`
 
 ### `colors=(colors : Bool)`
