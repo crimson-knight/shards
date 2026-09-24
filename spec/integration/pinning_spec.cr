@@ -18,11 +18,45 @@ describe "root dependency pinning" do
       File.write("shard.yml", File.read("shard.yml") + "pinning: library\n")
 
       output = run "shards install --no-color"
-      output.should contain("W: pinning: library requires a committed shard.lock; shard.lock is missing")
+      output.should contain("W: publishes_version_ranges requires a committed shard.lock; shard.lock is missing")
+      output.should contain("Deprecated shard.yml key pinning: library")
+      output.should contain(".minecart-policy.yml rules.dependencies.publishes_version_ranges: true")
+      output.lines.count(&.includes?("Deprecated shard.yml key pinning: library")).should eq(1)
       output.should_not contain("dependency 'web' is not pinned")
 
       next_output = run "shards install --no-color"
       next_output.should match(/shard\.lock is (not committed|gitignored)/)
+    end
+  end
+
+  it "honors library range publishing from policy and requires a committed lock in strict mode" do
+    metadata = {dependencies: {web: "~> 1.0.0"}}
+    with_shard(metadata) do
+      File.write(".minecart-policy.yml", <<-YAML
+      version: 1
+      rules:
+        dependencies:
+          publishes_version_ranges: true
+      YAML
+      )
+
+      output = run "shards install --no-color"
+      output.should contain("publishes_version_ranges requires a committed shard.lock; shard.lock is missing")
+      output.should_not contain("dependency 'web' is not pinned")
+      output.should_not contain("Deprecated shard.yml key pinning: library")
+
+      ex = expect_raises(FailedCommand) { run "shards --strict-pinning install --no-color" }
+      (ex.stdout + ex.stderr).should contain("publishes_version_ranges requires a committed shard.lock")
+      (ex.stdout + ex.stderr).should match(/shard\.lock is (not committed|gitignored)/)
+    end
+  end
+
+  it "warns about a root version range when no library declaration is set" do
+    metadata = {dependencies: {web: "~> 1.0.0"}}
+    with_shard(metadata) do
+      output = run "shards install --no-color"
+      output.should contain("dependency 'web' is not pinned (version range")
+      output.should_not contain("Deprecated shard.yml key pinning: library")
     end
   end
 

@@ -286,9 +286,19 @@ an advisory that a commit plus the lock checksum is stronger.
 Use `--strict-pinning` to make the warning an error now. A policy file can set
 `rules.dependencies.require_exact` to `true`, `warn`, or `false`; the default is
 `warn` in this release and can be changed to `true` in a later release. A
-library that publishes ranges can set top-level `pinning: library` in
-`shard.yml`; Minecart then warns if `shard.lock` is missing, gitignored, or not
-committed. Stock `shards` ignores the additive key.
+library that publishes version ranges can set
+`rules.dependencies.publishes_version_ranges: true` in `.minecart-policy.yml`;
+Minecart then warns, or errors under strict mode, if `shard.lock` is missing,
+gitignored, or not committed.
+The legacy top-level `pinning: library` shard.yml key remains supported during
+the draft period and emits a deprecation warning naming the policy setting.
+
+```yaml
+version: 1
+rules:
+  dependencies:
+    publishes_version_ranges: true
+```
 
 Minecart prefers `.minecart-policy.yml`, `.minecart-audit-ignore`,
 `.minecart-license-policy.yml`, and `.minecart/` when both new and legacy

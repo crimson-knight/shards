@@ -75,6 +75,7 @@ module Shards
         puts "Dependency rules:"
         puts "  Blocked: #{policy.dependencies.blocked.empty? ? "(none)" : policy.dependencies.blocked.map(&.name).join(", ")}"
         puts "  Minimum versions: #{policy.dependencies.minimum_versions.empty? ? "(none)" : policy.dependencies.minimum_versions.map { |k, v| "#{k} #{v}" }.join(", ")}"
+        puts "  Publishes version ranges: #{policy.dependencies.publishes_version_ranges?}"
         puts ""
         puts "Security rules:"
         puts "  Require license: #{policy.security.require_license?}"
@@ -104,6 +105,7 @@ module Shards
           blocked: []
           minimum_versions: {}
           require_exact: warn
+          publishes_version_ranges: false # Set true for libraries that publish version ranges.
 
         security:
           require_license: false

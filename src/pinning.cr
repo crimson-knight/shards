@@ -16,20 +16,25 @@ module Shards
       rules = policy_dependency_rules
       require_exact = rules.require_exact
       strict = @strict || Shards.strict_pinning?
+      has_legacy_library_declaration = @spec.pinning == "library"
 
-      return if require_exact == "false" && !strict
+      if has_legacy_library_declaration
+        Log.warn { "Deprecated shard.yml key pinning: library; use .minecart-policy.yml rules.dependencies.publishes_version_ranges: true" }
+      end
 
-      if @spec.pinning == "library"
+      if rules.publishes_version_ranges? || has_legacy_library_declaration
         check_library_lock
         return unless rules.has_explicit_require_exact && require_exact == "true"
       end
+
+      return if require_exact == "false" && !strict
 
       errors = [] of String
       @spec.dependencies.each do |dependency|
         next if dependency.resolver.is_a?(PathResolver)
 
         if reason = unpinned_reason(dependency.requirement)
-          message = "dependency '#{dependency.name}' is not pinned (#{reason}); pin an exact version or commit, or set pinning: library"
+          message = "dependency '#{dependency.name}' is not pinned (#{reason}); pin an exact version or commit, or set rules.dependencies.publishes_version_ranges: true in .minecart-policy.yml"
           if strict || require_exact == "true"
             errors << message
           else
@@ -64,7 +69,7 @@ module Shards
                end
       return unless reason
 
-      message = "pinning: library requires a committed shard.lock; #{reason}"
+      message = "publishes_version_ranges requires a committed shard.lock; #{reason}"
       if @strict || Shards.strict_pinning?
         Log.error { message }
         raise PinningError.new("A committed shard.lock is required for a library")

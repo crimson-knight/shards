@@ -50,12 +50,14 @@ module Shards
       getter minimum_versions : Hash(String, String)
       getter require_exact : String
       getter has_explicit_require_exact : Bool
+      getter? publishes_version_ranges : Bool
 
       def initialize(
         @blocked = [] of BlockedDep,
         @minimum_versions = {} of String => String,
         @require_exact = DEFAULT_REQUIRE_EXACT,
         @has_explicit_require_exact = false,
+        @publishes_version_ranges = false,
       )
       end
     end
@@ -197,6 +199,7 @@ module Shards
       minimum_versions = {} of String => String
       require_exact = DependencyRules::DEFAULT_REQUIRE_EXACT
       has_explicit_require_exact = false
+      publishes_version_ranges = false
 
       pull.each_in_mapping do
         case pull.read_scalar
@@ -225,12 +228,18 @@ module Shards
           unless require_exact.in?("true", "warn", "false")
             pull.raise "require_exact must be true, warn, or false"
           end
+        when "publishes_version_ranges"
+          value = pull.read_scalar
+          unless value.in?("true", "false")
+            pull.raise "publishes_version_ranges must be true or false"
+          end
+          publishes_version_ranges = value == "true"
         else
           pull.skip
         end
       end
 
-      DependencyRules.new(blocked, minimum_versions, require_exact, has_explicit_require_exact)
+      DependencyRules.new(blocked, minimum_versions, require_exact, has_explicit_require_exact, publishes_version_ranges)
     end
 
     private def parse_freshness(pull) : FreshnessRules

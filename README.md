@@ -345,16 +345,20 @@ the lock checksum is stronger. Use `--strict-pinning` to make unpinned
 dependencies errors now. The default is designed to become an error in a later
 release.
 
-Libraries that publish ranges can add `pinning: library` to the top level of
-`shard.yml`. Minecart then checks that `shard.lock` is committed and is not
-gitignored. Stock `shards` ignores this additive key. A policy can override the
-default with `dependencies.require_exact`:
+Libraries that publish version ranges can set
+`rules.dependencies.publishes_version_ranges: true` in
+`.minecart-policy.yml`. Minecart then checks that `shard.lock` is committed and
+is not gitignored, warning normally and erroring with `--strict-pinning`. The
+legacy `pinning: library` shard.yml key remains supported for now and emits a
+deprecation warning. A policy can also control root
+dependency pinning with `rules.dependencies.require_exact`:
 
 ```yaml
 version: 1
 rules:
   dependencies:
     require_exact: warn # true, warn, or false
+    publishes_version_ranges: true # library declaration; requires a committed shard.lock
 ```
 
 Minecart prefers `.minecart-policy.yml`, `.minecart-audit-ignore`,

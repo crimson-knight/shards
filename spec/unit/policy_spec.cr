@@ -22,6 +22,8 @@ module Shards
               reason: "Known supply chain compromise"
           minimum_versions:
             some_shard: ">= 2.0.0"
+          require_exact: warn
+          publishes_version_ranges: true
         freshness:
           max_age_days: 365
           require_recent_commit: 180
@@ -50,6 +52,7 @@ module Shards
       policy.dependencies.blocked[0].name.should eq("malicious_shard")
       policy.dependencies.blocked[0].reason.should eq("Known supply chain compromise")
       policy.dependencies.minimum_versions["some_shard"].should eq(">= 2.0.0")
+      policy.dependencies.publishes_version_ranges?.should be_true
 
       # Freshness
       policy.freshness.max_age_days.should eq(365)
@@ -78,6 +81,7 @@ module Shards
       policy.sources.deny_path_dependencies?.should be_false
       policy.dependencies.blocked.should be_empty
       policy.dependencies.minimum_versions.should be_empty
+      policy.dependencies.publishes_version_ranges?.should be_false
       policy.freshness.max_age_days.should be_nil
       policy.freshness.require_recent_commit.should be_nil
       policy.security.require_license?.should be_false
@@ -173,6 +177,17 @@ module Shards
       policy.dependencies.blocked.size.should eq(1)
       policy.dependencies.blocked[0].name.should eq("bad_dep")
       policy.dependencies.blocked[0].reason.should be_nil
+    end
+
+    it "rejects a non-boolean publishes_version_ranges value" do
+      expect_raises(ParseError) do
+        Policy.from_yaml <<-YAML
+        version: 1
+        rules:
+          dependencies:
+            publishes_version_ranges: maybe
+        YAML
+      end
     end
   end
 end
