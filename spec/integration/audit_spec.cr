@@ -36,7 +36,7 @@ describe "audit" do
       json = JSON.parse(extract_json(output))
 
       json["schema_version"].should eq("1.0.0")
-      json["tool"].should eq("shards-alpha")
+      json["tool"].should eq("minecart")
       json["summary"]?.should_not be_nil
       json["summary"]["total_packages"].as_i.should be >= 1
       json["packages"]?.should_not be_nil
@@ -56,7 +56,7 @@ describe "audit" do
       json["$schema"].as_s.should contain("sarif")
       json["runs"]?.should_not be_nil
       json["runs"].as_a.size.should eq(1)
-      json["runs"].as_a.first["tool"]["driver"]["name"].should eq("shards-alpha audit")
+      json["runs"].as_a.first["tool"]["driver"]["name"].should eq("minecart audit")
     end
   end
 

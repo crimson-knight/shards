@@ -17,7 +17,7 @@ module Shards
           package = Shards.info.installed[dependency.name]?
           unless package
             Log.debug { "#{dependency.name}: not installed" }
-            raise Error.new("Dependencies aren't satisfied. Install them with 'shards install'")
+            raise Error.new("Dependencies aren't satisfied. Install them with 'minecart install'")
           end
 
           indent = "  " * level

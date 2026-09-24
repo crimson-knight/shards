@@ -89,7 +89,7 @@ module Shards
     end
 
     # Optional `ai_assistant` section in `shard.yml` for enabling automatic
-    # installation/update of AI assistant configuration during `shards install`.
+    # installation/update of AI assistant configuration during `minecart install`.
     #
     # ```yaml
     # ai_assistant:
@@ -151,6 +151,7 @@ module Shards
     getter? read_from_yaml : Bool
     getter ai_docs : AIDocs?
     getter ai_assistant : AIAssistant?
+    getter pinning : String?
 
     def mismatched_version?
       Versions.compare(version, original_version) != 0
@@ -236,6 +237,9 @@ module Shards
           pull.read_empty_or do
             @ai_assistant = AIAssistant.new(pull)
           end
+        when "pinning"
+          check_duplicate(@pinning, "pinning", line, column)
+          @pinning = pull.read_scalar
         else
           if validate
             pull.raise "unknown attribute: #{key}", line, column

@@ -61,7 +61,18 @@ module Shards
 
     def compute_checksum : String?
       return nil unless File.exists?(install_path)
+
+      if checksum.try(&.starts_with?("git-tree:"))
+        return resolver.checksum_for(version)
+      end
+
       Checksum.compute(install_path)
+    end
+
+    # Prefer the resolver's stable source identity, falling back to the
+    # directory checksum used by path, Mercurial, and Fossil dependencies.
+    def computed_checksum : String?
+      resolver.checksum_for(version) || compute_checksum
     end
 
     def install
@@ -117,7 +128,7 @@ module Shards
           return
         elsif entry.has_run && entry.script_hash != script_hash
           Log.warn { "Postinstall script for #{name} has changed." }
-          Log.warn { "  Run `shards run-script #{name}` to execute it." }
+          Log.warn { "  Run `minecart run-script #{name}` to execute it." }
           info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: false)
           info.save
           return

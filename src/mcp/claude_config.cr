@@ -6,20 +6,20 @@ module Shards
     # Existing files are never overwritten.
 
     FILES = {
-      ".claude/CLAUDE.md"                                       => CLAUDE_MD,
-      ".claude/settings.json"                                   => SETTINGS_JSON,
-      ".claude/skills/audit/SKILL.md"                           => SKILL_AUDIT,
-      ".claude/skills/licenses/SKILL.md"                        => SKILL_LICENSES,
-      ".claude/skills/policy-check/SKILL.md"                    => SKILL_POLICY_CHECK,
-      ".claude/skills/diff-deps/SKILL.md"                       => SKILL_DIFF_DEPS,
-      ".claude/skills/compliance-report/SKILL.md"               => SKILL_COMPLIANCE_REPORT,
-      ".claude/skills/sbom/SKILL.md"                            => SKILL_SBOM,
-      ".claude/skills/shards-cli/SKILL.md"                      => SKILL_SHARDS_CLI,
-      ".claude/skills/shards-cli/reference/commands.md"         => REF_COMMANDS,
-      ".claude/skills/shards-cli/reference/shard-yml-format.md" => REF_SHARD_YML,
-      ".claude/skills/shards-cli/reference/ai-docs-guide.md"    => REF_AI_DOCS,
-      ".claude/agents/compliance-checker.md"                    => AGENT_COMPLIANCE_CHECKER,
-      ".claude/agents/security-reviewer.md"                     => AGENT_SECURITY_REVIEWER,
+      ".claude/CLAUDE.md"                                         => CLAUDE_MD,
+      ".claude/settings.json"                                     => SETTINGS_JSON,
+      ".claude/skills/audit/SKILL.md"                             => SKILL_AUDIT,
+      ".claude/skills/licenses/SKILL.md"                          => SKILL_LICENSES,
+      ".claude/skills/policy-check/SKILL.md"                      => SKILL_POLICY_CHECK,
+      ".claude/skills/diff-deps/SKILL.md"                         => SKILL_DIFF_DEPS,
+      ".claude/skills/compliance-report/SKILL.md"                 => SKILL_COMPLIANCE_REPORT,
+      ".claude/skills/sbom/SKILL.md"                              => SKILL_SBOM,
+      ".claude/skills/minecart-cli/SKILL.md"                      => SKILL_SHARDS_CLI,
+      ".claude/skills/minecart-cli/reference/commands.md"         => REF_COMMANDS,
+      ".claude/skills/minecart-cli/reference/shard-yml-format.md" => REF_SHARD_YML,
+      ".claude/skills/minecart-cli/reference/ai-docs-guide.md"    => REF_AI_DOCS,
+      ".claude/agents/compliance-checker.md"                      => AGENT_COMPLIANCE_CHECKER,
+      ".claude/agents/security-reviewer.md"                       => AGENT_SECURITY_REVIEWER,
     }
 
     def self.install(path : String) : Array(String)
@@ -42,29 +42,30 @@ module Shards
     end
 
     CLAUDE_MD = <<-'CONTENT'
-    # Shards-Alpha: Supply Chain Compliance for Crystal
+    # Minecart: Supply Chain Compliance for Crystal
 
-    This project uses shards-alpha, a Crystal package manager with built-in supply chain compliance tools.
+    This project uses Minecart, formerly distributed as shards-alpha, a
+    drop-in compatible fork of stock shards with supply chain tools.
 
     ## Available Commands
 
     | Command | Description |
     |---------|-------------|
-    | `shards-alpha install` | Install dependencies from shard.yml |
-    | `shards-alpha update` | Update dependencies to latest compatible versions |
-    | `shards-alpha audit` | Scan dependencies for known vulnerabilities (OSV database) |
-    | `shards-alpha licenses` | List dependency licenses with SPDX compliance checking |
-    | `shards-alpha policy check` | Check dependencies against policy rules |
-    | `shards-alpha diff` | Show dependency changes between lockfile states |
-    | `shards-alpha compliance-report` | Generate unified compliance report |
-    | `shards-alpha sbom` | Generate Software Bill of Materials (SPDX/CycloneDX) |
+    | `minecart install` | Install dependencies from shard.yml |
+    | `minecart update` | Update dependencies to latest compatible versions |
+    | `minecart audit` | Scan dependencies for known vulnerabilities (OSV database) |
+    | `minecart licenses` | List dependency licenses with SPDX compliance checking |
+    | `minecart policy check` | Check dependencies against policy rules |
+    | `minecart diff` | Show dependency changes between lockfile states |
+    | `minecart compliance-report` | Generate unified compliance report |
+    | `minecart sbom` | Generate Software Bill of Materials (SPDX/CycloneDX) |
 
     ## Quick Compliance Check
 
     ```sh
-    shards-alpha audit                    # Check for vulnerabilities
-    shards-alpha licenses --check         # Verify license compliance
-    shards-alpha policy check             # Enforce dependency policies
+    minecart audit                    # Check for vulnerabilities
+    minecart licenses --check         # Verify license compliance
+    minecart policy check             # Enforce dependency policies
     ```
 
     ## Key Files
@@ -73,16 +74,16 @@ module Shards
     |------|---------|
     | `shard.yml` | Dependency specification |
     | `shard.lock` | Locked dependency versions |
-    | `.shards-policy.yml` | Dependency policy rules (optional) |
-    | `.shards-audit-ignore` | Suppressed vulnerability IDs (optional) |
+    | `.minecart-policy.yml` | Dependency policy rules (legacy `.shards-policy.yml` also works) |
+    | `.minecart-audit-ignore` | Suppressed IDs (legacy `.shards-audit-ignore` also works) |
 
     ## MCP Compliance Server
 
     An MCP server exposes all compliance tools for AI agent integration:
 
     ```sh
-    shards-alpha mcp-server              # Start stdio MCP server
-    shards-alpha mcp-server --interactive # Manual testing mode
+    minecart mcp-server              # Start stdio MCP server
+    minecart mcp-server --interactive # Manual testing mode
     ```
 
     Supports MCP protocol versions: 2025-11-25, 2025-06-18, 2025-03-26, 2024-11-05.
@@ -92,13 +93,13 @@ module Shards
     {
       "permissions": {
         "allow": [
-          "Bash(shards-alpha audit *)",
-          "Bash(shards-alpha licenses *)",
-          "Bash(shards-alpha policy *)",
-          "Bash(shards-alpha diff *)",
-          "Bash(shards-alpha compliance-report *)",
-          "Bash(shards-alpha sbom *)",
-          "Bash(shards-alpha mcp-server *)",
+          "Bash(minecart audit *)",
+          "Bash(minecart licenses *)",
+          "Bash(minecart policy *)",
+          "Bash(minecart diff *)",
+          "Bash(minecart compliance-report *)",
+          "Bash(minecart sbom *)",
+          "Bash(minecart mcp-server *)",
           "Bash(crystal build *)",
           "Bash(crystal spec *)",
           "Bash(crystal tool format *)"
@@ -122,11 +123,11 @@ module Shards
 
     ## Steps
 
-    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.
+    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `minecart install` first.
 
     2. Run the audit command with the user's requested options:
        ```sh
-       shards-alpha audit [OPTIONS]
+       minecart audit [OPTIONS]
        ```
 
        Common options to pass through from user arguments:
@@ -134,7 +135,7 @@ module Shards
        - `--format=FORMAT` — Output format: `terminal` (default), `json`, `sarif`
        - `--fail-above=LEVEL` — Only exit non-zero for vulnerabilities at or above this severity
        - `--ignore=ID[,ID]` — Comma-separated advisory IDs to suppress
-       - `--ignore-file=PATH` — Path to ignore file (default: `.shards-audit-ignore`)
+       - `--ignore-file=PATH` — Path to ignore file (default: `.minecart-audit-ignore`; legacy `.shards-audit-ignore` also works)
        - `--offline` — Use cached vulnerability data only, no network requests
        - `--update-db` — Force a cache refresh before scanning
 
@@ -150,7 +151,7 @@ module Shards
     5. Provide remediation advice:
        - Check if newer versions of affected dependencies are available that fix the vulnerability
        - Suggest specific version bumps in `shard.yml` where applicable
-       - If a vulnerability cannot be fixed by upgrading, suggest adding it to `.shards-audit-ignore` with a reason and expiry date
+       - If a vulnerability cannot be fixed by upgrading, suggest adding it to `.minecart-audit-ignore` with a reason and expiry date
        - Mention the `--fail-above` flag for CI pipelines that should only block on critical issues
 
     6. For JSON output (`--format=json`), parse the structured data to provide a more detailed breakdown. For SARIF output (`--format=sarif`), note that this is designed for GitHub Code Scanning integration.
@@ -159,16 +160,16 @@ module Shards
 
     ```sh
     # Basic scan
-    shards-alpha audit
+    minecart audit
 
     # Only show high and critical vulnerabilities
-    shards-alpha audit --severity=high
+    minecart audit --severity=high
 
     # CI-friendly: fail only on critical, output SARIF for GitHub
-    shards-alpha audit --format=sarif --fail-above=critical
+    minecart audit --format=sarif --fail-above=critical
 
     # Offline scan with cached data
-    shards-alpha audit --offline
+    minecart audit --offline
     ```
     CONTENT
 
@@ -187,11 +188,11 @@ module Shards
 
     ## Steps
 
-    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.
+    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `minecart install` first.
 
     2. Run the licenses command with the user's requested options:
        ```sh
-       shards-alpha licenses [OPTIONS]
+       minecart licenses [OPTIONS]
        ```
 
        Available options to pass through:
@@ -226,26 +227,26 @@ module Shards
 
     ```sh
     # Basic license listing
-    shards-alpha licenses
+    minecart licenses
 
     # Check against policy, fail on violations
-    shards-alpha licenses --check
+    minecart licenses --check
 
     # Detect licenses from LICENSE files when not declared
-    shards-alpha licenses --detect
+    minecart licenses --detect
 
     # Generate CSV for legal team review
-    shards-alpha licenses --format=csv
+    minecart licenses --format=csv
 
     # Full scan including dev dependencies with detection
-    shards-alpha licenses --detect --include-dev --format=json
+    minecart licenses --detect --include-dev --format=json
     ```
     CONTENT
 
     SKILL_POLICY_CHECK = <<-'CONTENT'
     ---
     name: policy-check
-    description: Check dependencies against policy rules in .shards-policy.yml. Use when verifying compliance before releases.
+    description: Check dependencies against policy rules in .minecart-policy.yml (legacy .shards-policy.yml also works). Use when verifying compliance before releases.
     allowed-tools: Bash, Read, Grep, Write
     user-invocable: true
     argument-hint: [--strict]
@@ -253,17 +254,17 @@ module Shards
 
     # Check Dependencies Against Policy Rules
 
-    Evaluate all locked dependencies against the rules defined in `.shards-policy.yml`.
+    Evaluate all locked dependencies against the rules defined in `.minecart-policy.yml` or the legacy `.shards-policy.yml`.
 
     ## Steps
 
-    1. Check if `.shards-policy.yml` exists in the project root:
+    1. Check for `.minecart-policy.yml` first, then `.shards-policy.yml` in the project root:
        - If it exists, read it to understand the active policy rules before running the check.
-       - If it does not exist, ask the user if they want to create one with `shards-alpha policy init`, which generates a starter policy file.
+       - If it does not exist, ask the user if they want to create one with `minecart policy init`, which generates a starter policy file.
 
     2. Run the policy check with the user's requested options:
        ```sh
-       shards-alpha policy check [OPTIONS]
+       minecart policy check [OPTIONS]
        ```
 
        Available options:
@@ -271,8 +272,8 @@ module Shards
        - `--format=FORMAT` — Output format: `terminal` (default), `json`
 
        Other policy subcommands:
-       - `shards-alpha policy init` — Create a starter `.shards-policy.yml`
-       - `shards-alpha policy show` — Display a summary of the current policy
+       - `minecart policy init` — Create a starter `.minecart-policy.yml`
+       - `minecart policy show` — Display a summary of the current policy
 
     3. Interpret the results:
        - **Error violations** block installation: blocked dependencies, denied sources, minimum version failures
@@ -292,11 +293,11 @@ module Shards
        - **Missing license**: Add a license to the dependency's shard.yml or set `rules.security.require_license: false`
        - **Postinstall script warning**: Review the script for safety, then either allow it or set `rules.security.block_postinstall: true` to block
 
-    6. If the user wants to modify the policy, offer to edit `.shards-policy.yml` directly with the needed changes.
+    6. If the user wants to modify the policy, offer to edit `.minecart-policy.yml` directly with the needed changes.
 
     ## Policy File Structure
 
-    The policy file `.shards-policy.yml` supports these rule categories:
+    The policy file `.minecart-policy.yml` supports these rule categories. `.shards-policy.yml` remains a legacy alias.
     - `rules.sources` — Allowed hosts, allowed organizations, deny path dependencies
     - `rules.dependencies` — Blocked dependencies with reasons, minimum version requirements
     - `rules.security` — Require licenses, block/audit postinstall scripts
@@ -306,19 +307,19 @@ module Shards
 
     ```sh
     # Basic policy check
-    shards-alpha policy check
+    minecart policy check
 
     # Strict mode for CI (warnings become errors)
-    shards-alpha policy check --strict
+    minecart policy check --strict
 
     # JSON output for tooling
-    shards-alpha policy check --format=json
+    minecart policy check --format=json
 
     # Create a starter policy
-    shards-alpha policy init
+    minecart policy init
 
     # View current policy summary
-    shards-alpha policy show
+    minecart policy show
     ```
     CONTENT
 
@@ -341,7 +342,7 @@ module Shards
 
     2. Run the diff command with the user's requested options:
        ```sh
-       shards-alpha diff [OPTIONS]
+       minecart diff [OPTIONS]
        ```
 
        Available options:
@@ -371,19 +372,19 @@ module Shards
 
     ```sh
     # What changed since the last commit?
-    shards-alpha diff
+    minecart diff
 
     # What changed since a release tag?
-    shards-alpha diff --from=v1.0.0
+    minecart diff --from=v1.0.0
 
     # Compare two specific lockfiles
-    shards-alpha diff --from=before.lock --to=after.lock
+    minecart diff --from=before.lock --to=after.lock
 
     # Generate markdown for a PR description
-    shards-alpha diff --from=main --format=markdown
+    minecart diff --from=main --format=markdown
 
     # JSON output for tooling
-    shards-alpha diff --format=json
+    minecart diff --format=json
     ```
     CONTENT
 
@@ -404,12 +405,12 @@ module Shards
 
     1. Verify prerequisites:
        - `shard.yml` must exist in the project root
-       - `shard.lock` must exist (run `shards-alpha install` if missing)
-       - For policy sections, `.shards-policy.yml` should exist (optional but recommended)
+       - `shard.lock` must exist (run `minecart install` if missing)
+       - For policy sections, `.minecart-policy.yml` or the legacy `.shards-policy.yml` should exist (optional but recommended)
 
     2. Run the compliance report command with the user's requested options:
        ```sh
-       shards-alpha compliance-report [OPTIONS]
+       minecart compliance-report [OPTIONS]
        ```
 
        Available options:
@@ -447,16 +448,16 @@ module Shards
 
     ```sh
     # Full compliance report in HTML for auditors
-    shards-alpha compliance-report --format=html --reviewer=security@company.com
+    minecart compliance-report --format=html --reviewer=security@company.com
 
     # Quick check with just SBOM and integrity sections
-    shards-alpha compliance-report --sections=sbom,integrity
+    minecart compliance-report --sections=sbom,integrity
 
     # JSON report for CI artifact archival
-    shards-alpha compliance-report --output=compliance-report.json
+    minecart compliance-report --output=compliance-report.json
 
     # Markdown report for documentation
-    shards-alpha compliance-report --format=markdown
+    minecart compliance-report --format=markdown
     ```
     CONTENT
 
@@ -475,11 +476,11 @@ module Shards
 
     ## Steps
 
-    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `shards-alpha install` first.
+    1. Verify that `shard.lock` exists in the project root. If it does not, inform the user they need to run `minecart install` first.
 
     2. Run the SBOM generation command:
        ```sh
-       shards-alpha sbom [OPTIONS]
+       minecart sbom [OPTIONS]
        ```
 
        Available options:
@@ -502,71 +503,73 @@ module Shards
 
     ```sh
     # Generate SPDX SBOM (default)
-    shards-alpha sbom
+    minecart sbom
 
     # Generate CycloneDX SBOM
-    shards-alpha sbom --format=cyclonedx
+    minecart sbom --format=cyclonedx
 
     # Custom output path
-    shards-alpha sbom --output=artifacts/sbom.spdx.json
+    minecart sbom --output=artifacts/sbom.spdx.json
 
     # Include development dependencies
-    shards-alpha sbom --include-dev
+    minecart sbom --include-dev
     ```
     CONTENT
 
     SKILL_SHARDS_CLI = <<-'CONTENT'
     ---
-    name: shards-cli
-    description: Crystal Shards package manager CLI reference. Provides guidance on shard.yml format, dependency management, installation, building, and AI docs distribution.
+    name: minecart-cli
+    description: Minecart package manager CLI reference. Provides guidance on shard.yml format, dependency management, installation, building, and AI docs distribution.
     user-invocable: false
     ---
 
-    # Crystal Shards CLI
+    # Minecart CLI
 
-    Shards is the dependency manager for Crystal. It reads `shard.yml` to resolve, install, and update dependencies from source repositories.
+    Minecart is a drop-in compatible fork of the stock Crystal `shards`
+    dependency manager. It reads `shard.yml` to resolve, install, and update
+    dependencies from source repositories.
 
     ## Common Workflows
 
     ### Install dependencies
     ```
-    shards install                  # Install from shard.yml, using shard.lock if present
-    shards install --production     # Frozen + without development dependencies
-    shards install --skip-ai-docs   # Skip AI documentation installation
+    minecart install                  # Install from shard.yml, using shard.lock if present
+    minecart install --production     # Frozen + without development dependencies
+    minecart install --skip-ai-docs   # Skip AI documentation installation
     ```
 
     ### Update dependencies
     ```
-    shards update                   # Update all to latest compatible versions
-    shards update kemal             # Update only kemal
+    minecart update                   # Update all to latest compatible versions
+    minecart update kemal             # Update only kemal
     ```
 
     ### Build targets
     ```
-    shards build                    # Build all targets
-    shards build my_app             # Build specific target
-    shards build --release          # Build with --release flag
+    minecart build                    # Build all targets
+    minecart build my_app             # Build specific target
+    minecart build --release          # Build with --release flag
     ```
 
     ### Supply chain compliance
     ```
-    shards audit                    # Vulnerability scan
-    shards licenses                 # License compliance
-    shards policy check             # Policy enforcement
-    shards diff                     # Dependency changes
-    shards compliance-report        # Full compliance report
-    shards sbom                     # Software Bill of Materials
+    minecart audit                    # Vulnerability scan
+    minecart licenses                 # License compliance
+    minecart policy check             # Policy enforcement
+    minecart diff                     # Dependency changes
+    minecart compliance-report        # Full compliance report
+    minecart sbom                     # Software Bill of Materials
     ```
 
     ### Other commands
     ```
-    shards check                    # Verify all dependencies are installed
-    shards list                     # List installed dependencies
-    shards list --tree              # List with dependency tree
-    shards outdated                 # Show outdated dependencies
-    shards prune                    # Remove unused dependencies from lib/
-    shards version                  # Print shard version
-    shards init                     # Generate a new shard.yml
+    minecart check                    # Verify all dependencies are installed
+    minecart list                     # List installed dependencies
+    minecart list --tree              # List with dependency tree
+    minecart outdated                 # Show outdated dependencies
+    minecart prune                    # Remove unused dependencies from lib/
+    minecart version                  # Print shard version
+    minecart init                     # Generate a new shard.yml
     ```
 
     ## Key Flags
@@ -588,135 +591,135 @@ module Shards
     CONTENT
 
     REF_COMMANDS = <<-'CONTENT'
-    # Shards CLI Commands Reference
+    # Minecart CLI Commands Reference
 
-    ## shards install
+    ## minecart install
 
     Install dependencies from `shard.yml`. Creates `shard.lock` if it doesn't exist.
 
     ```
-    shards install [options]
+    minecart install [options]
     ```
 
-    ## shards update
+    ## minecart update
 
     Update dependencies to latest compatible versions.
 
     ```
-    shards update [shard_names...] [options]
+    minecart update [shard_names...] [options]
     ```
 
-    ## shards build
+    ## minecart build
 
     Build targets defined in `shard.yml`.
 
     ```
-    shards build [targets...] [-- build_options...]
+    minecart build [targets...] [-- build_options...]
     ```
 
-    ## shards check
+    ## minecart check
 
     Verify all dependencies are installed and match `shard.lock`.
 
-    ## shards list
+    ## minecart list
 
     List installed dependencies.
 
     ```
-    shards list [--tree]
+    minecart list [--tree]
     ```
 
-    ## shards lock
+    ## minecart lock
 
     Lock dependencies without installing.
 
     ```
-    shards lock [--print] [--update [shards...]]
+    minecart lock [--print] [--update [shards...]] [--rekey]
     ```
 
-    ## shards outdated
+    ## minecart outdated
 
     Show outdated dependencies.
 
     ```
-    shards outdated [--pre]
+    minecart outdated [--pre]
     ```
 
-    ## shards prune
+    ## minecart prune
 
     Remove unused dependencies from `lib/`.
 
-    ## shards init
+    ## minecart init
 
     Generate a new `shard.yml`.
 
-    ## shards version
+    ## minecart version
 
     Print the shard version from `shard.yml`.
 
     ```
-    shards version [path]
+    minecart version [path]
     ```
 
-    ## shards audit
+    ## minecart audit
 
     Scan dependencies for known vulnerabilities via OSV database.
 
     ```
-    shards audit [--severity=LEVEL] [--format=FORMAT] [--fail-above=LEVEL] [--offline]
+    minecart audit [--severity=LEVEL] [--format=FORMAT] [--fail-above=LEVEL] [--offline]
     ```
 
-    ## shards licenses
+    ## minecart licenses
 
     List dependency licenses with SPDX validation.
 
     ```
-    shards licenses [--check] [--detect] [--format=FORMAT] [--include-dev]
+    minecart licenses [--check] [--detect] [--format=FORMAT] [--include-dev]
     ```
 
-    ## shards policy
+    ## minecart policy
 
     Manage dependency policies.
 
     ```
-    shards policy check [--strict] [--format=FORMAT]
-    shards policy init
-    shards policy show
+    minecart policy check [--strict] [--format=FORMAT]
+    minecart policy init
+    minecart policy show
     ```
 
-    ## shards diff
+    ## minecart diff
 
     Show dependency changes between lockfile states.
 
     ```
-    shards diff [--from=REF] [--to=REF] [--format=FORMAT]
+    minecart diff [--from=REF] [--to=REF] [--format=FORMAT]
     ```
 
-    ## shards compliance-report
+    ## minecart compliance-report
 
     Generate unified compliance report.
 
     ```
-    shards compliance-report [--format=FORMAT] [--sections=LIST] [--reviewer=EMAIL]
+    minecart compliance-report [--format=FORMAT] [--sections=LIST] [--reviewer=EMAIL]
     ```
 
-    ## shards sbom
+    ## minecart sbom
 
     Generate Software Bill of Materials.
 
     ```
-    shards sbom [--format=spdx|cyclonedx] [--output=FILE] [--include-dev]
+    minecart sbom [--format=spdx|cyclonedx] [--output=FILE] [--include-dev]
     ```
 
-    ## shards mcp-server
+    ## minecart mcp-server
 
     Start MCP compliance server for AI agent integration.
 
     ```
-    shards mcp-server              # Start stdio server
-    shards mcp-server --interactive # Interactive testing mode
-    shards mcp-server init          # Configure .mcp.json and .claude/
-    shards mcp-server --help        # Show help
+    minecart mcp-server              # Start stdio server
+    minecart mcp-server --interactive # Interactive testing mode
+    minecart mcp-server init          # Configure .mcp.json and .claude/
+    minecart mcp-server --help        # Show help
     ```
     CONTENT
 
@@ -801,7 +804,9 @@ module Shards
 
     ## Overview
 
-    Shards can distribute AI coding agent documentation alongside library code. When you run `shards install`, AI docs from dependencies are automatically installed into your project's `.claude/` directory.
+    Minecart can distribute AI coding agent documentation alongside library
+    code. When you run `minecart install`, AI docs from dependencies are
+    automatically installed into your project's `.claude/` directory.
 
     ## How It Works
 
@@ -841,7 +846,7 @@ module Shards
 
     ## User Customization
 
-    - **Unmodified files**: Auto-updated on `shards update`
+    - **Unmodified files**: Auto-updated on `minecart update`
     - **Modified files**: Preserved on update
     - **View changes**: `shards ai-docs diff <shard>`
     - **Reset to upstream**: `shards ai-docs reset <shard>`
@@ -858,18 +863,18 @@ module Shards
 
     # Compliance Checker Agent
 
-    You are a supply-chain compliance specialist for Crystal projects using shards-alpha. Your job is to run a comprehensive compliance analysis and produce a clear, actionable report.
+    You are a supply-chain compliance specialist for Crystal projects using minecart. Your job is to run a comprehensive compliance analysis and produce a clear, actionable report.
 
     ## Procedure
 
     ### Step 1: Verify Project Setup
 
-    Check that `shard.yml` and `shard.lock` exist. If `shard.lock` is missing, run `shards-alpha install`.
+    Check that `shard.yml` and `shard.lock` exist. If `shard.lock` is missing, run `minecart install`.
 
     ### Step 2: Run Vulnerability Audit
 
     ```sh
-    shards-alpha audit --format=json
+    minecart audit --format=json
     ```
 
     Record total vulnerabilities and breakdown by severity.
@@ -877,17 +882,17 @@ module Shards
     ### Step 3: Run License Scan
 
     ```sh
-    shards-alpha licenses --format=json --detect
+    minecart licenses --format=json --detect
     ```
 
     Record dependencies with valid SPDX licenses, missing licenses, and copyleft concerns.
 
     ### Step 4: Run Policy Check
 
-    If `.shards-policy.yml` exists:
+    If `.minecart-policy.yml` or legacy `.shards-policy.yml` exists:
 
     ```sh
-    shards-alpha policy check --format=json
+    minecart policy check --format=json
     ```
 
     Record errors and warnings. If no policy file exists, note the gap.
@@ -917,10 +922,10 @@ module Shards
 
     ### Step 6: Offer Additional Actions
 
-    - Generate formal report: `shards-alpha compliance-report --format=html`
-    - Generate SBOM: `shards-alpha sbom`
-    - Create policy: `shards-alpha policy init`
-    - View changes: `shards-alpha diff`
+    - Generate formal report: `minecart compliance-report --format=html`
+    - Generate SBOM: `minecart sbom`
+    - Create policy: `minecart policy init`
+    - View changes: `minecart diff`
 
     ## Important Notes
 
@@ -940,14 +945,14 @@ module Shards
 
     # Security Reviewer Agent
 
-    You are a dependency security analyst for Crystal projects using shards-alpha. Your focus is identifying vulnerabilities, prioritizing them by risk, and recommending specific remediation actions.
+    You are a dependency security analyst for Crystal projects using minecart. Your focus is identifying vulnerabilities, prioritizing them by risk, and recommending specific remediation actions.
 
     ## Procedure
 
     ### Step 1: Run Vulnerability Audit
 
     ```sh
-    shards-alpha audit --format=json
+    minecart audit --format=json
     ```
 
     If exit code 0, report clean. If exit code 1, continue analysis.
@@ -971,7 +976,7 @@ module Shards
 
     **Version Bump**: State the exact version constraint change needed.
 
-    **Ignore with Justification**: If not applicable, recommend adding to `.shards-audit-ignore` with reason and 90-day expiry.
+    **Ignore with Justification**: If not applicable, recommend adding to `.minecart-audit-ignore` with reason and 90-day expiry.
 
     **Dependency Replacement**: If unmaintained, recommend alternatives.
 

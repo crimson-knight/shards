@@ -10,7 +10,7 @@ module Shards
   # This enables version-aware postinstall behavior:
   # - First install: run the script, record its hash
   # - Subsequent installs with same script: skip silently
-  # - Script changed: warn the user, require explicit `shards run-script`
+  # - Script changed: warn the user, require explicit `minecart run-script`
   class PostinstallInfo
     CURRENT_VERSION = "1.0"
 

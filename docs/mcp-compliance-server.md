@@ -2,11 +2,11 @@
 
 ## Overview
 
-The shards-alpha MCP compliance server exposes Crystal project supply-chain compliance tooling to AI agents through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It implements the JSON-RPC 2.0 over stdio transport, allowing MCP clients such as Claude Code, Cursor, and other LLM-powered development environments to invoke vulnerability audits, license checks, policy enforcement, dependency diffs, compliance reports, and SBOM generation directly from natural language conversations.
+The minecart MCP compliance server exposes Crystal project supply-chain compliance tooling to AI agents through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It implements the JSON-RPC 2.0 over stdio transport, allowing MCP clients such as Claude Code, Cursor, and other LLM-powered development environments to invoke vulnerability audits, license checks, policy enforcement, dependency diffs, compliance reports, and SBOM generation directly from natural language conversations.
 
 The server is implemented in `src/mcp/compliance_server.cr` as the `Shards::ComplianceMCPServer` class. It uses the [mcprotocol](https://github.com/nobodywasishere/mcprotocol) Crystal shard for MCP type definitions and advertises itself with the server name `shards-compliance`.
 
-When a tool is called, the server delegates to the shards-alpha CLI by spawning a subprocess with the appropriate command and flags, capturing its stdout/stderr, and returning the result as structured JSON-RPC content. This architecture means the MCP server always produces the same output as the CLI commands it wraps.
+When a tool is called, the server delegates to the minecart CLI by spawning a subprocess with the appropriate command and flags, capturing its stdout/stderr, and returning the result as structured JSON-RPC content. This architecture means the MCP server always produces the same output as the CLI commands it wraps.
 
 ---
 
@@ -17,7 +17,7 @@ When a tool is called, the server delegates to the shards-alpha CLI by spawning 
 From your Crystal project root:
 
 ```bash
-shards-alpha mcp-server init
+minecart mcp-server init
 ```
 
 This creates or updates `.mcp.json` in the current directory with the `shards-compliance` server entry.
@@ -25,10 +25,10 @@ This creates or updates `.mcp.json` in the current directory with the `shards-co
 For Claude Code skills, agents, and settings, also run:
 
 ```bash
-shards-alpha assistant init
+minecart assistant init
 ```
 
-See `shards-alpha assistant --help` for component selection and update options.
+See `minecart assistant --help` for component selection and update options.
 
 ### 2. Restart your MCP client
 
@@ -134,7 +134,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha audit --format=json --severity=high --fail-above=critical
+minecart audit --format=json --severity=high --fail-above=critical
 ```
 
 **Note:** `audit` uses exit code 1 to signal "vulnerabilities found." The server treats this as a successful result (not an error) and includes the exit code in `_meta`.
@@ -196,7 +196,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha licenses --format=json --check --include-dev
+minecart licenses --format=json --check --include-dev
 ```
 
 **Note:** Like `audit`, `licenses --check` uses exit code 1 to signal violations without being treated as a server error.
@@ -255,7 +255,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha policy check --format=json --strict
+minecart policy check --format=json --strict
 ```
 
 **Note:** `policy_check` uses exit code 1 to signal policy violations without being treated as a server error.
@@ -316,7 +316,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha diff --format=json --from=v1.0.0 --to=HEAD
+minecart diff --format=json --from=v1.0.0 --to=HEAD
 ```
 
 ---
@@ -375,7 +375,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha compliance-report --format=json --sections=audit,licenses,policy --reviewer=security@example.com
+minecart compliance-report --format=json --sections=audit,licenses,policy --reviewer=security@example.com
 ```
 
 ---
@@ -439,7 +439,7 @@ All parameters are optional.
 **CLI equivalent:**
 
 ```bash
-shards-alpha sbom --format=cyclonedx --output=/dev/stdout --include-dev
+minecart sbom --format=cyclonedx --output=/dev/stdout --include-dev
 ```
 
 **Note:** The SBOM tool always writes to `/dev/stdout` so the server can capture the output. When the CLI output is valid JSON, the response includes a `structuredContent` field with the parsed JSON in addition to the `content` text field.
@@ -453,12 +453,12 @@ shards-alpha sbom --format=cyclonedx --output=/dev/stdout --include-dev
 The simplest way to configure the server:
 
 ```bash
-shards-alpha mcp-server init
+minecart mcp-server init
 ```
 
 This command:
 
-1. Looks for `shards-alpha` on `PATH`. If not found, falls back to the absolute path of the current binary.
+1. Looks for `minecart` on `PATH`. If not found, falls back to the absolute path of the current binary.
 2. Creates `.mcp.json` in the current directory (or merges into an existing one).
 3. Adds the `shards-compliance` server entry.
 
@@ -468,7 +468,7 @@ The resulting `.mcp.json` looks like:
 {
   "mcpServers": {
     "shards-compliance": {
-      "command": "shards-alpha",
+      "command": "minecart",
       "args": [
         "mcp-server"
       ]
@@ -483,7 +483,7 @@ If `.mcp.json` already exists with other servers, `init` merges the new entry in
 
 ### Manual setup
 
-You can create or edit `.mcp.json` by hand. The minimum required structure is shown above. The `command` value should be the path to or name of the `shards-alpha` binary, and `args` must include `mcp-server`.
+You can create or edit `.mcp.json` by hand. The minimum required structure is shown above. The `command` value should be the path to or name of the `minecart` binary, and `args` must include `mcp-server`.
 
 ### After setup
 
@@ -496,7 +496,7 @@ After creating or modifying `.mcp.json`, restart your MCP client (e.g., Claude C
 For manual testing and debugging, run the server in interactive mode:
 
 ```bash
-shards-alpha mcp-server --interactive
+minecart mcp-server --interactive
 ```
 
 Interactive mode:
@@ -531,7 +531,7 @@ Example messages:
 ### Example interactive session
 
 ```
-$ shards-alpha mcp-server --interactive
+$ minecart mcp-server --interactive
 shards-compliance MCP server v2.0.0 (interactive)
 Supported MCP versions: 2025-11-25, 2025-06-18, 2025-03-26, 2024-11-05
 Type JSON-RPC messages, 'help' for examples, or 'quit' to exit.
@@ -572,22 +572,22 @@ Goodbye!
 Display the built-in help text:
 
 ```bash
-shards-alpha mcp-server --help
+minecart mcp-server --help
 ```
 
 or:
 
 ```bash
-shards-alpha mcp-server -h
+minecart mcp-server -h
 ```
 
 Output:
 
 ```
-shards-alpha mcp-server — MCP compliance server (JSON-RPC 2.0 over stdio)
+minecart mcp-server — MCP compliance server (JSON-RPC 2.0 over stdio)
 
 Usage:
-    shards-alpha mcp-server [command] [options]
+    minecart mcp-server [command] [options]
 
 Commands:
     init               Configure .mcp.json for MCP server
@@ -606,12 +606,12 @@ Tools provided:
     sbom               Generate Software Bill of Materials (SPDX/CycloneDX)
 
 Examples:
-    shards-alpha mcp-server init          # Configure .mcp.json
-    shards-alpha mcp-server               # Start server (for MCP clients)
-    shards-alpha mcp-server --interactive  # Manual testing mode
+    minecart mcp-server init          # Configure .mcp.json
+    minecart mcp-server               # Start server (for MCP clients)
+    minecart mcp-server --interactive  # Manual testing mode
 
 For Claude Code skills, agents, and settings, use:
-    shards-alpha assistant init
+    minecart assistant init
 ```
 
 ---
@@ -620,10 +620,10 @@ For Claude Code skills, agents, and settings, use:
 
 ### Subprocess execution model
 
-The MCP server does not implement audit, license scanning, or SBOM generation directly. Instead, it acts as a thin JSON-RPC adapter in front of the shards-alpha CLI:
+The MCP server does not implement audit, license scanning, or SBOM generation directly. Instead, it acts as a thin JSON-RPC adapter in front of the minecart CLI:
 
 ```
-MCP Client  <--stdio-->  ComplianceMCPServer  <--subprocess-->  shards-alpha <command>
+MCP Client  <--stdio-->  ComplianceMCPServer  <--subprocess-->  minecart <command>
 ```
 
 When a `tools/call` request arrives:
@@ -637,10 +637,10 @@ When a `tools/call` request arrives:
 
 ### Executable discovery
 
-The server resolves the shards-alpha executable in the following order:
+The server resolves the minecart executable in the following order:
 
 1. `Process.executable_path` -- the running binary itself.
-2. `Process.find_executable("shards-alpha")` -- look up on PATH.
+2. `Process.find_executable("minecart")` -- look up on PATH.
 3. `Process.find_executable("shards")` -- fall back to upstream shards.
 
 If none of these succeed, the server raises an error.
@@ -669,12 +669,12 @@ All three streams are set to `sync = true` to disable buffering.
 
 | MCP Tool | CLI Command | Implicit Flags |
 |---|---|---|
-| `audit` | `shards-alpha audit` | `--format=json` |
-| `licenses` | `shards-alpha licenses` | `--format=json` |
-| `policy_check` | `shards-alpha policy check` | `--format=json` |
-| `diff` | `shards-alpha diff` | `--format=json` |
-| `compliance_report` | `shards-alpha compliance-report` | `--format=json` |
-| `sbom` | `shards-alpha sbom` | `--output=/dev/stdout` |
+| `audit` | `minecart audit` | `--format=json` |
+| `licenses` | `minecart licenses` | `--format=json` |
+| `policy_check` | `minecart policy check` | `--format=json` |
+| `diff` | `minecart diff` | `--format=json` |
+| `compliance_report` | `minecart compliance-report` | `--format=json` |
+| `sbom` | `minecart sbom` | `--output=/dev/stdout` |
 
 ### Expected non-zero exit codes
 
@@ -762,7 +762,7 @@ Returned when an unexpected exception occurs during message handling.
   "id": 8,
   "error": {
     "code": -32603,
-    "message": "Internal error: Could not find shards-alpha executable"
+    "message": "Internal error: Could not find minecart executable"
   }
 }
 ```
@@ -778,16 +778,16 @@ Returned when an unexpected exception occurs during message handling.
 
 ## Integration with MCP Lifecycle
 
-The `shards-alpha mcp-server` command and the `shards-alpha mcp` lifecycle commands serve complementary roles:
+The `minecart mcp-server` command and the `minecart mcp` lifecycle commands serve complementary roles:
 
-### `shards-alpha mcp-server` (this server)
+### `minecart mcp-server` (this server)
 
-- The **built-in** MCP compliance server bundled with shards-alpha.
+- The **built-in** MCP compliance server bundled with minecart.
 - Provides supply-chain compliance tools (audit, licenses, policy, etc.).
-- Configured via `shards-alpha mcp-server init` which writes to `.mcp.json`.
+- Configured via `minecart mcp-server init` which writes to `.mcp.json`.
 - Run directly by MCP clients as a subprocess (stdio transport).
 
-### `shards-alpha mcp` (lifecycle manager)
+### `minecart mcp` (lifecycle manager)
 
 - Manages **third-party** MCP servers distributed through shard dependencies.
 - Handles starting, stopping, restarting, and log tailing for servers defined in `.mcp-shards.json`.
@@ -795,9 +795,9 @@ The `shards-alpha mcp-server` command and the `shards-alpha mcp` lifecycle comma
 
 ### How they relate
 
-The lifecycle manager (`shards mcp start/stop/logs`) is designed for MCP servers that come from **dependencies** -- when a shard ships an `.mcp.json` with its own tools, `shards install` merges them into `.mcp-shards.json`, and `shards mcp start` launches them as managed background processes.
+The lifecycle manager (`minecart mcp start/stop/logs`) is designed for MCP servers that come from **dependencies** -- when a shard ships an `.mcp.json` with its own tools, `minecart install` merges them into `.mcp-shards.json`, and `minecart mcp start` launches them as managed background processes.
 
-The compliance server (`shards mcp-server`) is the **first-party** server built directly into shards-alpha. It does not need the lifecycle manager because MCP clients launch it directly as a subprocess via the `.mcp.json` configuration.
+The compliance server (`minecart mcp-server`) is the **first-party** server built directly into minecart. It does not need the lifecycle manager because MCP clients launch it directly as a subprocess via the `.mcp.json` configuration.
 
 Both write to `.mcp.json` but with different server names: the compliance server registers as `shards-compliance`, while dependency servers are namespaced by their shard name (e.g., `my_shard/explorer`).
 
@@ -809,7 +809,7 @@ A project might use both:
 {
   "mcpServers": {
     "shards-compliance": {
-      "command": "shards-alpha",
+      "command": "minecart",
       "args": ["mcp-server"]
     },
     "analytics_shard/query-tool": {
@@ -820,4 +820,4 @@ A project might use both:
 }
 ```
 
-Here, `shards-compliance` is managed by the MCP client directly, while `analytics_shard/query-tool` can be managed through `shards mcp start/stop/logs`.
+Here, `shards-compliance` is managed by the MCP client directly, while `analytics_shard/query-tool` can be managed through `minecart mcp start/stop/logs`.

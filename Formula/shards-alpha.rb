@@ -9,11 +9,12 @@ class ShardsAlpha < Formula
   depends_on "crystal"
 
   def install
-    system "make", "bin/shards-alpha", "release=1"
+    system "make", "bin/minecart", "bin/shards-alpha", "release=1"
+    bin.install "bin/minecart"
     bin.install "bin/shards-alpha"
   end
 
   test do
-    assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
+    assert_match "Minecart", shell_output("#{bin}/minecart --version")
   end
 end

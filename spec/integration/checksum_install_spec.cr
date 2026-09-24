@@ -10,7 +10,7 @@ describe "checksum pinning" do
       assert_installed "web", "2.1.0"
 
       lock_content = File.read("shard.lock")
-      lock_content.should contain("checksum: sha256:")
+      lock_content.should contain("checksum: git-tree:")
     end
   end
 
@@ -38,7 +38,7 @@ describe "checksum pinning" do
 
       # Tamper with the checksum in shard.lock
       lock_content = File.read("shard.lock")
-      tampered = lock_content.gsub(/checksum: sha256:[0-9a-f]+/, "checksum: sha256:0000000000000000000000000000000000000000000000000000000000000000")
+      tampered = lock_content.gsub(/checksum: git-tree:[0-9a-f]+/, "checksum: git-tree:#{"0" * 40}")
       File.write("shard.lock", tampered)
 
       # Delete lib/web and lib/.shards.info so it gets reinstalled
@@ -50,7 +50,7 @@ describe "checksum pinning" do
     end
   end
 
-  it "--skip-verify bypasses checksum verification" do
+  it "does not accept a checksum verification bypass" do
     metadata = {
       dependencies: {web: "*"},
     }
@@ -58,18 +58,8 @@ describe "checksum pinning" do
       run "shards install"
       assert_installed "web", "2.1.0"
 
-      # Tamper with the checksum in shard.lock
-      lock_content = File.read("shard.lock")
-      tampered = lock_content.gsub(/checksum: sha256:[0-9a-f]+/, "checksum: sha256:0000000000000000000000000000000000000000000000000000000000000000")
-      File.write("shard.lock", tampered)
-
-      # Delete lib/web and lib/.shards.info so it gets reinstalled
-      Shards::Helpers.rm_rf(File.join("lib", "web"))
-      File.delete(File.join("lib", ".shards.info")) if File.exists?(File.join("lib", ".shards.info"))
-
-      # With --skip-verify, should succeed despite tampered checksum
-      run "shards install --skip-verify"
-      assert_installed "web", "2.1.0"
+      ex = expect_raises(FailedCommand) { run "shards install --skip-verify --no-color" }
+      (ex.stdout + ex.stderr).should contain("--skip-verify")
     end
   end
 
@@ -86,8 +76,8 @@ describe "checksum pinning" do
 
       # Force a mismatch and a reinstall.
       lock_content = File.read("shard.lock")
-      File.write("shard.lock", lock_content.gsub(/checksum: sha256:[0-9a-f]+/,
-        "checksum: sha256:#{"0" * 64}"))
+      File.write("shard.lock", lock_content.gsub(/checksum: git-tree:[0-9a-f]+/,
+        "checksum: git-tree:#{"0" * 40}"))
       Shards::Helpers.rm_rf(File.join("lib", "post"))
       File.delete(File.join("lib", ".shards.info")) if File.exists?(File.join("lib", ".shards.info"))
 
@@ -99,25 +89,12 @@ describe "checksum pinning" do
     end
   end
 
-  it "--checksum-warn downgrades a mismatch to a warning and proceeds" do
+  it "does not accept a checksum warning bypass" do
     with_shard({dependencies: {post: "*"}}) do
       run "shards install"
 
-      lock_content = File.read("shard.lock")
-      File.write("shard.lock", lock_content.gsub(/checksum: sha256:[0-9a-f]+/,
-        "checksum: sha256:#{"0" * 64}"))
-      Shards::Helpers.rm_rf(File.join("lib", "post"))
-      File.delete(File.join("lib", ".shards.info")) if File.exists?(File.join("lib", ".shards.info"))
-      # `.shards.postinstall` records that this script already ran for this
-      # package; without clearing it the reinstall skips the script and the
-      # marker below would be missing for a reason unrelated to checksums.
-      postinstall_info = File.join("lib", ".shards.postinstall")
-      File.delete(postinstall_info) if File.exists?(postinstall_info)
-
-      output = run "shards install --no-color --checksum-warn"
-      output.should contain("Checksum mismatch for post")
-      assert_installed "post", "0.1.0"
-      File.exists?(install_path("post", "made.txt")).should be_true
+      ex = expect_raises(FailedCommand) { run "shards install --checksum-warn --no-color" }
+      (ex.stdout + ex.stderr).should contain("--checksum-warn")
     end
   end
 
@@ -136,7 +113,7 @@ describe "checksum pinning" do
 
       # After install, lock file should be upgraded with checksums
       lock_after = File.read("shard.lock")
-      lock_after.should contain("checksum: sha256:")
+      lock_after.should contain("checksum: git-tree:")
     end
   end
 
@@ -149,12 +126,16 @@ describe "checksum pinning" do
       assert_installed "web", "1.2.0"
 
       lock_after_install = File.read("shard.lock")
-      lock_after_install.should contain("checksum: sha256:")
+      directory_checksum = Shards::Checksum.compute(install_path("web"))
+      legacy_lock = lock_after_install.sub(/checksum: git-tree:[0-9a-f]+/, "checksum: #{directory_checksum}")
+      File.write("shard.lock", legacy_lock)
+      legacy_lock.should contain("checksum: sha256:")
 
       run "shards update"
 
       lock_after_update = File.read("shard.lock")
-      lock_after_update.should contain("checksum: sha256:")
+      lock_after_update.should contain("checksum: git-tree:")
+      lock_after_update.should_not contain("checksum: sha256:")
     end
   end
 
@@ -165,6 +146,47 @@ describe "checksum pinning" do
     with_shard(metadata) do
       run "shards install"
       assert_installed "foo", "0.1.0"
+    end
+  end
+
+  it "installs a legacy directory checksum lock" do
+    with_shard({dependencies: {web: "2.1.0"}}) do
+      run "shards install --no-color"
+      checksum = Shards::Checksum.compute(install_path("web"))
+      lock_content = File.read("shard.lock").sub(/checksum: git-tree:[0-9a-f]+/, "checksum: #{checksum}")
+      File.write("shard.lock", lock_content)
+      lock_content.should contain("checksum: sha256:")
+
+      Shards::Helpers.rm_rf(install_path("web"))
+      File.delete(install_path(".shards.info")) if File.exists?(install_path(".shards.info"))
+
+      run "shards install --frozen --no-color"
+      assert_installed "web", "2.1.0"
+      File.read("shard.lock").should contain("checksum: sha256:")
+    end
+  end
+
+  it "installs a mixed lock containing directory and Git tree checksums" do
+    with_shard({dependencies: {pg: "0.2.1", web: "2.1.0"}}) do
+      run "shards install --no-color"
+      checksum = Shards::Checksum.compute(install_path("pg"))
+      lock_content = File.read("shard.lock").sub(/checksum: git-tree:[0-9a-f]+/, "checksum: #{checksum}")
+      File.write("shard.lock", lock_content)
+
+      lock_content.should contain("checksum: sha256:")
+      lock_content.should contain("checksum: git-tree:")
+      run "shards install --frozen --no-color"
+    end
+  end
+
+  it "warns about missing frozen checksums for already installed dependencies" do
+    with_shard({dependencies: {web: "2.1.0"}}) do
+      run "shards install --no-color"
+      File.write("shard.lock", File.read("shard.lock").gsub(/    checksum: .*\n/, ""))
+
+      output = run "shards install --frozen --no-color"
+      output.should contain("has no checksum in shard.lock")
+      output.should contain("this will become an error next release")
     end
   end
 end

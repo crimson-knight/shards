@@ -18,13 +18,13 @@ jobs:
         include:
           - os: macos-15
             arch: arm64
-            artifact: shards-alpha-darwin-arm64
+            artifact: minecart-darwin-arm64
           - os: macos-15-intel
             arch: x86_64
-            artifact: shards-alpha-darwin-x86_64
+            artifact: minecart-darwin-x86_64
           - os: ubuntu-24.04
             arch: x86_64
-            artifact: shards-alpha-linux-x86_64
+            artifact: minecart-linux-x86_64
 
     runs-on: ${{ matrix.os }}
 
@@ -38,11 +38,12 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
 
       - name: Build release binary
-        run: make bin/shards-alpha release=1
+        run: make bin/minecart bin/shards-alpha release=1
 
       - name: Package binary
         run: |
           mkdir -p dist
+          cp bin/minecart dist/
           cp bin/shards-alpha dist/
           cp LICENSE dist/
           cp man/shards.1 dist/ 2>/dev/null || true
@@ -83,31 +84,31 @@ jobs:
           fi
 
           cat > release_notes.md <<EOF
-          ## Ashard $VERSION
+          ## Minecart $VERSION
 
-          Ashard is the public name for this
-          [Crystal Shards](https://github.com/crystal-lang/shards)-compatible fork.
-          The current release artifacts and package names still ship as
-          \`shards-alpha\` during the transition.
+          Minecart is a drop-in compatible fork of
+          [Crystal Shards](https://github.com/crystal-lang/shards), formerly
+          distributed as \`shards-alpha\`.
 
           ### Alpha Features
-          - **AI docs distribution**: \`shards install\` copies AI docs from dependencies
-          - **SBOM generation**: \`shards sbom\` produces SPDX 2.3 / CycloneDX 1.6 JSON
+          - **AI docs distribution**: \`minecart install\` copies AI docs from dependencies
+          - **SBOM generation**: \`minecart sbom\` produces SPDX 2.3 / CycloneDX 1.6 JSON
           - **MCP server distribution**: Dependencies can ship MCP server configs
-          - **Docs theming**: \`shards docs\` with CSS theming and AI assistant buttons
+          - **Docs theming**: \`minecart docs\` with CSS theming and AI assistant buttons
           - **Postinstall tracking**: Version-aware script execution
 
           ### Install via Homebrew
           \`\`\`
           brew tap crimson-knight/tap
-          brew install shards-alpha
+          brew install minecart
           \`\`\`
 
           ### Documentation
           [https://crimson-knight.github.io/shards](https://crimson-knight.github.io/shards)
 
           ### Install from binary
-          Download the archive for your platform and extract \`shards-alpha\` to your PATH.
+          Download the archive for your platform and extract \`minecart\` and
+          \`shards-alpha\` to your PATH. The alias prints a deprecation notice.
 
           ### Changes
           \`\`\`
@@ -120,9 +121,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ github.ref_name }}" \
-            --title "Shards Alpha ${{ steps.notes.outputs.version }}" \
+            --title "Minecart ${{ steps.notes.outputs.version }}" \
             --notes-file release_notes.md \
             --prerelease \
-            artifacts/shards-alpha-darwin-arm64/*.tar.gz \
-            artifacts/shards-alpha-darwin-x86_64/*.tar.gz \
-            artifacts/shards-alpha-linux-x86_64/*.tar.gz
+            artifacts/minecart-darwin-arm64/*.tar.gz \
+            artifacts/minecart-darwin-x86_64/*.tar.gz \
+            artifacts/minecart-linux-x86_64/*.tar.gz

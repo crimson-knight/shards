@@ -43,7 +43,7 @@ describe "run" do
       ex = expect_raises(FailedCommand) do
         run "shards run --no-color app alt"
       end
-      ex.stdout.should contain("Error please specify only one target. If you meant to pass arguments you may use 'shards run target -- args'")
+      ex.stdout.should contain("Error please specify only one target. If you meant to pass arguments you may use 'minecart run target -- args'")
     end
   end
 
@@ -62,7 +62,7 @@ describe "run" do
       ex = expect_raises(FailedCommand) do
         run "shards run --no-color"
       end
-      ex.stdout.should contain("Error please specify the target with 'shards run target'")
+      ex.stdout.should contain("Error please specify the target with 'minecart run target'")
     end
   end
 

@@ -59,23 +59,17 @@ Compatibility is enforced in two places:
 If the compatibility gate fails, the sync must stop. We do not publish a new
 rebased `alpha` branch and then investigate afterward.
 
-## Naming guidance
+## Public name and compatibility commands
 
-The selected public name is **Ashard**.
+The public project and primary command are **Minecart** and `minecart`.
+Minecart is a drop-in replacement for stock `shards` dependency management.
+The old `shards-alpha` command remains as a deprecated alias and can suppress
+its one-line notice with `MINECART_NO_DEPRECATION=1`.
 
-Why this name:
-
-- It reads naturally to an English speaker as "a shard"
-- It keeps the link to Shards obvious
-- It leaves room for the "A" to imply additive, agent-oriented, and alpha-stage
-  tooling without sounding like a separate language or ecosystem
-
-For the transition period:
-
-- The public docs, release narrative, and blog copy should say **Ashard**
-- The current binary and package names can stay `shards-alpha` until we finish
-  the packaging rename without breaking compatibility for existing users
-
-We should avoid a binary name that starts with a numeral. While shells allow
-digits in executable names, a leading-number command is awkward to read, easy to
-mis-hear, and weaker for copy-pasteable installation docs.
+The manifest name remains `shards-alpha` to preserve existing package
+references. Minecart continues to read stock `shard.yml` and `shard.lock` files;
+stock `shards` must continue to read Minecart-written manifests and locks.
+Checksums are additive lock metadata and remain ignored by stock Shards.
+Configuration files and project state accept both Minecart and legacy
+shards-alpha names, with the Minecart name taking precedence when both exist.
+ADR 0003 records the current naming decision and supersedes ADR 0002.

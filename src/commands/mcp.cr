@@ -18,9 +18,9 @@ module Shards
         when "restart"
           manager.restart(remaining[0]?)
         when "logs"
-          raise Error.new("Usage: shards mcp logs <server_name> [--no-follow] [--lines=N]") if remaining.empty?
+          raise Error.new("Usage: minecart mcp logs <server_name> [--no-follow] [--lines=N]") if remaining.empty?
           server_name = remaining.reject(&.starts_with?("--")).first? ||
-                        raise Error.new("Usage: shards mcp logs <server_name>")
+                        raise Error.new("Usage: minecart mcp logs <server_name>")
           follow = !remaining.includes?("--no-follow")
           lines = 20
           remaining.each do |arg|

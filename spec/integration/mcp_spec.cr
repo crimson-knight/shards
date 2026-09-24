@@ -15,12 +15,12 @@ private def write_mcp_shards_json(servers : Hash(String, Hash(String, String | A
 end
 
 private def read_servers_json : JSON::Any
-  path = File.join(".shards", "mcp", "servers.json")
+  path = File.join(Shards.state_directory_path(application_path), "mcp", "servers.json")
   JSON.parse(File.read(path))
 end
 
 private def cleanup_mcp_processes
-  state_path = File.join(".shards", "mcp", "servers.json")
+  state_path = File.join(Shards.state_directory_path(application_path), "mcp", "servers.json")
   if File.exists?(state_path)
     begin
       state = JSON.parse(File.read(state_path))
@@ -123,7 +123,7 @@ describe "mcp" do
       end
     end
 
-    it "creates log file in .shards/mcp/" do
+    it "creates log file in .minecart/mcp/" do
       with_shard({name: "test"}) do
         write_mcp_shards_json({
           "my_shard/logger" => {
@@ -133,7 +133,8 @@ describe "mcp" do
         })
 
         run "shards mcp start"
-        File.exists?(File.join(".shards", "mcp", "my_shard--logger.log")).should be_true
+        state_directory = Shards.state_directory_path(application_path)
+        File.exists?(File.join(state_directory, "mcp", "my_shard--logger.log")).should be_true
       end
     end
 

@@ -74,7 +74,10 @@ module Shards
             "  Expected: #{expected}\n" \
             "  Got:      #{actual}\n" \
             "This may indicate the source has been tampered with or force-pushed.\n" \
-            "Run `shards update #{package_name}` to re-resolve, or use `--skip-verify` to bypass."
+            "Run `minecart update #{package_name}` to re-resolve the dependency."
     end
+  end
+
+  class PinningError < Error
   end
 end

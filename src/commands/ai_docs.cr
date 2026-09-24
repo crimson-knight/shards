@@ -22,10 +22,10 @@ module Shards
         when "status"
           status
         when "diff"
-          raise Error.new("Usage: shards ai-docs diff <shard>") if remaining.empty?
+          raise Error.new("Usage: minecart ai-docs diff <shard>") if remaining.empty?
           diff(remaining[0])
         when "reset"
-          raise Error.new("Usage: shards ai-docs reset <shard> [file]") if remaining.empty?
+          raise Error.new("Usage: minecart ai-docs reset <shard> [file]") if remaining.empty?
           reset(remaining[0], remaining[1]?)
         when "update"
           update(remaining[0]?)

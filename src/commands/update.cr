@@ -8,6 +8,7 @@ module Shards
   module Commands
     class Update < Command
       def run(shards : Array(String))
+        check_pinning
         check_symlink_privilege
 
         Log.info { "Resolving dependencies" }
@@ -23,11 +24,9 @@ module Shards
         solver.prepare(development: Shards.with_development?)
 
         packages = handle_resolver_errors { solver.solve }
+        copy_matching_locked_checksums(packages)
         check_policy(packages)
         install(packages)
-
-        # Compute checksums for all packages (update always regenerates)
-        compute_checksums(packages)
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -51,12 +50,24 @@ module Shards
       end
 
       private def install(packages : Array(Package))
-        # first install all dependencies:
-        installed = packages.compact_map { |package| install(package) }
+        newly_installed = [] of Package
+        packages.each do |package|
+          installed = install(package)
+          if installed
+            verify_checksum_before_scripts(package)
+            newly_installed << package
+          elsif package.checksum.try(&.starts_with?("git-tree:")) || package.spec.scripts["postinstall"]?.nil?
+            verify_checksum_before_scripts(package)
+          end
+        end
+
+        # Set lock checksums from source state before any postinstall can
+        # modify installed files.
+        compute_checksums(packages)
 
         # then execute the postinstall script of installed dependencies (with
         # access to all transitive dependencies):
-        installed.each(&.postinstall)
+        newly_installed.each(&.postinstall)
 
         # always install executables because the path resolver never actually
         # installs dependencies:
@@ -80,8 +91,7 @@ module Shards
 
       private def compute_checksums(packages : Array(Package))
         packages.each do |package|
-          next unless package.installed?
-          if computed = package.compute_checksum
+          if computed = package.computed_checksum
             package.checksum = computed
           end
         end
