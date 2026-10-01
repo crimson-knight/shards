@@ -37,6 +37,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
 
+      - name: Verify vendored dependency pins
+        run: crystal run scripts/verify_vendored_dependencies.cr
+
       - name: Build release binary
         run: make bin/shards-alpha release=1
 
@@ -62,11 +65,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
+        with:
+          fetch-depth: 0
 
       - name: Download all artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
         with:
           path: artifacts
+
+      - name: Pin release assets and source commit
+        run: |
+          mkdir -p release_assets
+          cp artifacts/*/*.tar.gz release_assets/
+          curl --fail --location "https://codeload.github.com/${GITHUB_REPOSITORY}/tar.gz/refs/tags/${GITHUB_REF_NAME}" -o release_assets/shards-alpha-source.tar.gz
+          git rev-parse HEAD > release_assets/SOURCE_COMMIT.txt
+          (cd release_assets && sha256sum *.tar.gz > SHA256SUMS)
 
       - name: Generate release notes
         id: notes
@@ -83,12 +96,15 @@ jobs:
           fi
 
           cat > release_notes.md <<EOF
-          ## Ashard $VERSION
+          ## Shards Alpha $VERSION
 
-          Ashard is the public name for this
-          [Crystal Shards](https://github.com/crystal-lang/shards)-compatible fork.
-          The current release artifacts and package names still ship as
-          \`shards-alpha\` during the transition.
+          A [Crystal Shards](https://github.com/crystal-lang/shards)-compatible fork.
+          This release preserves unchanged AI documentation and shared APFS storage.
+          Customized documentation stays intact across repeated installs; explicit
+          \`ai-docs update\` still restores upstream content.
+
+          Source commit: \`$(git rev-parse HEAD)\`.
+          Verify downloaded archives against the attached \`SHA256SUMS\` file.
 
           ### Alpha Features
           - **AI docs distribution**: \`shards install\` copies AI docs from dependencies
@@ -123,6 +139,4 @@ jobs:
             --title "Shards Alpha ${{ steps.notes.outputs.version }}" \
             --notes-file release_notes.md \
             --prerelease \
-            artifacts/shards-alpha-darwin-arm64/*.tar.gz \
-            artifacts/shards-alpha-darwin-x86_64/*.tar.gz \
-            artifacts/shards-alpha-linux-x86_64/*.tar.gz
+            release_assets/*

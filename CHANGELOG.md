@@ -1,5 +1,12 @@
 # Changelog
 
+## Shards Alpha 2025.11.25.6 (2026-10-01)
+
+- Preserve unchanged dependency AI documentation and its timestamps, avoiding writes that break APFS shared storage.
+- Preserve customized documentation across repeated installs, and avoid rewriting identical upstream comparison files. Explicit `ai-docs update` still restores upstream content.
+- Pin both build dependency commits and restore vendored dependency files to their verified upstream content so frozen checksum verification succeeds.
+- Avoid the deprecated color initialization call on Crystal 1.17 and newer.
+
 ## [0.20.0] (2025-12-19)
 
 [0.20.0]: https://github.com/crystal-lang/shards/releases/0.20.0
