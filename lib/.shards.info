@@ -3,7 +3,7 @@ version: 1.0
 shards:
   molinillo:
     git: https://github.com/crystal-lang/crystal-molinillo.git
-    version: 0.2.0
+    version: 0.2.0+git.commit.6246872e187bd88cafda44743cbec263e59e5841
   mcprotocol:
     git: https://github.com/crimson-knight/mcprotocol.git
-    version: 2024-11-05
+    version: 0.1.0+git.commit.27bdfecc2988fbdab325d6d5a5e84f57adceb07c
