@@ -1,5 +1,5 @@
 name: shards-alpha
-version: 2025.11.25.5
+version: 2025.11.25.7
 description: |
  Minecart is a drop-in compatible fork of Crystal's Shards package manager,
  formerly distributed as shards-alpha. It adds AI docs distribution,
