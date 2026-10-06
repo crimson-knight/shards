@@ -34,9 +34,12 @@
   end
 end`
 - `INSTALL_DIR` = `"lib"`
+- `LEGACY_STATE_DIRECTORY` = `".shards"`
 - `LOCK_FILENAME` = `"shard.lock"`
 - `Log` = `::Log.for(self)`
 - `LOGGER_COLORS` = `{::Log::Severity::Error => :red, ::Log::Severity::Warn => :yellow, ::Log::Severity::Info => :green, ::Log::Severity::Debug => :light_gray}`
+- `MINECART_POLICY_FILENAME` = `".minecart-policy.yml"`
+- `MINECART_STATE_DIRECTORY` = `".minecart"`
 - `OVERRIDE_FILENAME` = `"shard.override.yml"`
 - `POLICY_FILENAME` = `".shards-policy.yml"`
 - `POSTINSTALL_INFO_FILENAME` = `".shards.postinstall"`
@@ -62,15 +65,16 @@ end`
 
 ### `check_and_install_dependencies(path)`
 
-### `checksum_warn=(checksum_warn)`
-
-### `checksum_warn?`
-
 ### `cli_options`
 
 ### `colors=(colors : Bool)`
 
 ### `colors?`
+
+### `config_file_path(directory : String, minecart_name : String, legacy_name : String) : String`
+
+Prefer Minecart-owned files when both names exist, while retaining reads
+from the legacy shards-alpha filename.
 
 ### `crystal_bin`
 
@@ -130,9 +134,14 @@ end`
 
 ### `skip_postinstall?`
 
-### `skip_verify=(skip_verify)`
+### `state_directory_path(directory : String) : String`
 
-### `skip_verify?`
+Existing project state stays in `.shards` until a `.minecart` directory is
+present. A new project starts in `.minecart`; it wins if both exist.
+
+### `strict_pinning=(strict_pinning)`
+
+### `strict_pinning?`
 
 ### `version_string`
 
@@ -197,6 +206,8 @@ end`
 - `Shards::PackageScanResult` (struct)
 - `Shards::ParseError` (class)
 - `Shards::PathResolver` (class)
+- `Shards::PinningChecker` (class)
+- `Shards::PinningError` (class)
 - `Shards::Policy` (class)
 - `Shards::PolicyChecker` (class)
 - `Shards::PolicyReport` (class)

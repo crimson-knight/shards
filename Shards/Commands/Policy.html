@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../../Shards/Policy.html">Policy</a>
       
@@ -1029,7 +1039,7 @@
   <dl>
     
       <dt class="entry-const" id="DEFAULT_POLICY_TEMPLATE">
-        <strong>DEFAULT_POLICY_TEMPLATE</strong> = <code><span class="s">&quot;version: 1\n\nrules:\n  sources:\n    allowed_hosts: []\n    deny_path_dependencies: false\n\n  dependencies:\n    blocked: []\n    minimum_versions: {}\n\n  security:\n    require_license: false\n    block_postinstall: false\n    audit_postinstall: false&quot;</span></code>
+        <strong>DEFAULT_POLICY_TEMPLATE</strong> = <code><span class="s">&quot;version: 1\n\nrules:\n  sources:\n    allowed_hosts: []\n    deny_path_dependencies: false\n\n  dependencies:\n    blocked: []\n    minimum_versions: {}\n    require_exact: warn\n    publishes_version_ranges: false # Set true for libraries that publish version ranges.\n\n  security:\n    require_license: false\n    block_postinstall: false\n    audit_postinstall: false&quot;</span></code>
       </dt>
       
     

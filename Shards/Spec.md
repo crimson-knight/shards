@@ -46,6 +46,8 @@
 
 ### `original_version?`
 
+### `pinning`
+
 ### `read_from_yaml?`
 
 ### `resolver`

@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../Shards/Policy.html">Policy</a>
       
@@ -1063,6 +1073,13 @@
       </li>
     
       <li class="entry-summary">
+        <a href="#checksum_for%28version%3AVersion%29%3AString-instance-method" class="signature"><strong>#checksum_for</strong>(version : Version) : String</a>
+        
+          <div class="summary"><p>Hash the commit's root tree object from the Git mirror.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#commit_sha1_at%28ref%3AGitRef%29-instance-method" class="signature"><strong>#commit_sha1_at</strong>(ref : GitRef)</a>
         
       </li>
@@ -1108,6 +1125,11 @@
       </li>
     
       <li class="entry-summary">
+        <a href="#tree_hash_for%28version%3AVersion%29%3AString-instance-method" class="signature"><strong>#tree_hash_for</strong>(version : Version) : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#update_local_cache-instance-method" class="signature"><strong>#update_local_cache</strong></a>
         
       </li>
@@ -1131,6 +1153,11 @@
     <a href="../Shards/Resolver.html#available_releases%3AArray%28Version%29-instance-method" class="tooltip">
       <span>available_releases : Array(Version)</span>
     available_releases</a>, 
+    
+  
+    <a href="../Shards/Resolver.html#checksum_for%28version%3AVersion%29%3AString%7CNil-instance-method" class="tooltip">
+      <span>checksum_for(version : Version) : String | Nil</span>
+    checksum_for</a>, 
     
   
     <a href="../Shards/Resolver.html#install_sources%28version%3AVersion%2Cinstall_path%3AString%29-instance-method" class="tooltip">
@@ -1355,6 +1382,29 @@
       </div>
     </div>
   
+    <div class="entry-detail" id="checksum_for(version:Version):String-instance-method">
+      <div class="signature">
+        
+        def <strong>checksum_for</strong>(version : <a href="../Shards/Version.html">Version</a>) : String
+
+        <a class="method-permalink" href="#checksum_for%28version%3AVersion%29%3AString-instance-method">#</a>
+      </div>
+      
+        <div class="doc">
+          
+          <p>Hash the commit's root tree object from the Git mirror. This is stable
+across machines and does not depend on installed files or postinstall
+output.</p>
+        </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L238" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
     <div class="entry-detail" id="commit_sha1_at(ref:GitRef)-instance-method">
       <div class="signature">
         
@@ -1382,7 +1432,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L255" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L269" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1430,7 +1480,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L235" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L249" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1462,7 +1512,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L259" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L273" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1494,7 +1544,23 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L459" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L475" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="tree_hash_for(version:Version):String-instance-method">
+      <div class="signature">
+        
+        def <strong>tree_hash_for</strong>(version : <a href="../Shards/Version.html">Version</a>) : String
+
+        <a class="method-permalink" href="#tree_hash_for%28version%3AVersion%29%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L242" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1510,7 +1576,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L297" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/resolvers/git.cr#L311" target="_blank">View source</a>]
         
       </div>
     </div>

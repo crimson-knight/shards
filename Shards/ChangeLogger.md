@@ -2,7 +2,7 @@
 
 ## Constants
 
-- `AUDIT_DIR` = `".shards/audit"`
+- `AUDIT_SUBDIRECTORY` = `"audit"`
 - `LOG_FILE` = `"changelog.json"`
 
 ## Class Methods

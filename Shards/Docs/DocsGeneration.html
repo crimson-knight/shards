@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../../Shards/Policy.html">Policy</a>
       
@@ -993,7 +1003,7 @@
     <use href="#octicon-link"/>
   </svg>
 </a>Documentation Generation and Theming</h2>
-<p>The <code>shards docs</code> command wraps <code>crystal docs</code> to add theming support,
+<p>The <code>minecart docs</code> command wraps <code>crystal docs</code> to add theming support,
 AI assistant integration buttons, LLM-oriented text exports, and
 publishable copies of project agent files.</p>
 <h3><a id="usage" class="anchor" href="#usage">
@@ -1012,7 +1022,7 @@ shards docs -o my_docs            # Custom output directory</code></pre>
     <use href="#octicon-link"/>
   </svg>
 </a>Theming with CSS Variables</h3>
-<p><code>shards docs</code> injects CSS custom properties into the generated
+<p><code>minecart docs</code> injects CSS custom properties into the generated
 stylesheet. To create a custom theme, create <code>docs-theme/style.css</code>
 in your project root and override the variables:</p>
 <pre><code class="language-css">:root {
@@ -1048,7 +1058,7 @@ includes the type name, project name, and documentation.</p>
 <p>Parallel <code>.md</code> files are generated for every HTML page, making
 the documentation easily consumable by AI coding assistants,
 CLI tools, and any system that prefers plain text.</p>
-<p><code>shards docs</code> also emits:</p>
+<p><code>minecart docs</code> also emits:</p>
 <ul>
 <li><code>llms.txt</code> — concise machine-oriented index of the generated docs</li>
 <li><code>llms-full.txt</code> — concatenated markdown export of the docs set</li>

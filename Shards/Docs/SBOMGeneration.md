@@ -2,7 +2,7 @@
 
 ## Software Bill of Materials (SBOM) Generation
 
-The `shards sbom` command generates a machine-readable inventory of all
+The `minecart sbom` command generates a machine-readable inventory of all
 dependencies in SPDX 2.3 or CycloneDX 1.6 JSON format for compliance
 auditing (SOC 2, ISO 27001).
 

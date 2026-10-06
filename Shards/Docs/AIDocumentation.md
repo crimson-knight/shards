@@ -3,7 +3,7 @@
 ## AI Documentation Distribution
 
 Shards can distribute AI coding agent documentation alongside library
-code. When you run `shards install`, AI docs from dependencies are
+code. When you run `minecart install`, AI docs from dependencies are
 automatically installed into the project's `.claude/` directory.
 
 ### How It Works

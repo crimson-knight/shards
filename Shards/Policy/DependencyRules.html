@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent open current" data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../../Shards/Policy.html">Policy</a>
       
@@ -1016,6 +1026,29 @@
 
 
 
+  
+    <h2>
+      <a id="constant-summary" class="anchor" href="#constant-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+      Constant Summary
+    </h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="DEFAULT_REQUIRE_EXACT">
+        <strong>DEFAULT_REQUIRE_EXACT</strong> = <code><span class="s">&quot;warn&quot;</span></code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>Flip this value to &quot;true&quot; to make exact versions the default.</p>
+      </dd>
+      
+    
+  </dl>
+
 
 
   
@@ -1030,7 +1063,7 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new%28blocked%3AArray%28Shards%3A%3APolicy%3A%3ABlockedDep%29%3D%5B%5DofBlockedDep%2Cminimum_versions%3AHash%28String%2CString%29%3D%7B%7DofString%3D%3EString%29-class-method" class="signature"><strong>.new</strong>(blocked : Array(Shards::Policy::BlockedDep) = <span class="o">[]</span> <span class="k">of</span> <span class="t">BlockedDep</span>, minimum_versions : Hash(String, String) = {} <span class="k">of</span> <span class="t">String</span> <span class="o">=&gt;</span> <span class="t">String</span>)</a>
+        <a href="#new%28blocked%3AArray%28Shards%3A%3APolicy%3A%3ABlockedDep%29%3D%5B%5DofBlockedDep%2Cminimum_versions%3AHash%28String%2CString%29%3D%7B%7DofString%3D%3EString%2Crequire_exact%3AString%3DDEFAULT_REQUIRE_EXACT%2Chas_explicit_require_exact%3ABool%3Dfalse%2Cpublishes_version_ranges%3ABool%3Dfalse%29-class-method" class="signature"><strong>.new</strong>(blocked : Array(Shards::Policy::BlockedDep) = <span class="o">[]</span> <span class="k">of</span> <span class="t">BlockedDep</span>, minimum_versions : Hash(String, String) = {} <span class="k">of</span> <span class="t">String</span> <span class="o">=&gt;</span> <span class="t">String</span>, require_exact : String = <span class="t">DEFAULT_REQUIRE_EXACT</span>, has_explicit_require_exact : Bool = <span class="n">false</span>, publishes_version_ranges : Bool = <span class="n">false</span>)</a>
         
       </li>
     
@@ -1058,7 +1091,22 @@
       </li>
     
       <li class="entry-summary">
+        <a href="#has_explicit_require_exact%3ABool-instance-method" class="signature"><strong>#has_explicit_require_exact</strong> : Bool</a>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#minimum_versions%3AHash%28String%2CString%29-instance-method" class="signature"><strong>#minimum_versions</strong> : Hash(String, String)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#publishes_version_ranges%3F%3ABool-instance-method" class="signature"><strong>#publishes_version_ranges?</strong> : Bool</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#require_exact%3AString-instance-method" class="signature"><strong>#require_exact</strong> : String</a>
         
       </li>
     
@@ -1106,18 +1154,18 @@
     Constructor Detail
   </h2>
   
-    <div class="entry-detail" id="new(blocked:Array(Shards::Policy::BlockedDep)=[]ofBlockedDep,minimum_versions:Hash(String,String)={}ofString=&gt;String)-class-method">
+    <div class="entry-detail" id="new(blocked:Array(Shards::Policy::BlockedDep)=[]ofBlockedDep,minimum_versions:Hash(String,String)={}ofString=&gt;String,require_exact:String=DEFAULT_REQUIRE_EXACT,has_explicit_require_exact:Bool=false,publishes_version_ranges:Bool=false)-class-method">
       <div class="signature">
         
-        def self.<strong>new</strong>(blocked : Array(<a href="../../Shards/Policy/BlockedDep.html">Shards::Policy::BlockedDep</a>) = <span class="o">[]</span> <span class="k">of</span> <span class="t">BlockedDep</span>, minimum_versions : Hash(String, String) = {} <span class="k">of</span> <span class="t">String</span> <span class="o">=&gt;</span> <span class="t">String</span>)
+        def self.<strong>new</strong>(blocked : Array(<a href="../../Shards/Policy/BlockedDep.html">Shards::Policy::BlockedDep</a>) = <span class="o">[]</span> <span class="k">of</span> <span class="t">BlockedDep</span>, minimum_versions : Hash(String, String) = {} <span class="k">of</span> <span class="t">String</span> <span class="o">=&gt;</span> <span class="t">String</span>, require_exact : String = <span class="t">DEFAULT_REQUIRE_EXACT</span>, has_explicit_require_exact : Bool = <span class="n">false</span>, publishes_version_ranges : Bool = <span class="n">false</span>)
 
-        <a class="method-permalink" href="#new%28blocked%3AArray%28Shards%3A%3APolicy%3A%3ABlockedDep%29%3D%5B%5DofBlockedDep%2Cminimum_versions%3AHash%28String%2CString%29%3D%7B%7DofString%3D%3EString%29-class-method">#</a>
+        <a class="method-permalink" href="#new%28blocked%3AArray%28Shards%3A%3APolicy%3A%3ABlockedDep%29%3D%5B%5DofBlockedDep%2Cminimum_versions%3AHash%28String%2CString%29%3D%7B%7DofString%3D%3EString%2Crequire_exact%3AString%3DDEFAULT_REQUIRE_EXACT%2Chas_explicit_require_exact%3ABool%3Dfalse%2Cpublishes_version_ranges%3ABool%3Dfalse%29-class-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L49" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L55" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1149,7 +1197,23 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L46" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L49" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="has_explicit_require_exact:Bool-instance-method">
+      <div class="signature">
+        
+        def <strong>has_explicit_require_exact</strong> : Bool
+
+        <a class="method-permalink" href="#has_explicit_require_exact%3ABool-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L52" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1165,7 +1229,39 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L47" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L50" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="publishes_version_ranges?:Bool-instance-method">
+      <div class="signature">
+        
+        def <strong>publishes_version_ranges?</strong> : Bool
+
+        <a class="method-permalink" href="#publishes_version_ranges%3F%3ABool-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L53" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="require_exact:String-instance-method">
+      <div class="signature">
+        
+        def <strong>require_exact</strong> : String
+
+        <a class="method-permalink" href="#require_exact%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/policy.cr#L51" target="_blank">View source</a>]
         
       </div>
     </div>

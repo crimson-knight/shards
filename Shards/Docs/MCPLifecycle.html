@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../../Shards/Policy.html">Policy</a>
       
@@ -993,9 +1003,9 @@
     <use href="#octicon-link"/>
   </svg>
 </a>MCP Server Lifecycle Management</h2>
-<p>The <code>shards mcp</code> command manages the runtime lifecycle of MCP servers
+<p>The <code>minecart mcp</code> command manages the runtime lifecycle of MCP servers
 distributed via <code>.mcp-shards.json</code>. This completes the pipeline from
-distribution (handled by <code>shards install</code>) to execution.</p>
+distribution (handled by <code>minecart install</code>) to execution.</p>
 <h3><a id="commands" class="anchor" href="#commands">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1011,7 +1021,7 @@ shards mcp logs &lt;name&gt; [--no-follow] [--lines=N]</code></pre>
     <use href="#octicon-link"/>
   </svg>
 </a>Runtime state</h3>
-<p>All managed state lives in <code>.shards/mcp/</code>:</p>
+<p>All managed state lives in <code>.minecart/mcp/</code> (or the existing <code>.shards/mcp/</code>):</p>
 <ul>
 <li><code>servers.json</code>: PID, port, timestamps per server</li>
 <li><code>&lt;name&gt;.log</code>: per-server stdout/stderr logs</li>

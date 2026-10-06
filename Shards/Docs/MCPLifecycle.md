@@ -2,9 +2,9 @@
 
 ## MCP Server Lifecycle Management
 
-The `shards mcp` command manages the runtime lifecycle of MCP servers
+The `minecart mcp` command manages the runtime lifecycle of MCP servers
 distributed via `.mcp-shards.json`. This completes the pipeline from
-distribution (handled by `shards install`) to execution.
+distribution (handled by `minecart install`) to execution.
 
 ### Commands
 
@@ -18,7 +18,7 @@ shards mcp logs <name> [--no-follow] [--lines=N]
 
 ### Runtime state
 
-All managed state lives in `.shards/mcp/`:
+All managed state lives in `.minecart/mcp/` (or the existing `.shards/mcp/`):
 - `servers.json`: PID, port, timestamps per server
 - `<name>.log`: per-server stdout/stderr logs
 - `bin/`: cached builds for `crystal_main` servers

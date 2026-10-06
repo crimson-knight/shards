@@ -8,7 +8,7 @@ each shard's postinstall command and whether it has been executed.
 This enables version-aware postinstall behavior:
 - First install: run the script, record its hash
 - Subsequent installs with same script: skip silently
-- Script changed: warn the user, require explicit `shards run-script`
+- Script changed: warn the user, require explicit `minecart run-script`
 
 ## Constants
 

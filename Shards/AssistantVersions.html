@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../Shards/Policy.html">Policy</a>
       
@@ -1026,6 +1036,11 @@
   
   <dl>
     
+      <dt class="entry-const" id="REMOVED_FILES_KEY">
+        <strong>REMOVED_FILES_KEY</strong> = <code><span class="s">&quot;./removed-files.txt&quot;</span></code>
+      </dt>
+      
+    
       <dt class="entry-const" id="VERSIONS">
         <strong>VERSIONS</strong> = <code><span class="o">{{</span> run(<span class="s">&quot;./build_assistant_versions&quot;</span>) }}</code>
       </dt>
@@ -1060,14 +1075,14 @@
       <li class="entry-summary">
         <a href="#current_files%3AHash%28String%2CString%29-class-method" class="signature"><strong>.current_files</strong> : Hash(String, String)</a>
         
-          <div class="summary"><p>Build current file state by overlaying all versions oldest-to-newest</p></div>
+          <div class="summary"><p>Build current file state by overlaying all versions oldest-to-newest.</p></div>
         
       </li>
     
       <li class="entry-summary">
         <a href="#files_changed_since%28since_version%3AString%29%3AHash%28String%2CString%29-class-method" class="signature"><strong>.files_changed_since</strong>(since_version : String) : Hash(String, String)</a>
         
-          <div class="summary"><p>Get only files that changed since a given version</p></div>
+          <div class="summary"><p>Get files changed since a given version.</p></div>
         
       </li>
     
@@ -1111,7 +1126,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L29" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L49" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1126,13 +1141,14 @@
       
         <div class="doc">
           
-          <p>Build current file state by overlaying all versions oldest-to-newest</p>
+          <p>Build current file state by overlaying all versions oldest-to-newest.
+A version's removed-files.txt lists paths that it no longer ships.</p>
         </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L9" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1147,13 +1163,14 @@
       
         <div class="doc">
           
-          <p>Get only files that changed since a given version</p>
+          <p>Get files changed since a given version. Removals are handled by
+comparing current_files with the install tracker.</p>
         </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L16" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L23" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1169,7 +1186,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L25" target="_blank">View source</a>]
+          [<a href="https://github.com/crimson-knight/shards/blob/alpha/src/assistant_versions.cr#L45" target="_blank">View source</a>]
         
       </div>
     </div>

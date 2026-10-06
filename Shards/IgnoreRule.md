@@ -1,6 +1,7 @@
 # struct Shards::IgnoreRule
 
-Ignore rule loaded from .shards-audit-ignore or --ignore flag.
+Ignore rule loaded from .minecart-audit-ignore, the legacy
+.shards-audit-ignore, or --ignore flag.
 
 ## Constructors
 

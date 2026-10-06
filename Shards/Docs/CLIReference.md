@@ -6,17 +6,17 @@
 
 | Command | Description |
 |---|---|
-| `shards install` | Install dependencies from `shard.yml` |
-| `shards update [names...]` | Update dependencies to latest compatible |
-| `shards build [targets...]` | Build targets defined in `shard.yml` |
-| `shards run [target]` | Build and run a target |
-| `shards check` | Verify all dependencies are installed |
-| `shards list [--tree]` | List installed dependencies |
-| `shards lock [--update]` | Lock dependencies without installing |
+| `minecart install` | Install dependencies from `shard.yml` |
+| `minecart update [names...]` | Update dependencies to latest compatible |
+| `minecart build [targets...]` | Build targets defined in `shard.yml` |
+| `minecart run [target]` | Build and run a target |
+| `minecart check` | Verify all dependencies are installed |
+| `minecart list [--tree]` | List installed dependencies |
+| `minecart lock [--update] [--rekey]` | Lock dependencies without installing |
 | `shards outdated [--pre]` | Show outdated dependencies |
 | `shards prune` | Remove unused dependencies |
 | `shards version [path]` | Print the shard version |
-| `shards init` | Generate a new `shard.yml` |
+| `minecart init` | Generate a new `shard.yml` |
 
 ### AI docs commands
 
@@ -27,19 +27,19 @@
 | `shards ai-docs reset <shard> [file]` | Reset to upstream version |
 | `shards ai-docs update [shard]` | Force re-install AI docs |
 | `shards ai-docs merge-mcp` | Merge shard MCP configs into `.mcp.json` |
-| `shards run-script [names...]` | Run pending postinstall scripts |
-| `shards docs [options]` | Generate themed docs with AI buttons |
-| `shards sbom [options]` | Generate SBOM (SPDX/CycloneDX) |
+| `minecart run-script [names...]` | Run pending postinstall scripts |
+| `minecart docs [options]` | Generate themed docs with AI buttons |
+| `minecart sbom [options]` | Generate SBOM (SPDX/CycloneDX) |
 
 ### MCP lifecycle commands
 
 | Command | Description |
 |---|---|
-| `shards mcp` | Show MCP server status (default) |
-| `shards mcp start [name]` | Start all or one MCP server |
-| `shards mcp stop [name]` | Stop all or one MCP server |
-| `shards mcp restart [name]` | Restart all or one MCP server |
-| `shards mcp logs <name>` | Tail server logs (`--no-follow`, `--lines=N`) |
+| `minecart mcp` | Show MCP server status (default) |
+| `minecart mcp start [name]` | Start all or one MCP server |
+| `minecart mcp stop [name]` | Stop all or one MCP server |
+| `minecart mcp restart [name]` | Restart all or one MCP server |
+| `minecart mcp logs <name>` | Tail server logs (`--no-follow`, `--lines=N`) |
 
 ### Global flags
 

@@ -2,5 +2,5 @@
 
 ## Instance Methods
 
-### `run(shards : Array(String), print = false, update = false)`
+### `run(shards : Array(String), print = false, update = false, rekey = false)`
 

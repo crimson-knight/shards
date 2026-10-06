@@ -2,7 +2,7 @@
 
 ## Documentation Generation and Theming
 
-The `shards docs` command wraps `crystal docs` to add theming support,
+The `minecart docs` command wraps `crystal docs` to add theming support,
 AI assistant integration buttons, LLM-oriented text exports, and
 publishable copies of project agent files.
 
@@ -20,7 +20,7 @@ All standard `crystal docs` options are passed through.
 
 ### Theming with CSS Variables
 
-`shards docs` injects CSS custom properties into the generated
+`minecart docs` injects CSS custom properties into the generated
 stylesheet. To create a custom theme, create `docs-theme/style.css`
 in your project root and override the variables:
 
@@ -56,7 +56,7 @@ Parallel `.md` files are generated for every HTML page, making
 the documentation easily consumable by AI coding assistants,
 CLI tools, and any system that prefers plain text.
 
-`shards docs` also emits:
+`minecart docs` also emits:
 - `llms.txt` — concise machine-oriented index of the generated docs
 - `llms-full.txt` — concatenated markdown export of the docs set
 - `llms.json` — manifest of markdown and agent resources

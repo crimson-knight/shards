@@ -1,7 +1,7 @@
 # class Shards::Spec::AIAssistant
 
 Optional `ai_assistant` section in `shard.yml` for enabling automatic
-installation/update of AI assistant configuration during `shards install`.
+installation/update of AI assistant configuration during `minecart install`.
 
 ```yaml
 ai_assistant:

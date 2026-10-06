@@ -5,7 +5,7 @@
 - `BIN_DIR` = `"bin"`
 - `Log` = `::Log.for("shards.mcp")`
 - `MCP_SHARDS_CONFIG` = `".mcp-shards.json"`
-- `RUNTIME_DIR` = `".shards/mcp"`
+- `RUNTIME_SUBDIRECTORY` = `"mcp"`
 - `STATE_FILE` = `"servers.json"`
 
 ## Constructors

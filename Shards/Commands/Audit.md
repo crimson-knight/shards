@@ -3,6 +3,7 @@
 ## Constants
 
 - `IGNORE_FILENAME` = `".shards-audit-ignore"`
+- `MINECART_IGNORE_FILENAME` = `".minecart-audit-ignore"`
 
 ## Instance Methods
 

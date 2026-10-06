@@ -24,6 +24,11 @@
 
 ### `available_releases`
 
+### `checksum_for(version : Version) : String | Nil`
+
+Returns a source identity checksum when the resolver has one that is
+independent of the installed directory.
+
 ### `install_sources(version : Version, install_path : String)`
 
 ### `latest_version_for_ref(ref : Ref | Nil) : Version`

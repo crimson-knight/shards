@@ -3,6 +3,7 @@
 ## Constants
 
 - `DEFAULT_POLICY_FILENAME` = `".shards-license-policy.yml"`
+- `MINECART_POLICY_FILENAME` = `".minecart-license-policy.yml"`
 
 ## Class Methods
 

@@ -16,7 +16,7 @@ Postinstall scripts use `PostinstallInfo` for tracking:
 - **First install**: the script runs automatically, and its hash is recorded
 - **Subsequent installs** (same script): skipped silently
 - **Script changed**: a warning is emitted, the user must run
-  `shards run-script <shard>` explicitly
+  `minecart run-script <shard>` explicitly
 
 This prevents unexpected re-execution of potentially destructive scripts
 while still notifying users when scripts change.

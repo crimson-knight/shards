@@ -698,6 +698,16 @@
       
     </li>
   
+  <li class=" " data-id="Ashard/Shards/PinningChecker" data-name="shards::pinningchecker">
+      <a href="../../Shards/PinningChecker.html">PinningChecker</a>
+      
+    </li>
+  
+  <li class=" " data-id="Ashard/Shards/PinningError" data-name="shards::pinningerror">
+      <a href="../../Shards/PinningError.html">PinningError</a>
+      
+    </li>
+  
   <li class="parent " data-id="Ashard/Shards/Policy" data-name="shards::policy">
       <a href="../../Shards/Policy.html">Policy</a>
       
@@ -1000,17 +1010,17 @@
 </a>Core commands</h3>
 <p>| Command | Description |
 |---|---|
-| <code>shards install</code> | Install dependencies from <code>shard.yml</code> |
-| <code>shards update [names...]</code> | Update dependencies to latest compatible |
-| <code>shards build [targets...]</code> | Build targets defined in <code>shard.yml</code> |
-| <code>shards run [target]</code> | Build and run a target |
-| <code>shards check</code> | Verify all dependencies are installed |
-| <code>shards list [--tree]</code> | List installed dependencies |
-| <code>shards lock [--update]</code> | Lock dependencies without installing |
+| <code>minecart install</code> | Install dependencies from <code>shard.yml</code> |
+| <code>minecart update [names...]</code> | Update dependencies to latest compatible |
+| <code>minecart build [targets...]</code> | Build targets defined in <code>shard.yml</code> |
+| <code>minecart run [target]</code> | Build and run a target |
+| <code>minecart check</code> | Verify all dependencies are installed |
+| <code>minecart list [--tree]</code> | List installed dependencies |
+| <code>minecart lock [--update] [--rekey]</code> | Lock dependencies without installing |
 | <code>shards outdated [--pre]</code> | Show outdated dependencies |
 | <code>shards prune</code> | Remove unused dependencies |
 | <code>shards version [path]</code> | Print the shard version |
-| <code>shards init</code> | Generate a new <code>shard.yml</code> |</p>
+| <code>minecart init</code> | Generate a new <code>shard.yml</code> |</p>
 <h3><a id="ai-docs-commands" class="anchor" href="#ai-docs-commands">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1023,9 +1033,9 @@
 | <code>shards ai-docs reset &lt;shard&gt; [file]</code> | Reset to upstream version |
 | <code>shards ai-docs update [shard]</code> | Force re-install AI docs |
 | <code>shards ai-docs merge-mcp</code> | Merge shard MCP configs into <code>.mcp.json</code> |
-| <code>shards run-script [names...]</code> | Run pending postinstall scripts |
-| <code>shards docs [options]</code> | Generate themed docs with AI buttons |
-| <code>shards sbom [options]</code> | Generate SBOM (SPDX/CycloneDX) |</p>
+| <code>minecart run-script [names...]</code> | Run pending postinstall scripts |
+| <code>minecart docs [options]</code> | Generate themed docs with AI buttons |
+| <code>minecart sbom [options]</code> | Generate SBOM (SPDX/CycloneDX) |</p>
 <h3><a id="mcp-lifecycle-commands" class="anchor" href="#mcp-lifecycle-commands">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>
@@ -1033,11 +1043,11 @@
 </a>MCP lifecycle commands</h3>
 <p>| Command | Description |
 |---|---|
-| <code>shards mcp</code> | Show MCP server status (default) |
-| <code>shards mcp start [name]</code> | Start all or one MCP server |
-| <code>shards mcp stop [name]</code> | Stop all or one MCP server |
-| <code>shards mcp restart [name]</code> | Restart all or one MCP server |
-| <code>shards mcp logs &lt;name&gt;</code> | Tail server logs (<code>--no-follow</code>, <code>--lines=N</code>) |</p>
+| <code>minecart mcp</code> | Show MCP server status (default) |
+| <code>minecart mcp start [name]</code> | Start all or one MCP server |
+| <code>minecart mcp stop [name]</code> | Stop all or one MCP server |
+| <code>minecart mcp restart [name]</code> | Restart all or one MCP server |
+| <code>minecart mcp logs &lt;name&gt;</code> | Tail server logs (<code>--no-follow</code>, <code>--lines=N</code>) |</p>
 <h3><a id="global-flags" class="anchor" href="#global-flags">
   <svg class="octicon-link" aria-hidden="true">
     <use href="#octicon-link"/>

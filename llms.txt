@@ -130,6 +130,8 @@ Additional markdown pages:
 - /Shards/PackageScanResult.md
 - /Shards/ParseError.md
 - /Shards/PathResolver.md
+- /Shards/PinningChecker.md
+- /Shards/PinningError.md
 - /Shards/Policy.md
 - /Shards/Policy/BlockedDep.md
 - /Shards/Policy/CustomRule.md
