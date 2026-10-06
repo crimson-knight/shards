@@ -1,13 +1,14 @@
 require "json"
+require "./config"
 
 module Shards
   class MCPManager
     Log = ::Log.for("shards.mcp")
 
-    MCP_SHARDS_CONFIG = ".mcp-shards.json"
-    RUNTIME_DIR       = ".shards/mcp"
-    STATE_FILE        = "servers.json"
-    BIN_DIR           = "bin"
+    MCP_SHARDS_CONFIG    = ".mcp-shards.json"
+    RUNTIME_SUBDIRECTORY = "mcp"
+    STATE_FILE           = "servers.json"
+    BIN_DIR              = "bin"
 
     struct ServerConfig
       getter name : String
@@ -162,7 +163,7 @@ module Shards
 
       config = resolve_single(configs, name)
       key = sanitize_name(config.name)
-      log_path = File.join(path, RUNTIME_DIR, "#{key}.log")
+      log_path = File.join(runtime_directory, "#{key}.log")
 
       unless File.exists?(log_path)
         raise Error.new("No log file found for #{config.name}. Has the server been started?")
@@ -226,7 +227,11 @@ module Shards
     # --- State persistence ---
 
     private def state_path : String
-      File.join(path, RUNTIME_DIR, STATE_FILE)
+      File.join(runtime_directory, STATE_FILE)
+    end
+
+    private def runtime_directory : String
+      File.join(Shards.state_directory_path(path), RUNTIME_SUBDIRECTORY)
     end
 
     private def load_state : StateFile
@@ -237,7 +242,7 @@ module Shards
     end
 
     private def save_state(state : StateFile)
-      dir = File.join(path, RUNTIME_DIR)
+      dir = runtime_directory
       Dir.mkdir_p(dir) unless Dir.exists?(dir)
       File.write(state_path, state.to_pretty_json + "\n")
     end
@@ -246,7 +251,7 @@ module Shards
 
     private def start_server(config : ServerConfig, state : StateFile)
       key = sanitize_name(config.name)
-      runtime_dir = File.join(path, RUNTIME_DIR)
+      runtime_dir = runtime_directory
       Dir.mkdir_p(runtime_dir) unless Dir.exists?(runtime_dir)
 
       # Determine command
@@ -283,7 +288,7 @@ module Shards
         pid: process.pid.to_i64,
         transport: config.transport,
         port: nil,
-        log_file: File.join(RUNTIME_DIR, "#{key}.log"),
+        log_file: File.join(Shards.state_directory_path(path), RUNTIME_SUBDIRECTORY, "#{key}.log"),
         command: cmd,
         args: cmd_args,
         started_at: Time.utc.to_rfc3339
@@ -317,7 +322,7 @@ module Shards
 
       # Clean up FIFO if present
       key = sanitize_name(entry.name)
-      fifo_path = File.join(path, RUNTIME_DIR, "#{key}.stdin")
+      fifo_path = File.join(runtime_directory, "#{key}.stdin")
       File.delete(fifo_path) if File.exists?(fifo_path)
 
       Log.info { "Stopped #{entry.name}" }
@@ -361,7 +366,7 @@ module Shards
 
     private def build_crystal_main(name : String, source : String) : String
       key = sanitize_name(name)
-      bin_dir = File.join(path, RUNTIME_DIR, BIN_DIR)
+      bin_dir = File.join(runtime_directory, BIN_DIR)
       Dir.mkdir_p(bin_dir) unless Dir.exists?(bin_dir)
       binary = File.join(bin_dir, key)
       source_path = File.join(path, source)

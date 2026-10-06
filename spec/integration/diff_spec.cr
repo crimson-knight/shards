@@ -23,15 +23,15 @@ end
 describe "diff command" do
   it "shows no changes for same lockfile" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      output = run "shards-alpha diff --from=current --to=current --no-color 2>&1"
+      run "minecart install --no-color"
+      output = run "minecart diff --from=current --to=current --no-color 2>&1"
       output.should contain("No dependency changes")
     end
   end
 
   it "shows added dependency via file path comparison" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       # Save a copy of the current lockfile
       File.copy("shard.lock", "old.lock")
 
@@ -39,9 +39,9 @@ describe "diff command" do
       File.write("shard.yml", to_shard_yaml({dependencies: {web: "*", pg: "*"}}))
       # Remove the lockfile so shards resolves fresh
       File.delete("shard.lock")
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
-      output = run "shards-alpha diff --from=old.lock --to=current --format=terminal --no-color 2>&1"
+      output = run "minecart diff --from=old.lock --to=current --format=terminal --no-color 2>&1"
       output.should contain("pg")
       output.should contain("+")
     end
@@ -49,14 +49,14 @@ describe "diff command" do
 
   it "produces valid JSON output" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       File.copy("shard.lock", "old.lock")
 
       File.write("shard.yml", to_shard_yaml({dependencies: {web: "*", pg: "*"}}))
       File.delete("shard.lock")
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
-      output = run "shards-alpha diff --from=old.lock --to=current --format=json --no-color 2>&1"
+      output = run "minecart diff --from=old.lock --to=current --format=json --no-color 2>&1"
       json = extract_json(output)
 
       json["from"]?.should_not be_nil
@@ -72,14 +72,14 @@ describe "diff command" do
 
   it "produces markdown output with correct structure" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       File.copy("shard.lock", "old.lock")
 
       File.write("shard.yml", to_shard_yaml({dependencies: {web: "*", pg: "*"}}))
       File.delete("shard.lock")
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
-      output = run "shards-alpha diff --from=old.lock --to=current --format=markdown --no-color 2>&1"
+      output = run "minecart diff --from=old.lock --to=current --format=markdown --no-color 2>&1"
       output.should contain("## Dependency Changes")
       output.should contain("| Status |")
       output.should contain("**Summary:**")
@@ -89,13 +89,13 @@ describe "diff command" do
 
   it "fails gracefully with invalid git ref" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       # Initialize a git repo so the git show command has somewhere to look
       run "git init 2>&1"
       run "git config user.email test@test.com 2>&1"
       run "git config user.name Test 2>&1"
       ex = expect_raises(FailedCommand) do
-        run "shards-alpha diff --from=nonexistent_ref_abc123 --to=current --no-color 2>&1"
+        run "minecart diff --from=nonexistent_ref_abc123 --to=current --no-color 2>&1"
       end
       (ex.stdout + ex.stderr).should contain("Could not read")
     end
@@ -103,16 +103,16 @@ describe "diff command" do
 
   it "diff against file path works for removed dependency" do
     with_shard({dependencies: {web: "*", pg: "*"}}) do
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
       # Save a copy with both deps
       File.copy("shard.lock", "old.lock")
 
       # Remove pg dependency
       File.write("shard.yml", to_shard_yaml({dependencies: {web: "*"}}))
       File.delete("shard.lock")
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
-      output = run "shards-alpha diff --from=old.lock --to=current --format=terminal --no-color 2>&1"
+      output = run "minecart diff --from=old.lock --to=current --format=terminal --no-color 2>&1"
       output.should contain("pg")
       output.should contain("x")
       output.should contain("removed")
@@ -125,7 +125,7 @@ describe "diff command" do
       audit_dir = File.join(application_path, ".shards", "audit")
       FileUtils.rm_rf(audit_dir) if Dir.exists?(audit_dir)
 
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
       log_path = File.join(application_path, ".shards", "audit", "changelog.json")
       File.exists?(log_path).should be_true
@@ -148,7 +148,7 @@ describe "diff command" do
       audit_dir = File.join(application_path, ".shards", "audit")
       FileUtils.rm_rf(audit_dir) if Dir.exists?(audit_dir)
 
-      run "shards-alpha install --no-color"
+      run "minecart install --no-color"
 
       log_path = File.join(application_path, ".shards", "audit", "changelog.json")
       File.exists?(log_path).should be_true
@@ -157,7 +157,7 @@ describe "diff command" do
 
       # Update to a broader range so update has something to resolve differently
       File.write("shard.yml", to_shard_yaml({dependencies: {web: ">= 2.0.0"}}))
-      run "shards-alpha update --no-color"
+      run "minecart update --no-color"
 
       parsed = JSON.parse(File.read(log_path))
       entries = parsed["entries"].as_a

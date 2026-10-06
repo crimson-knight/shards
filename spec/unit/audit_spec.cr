@@ -322,7 +322,7 @@ module Shards
 
         json = JSON.parse(io.to_s)
         json["schema_version"].should eq("1.0.0")
-        json["tool"].should eq("shards-alpha")
+        json["tool"].should eq("minecart")
         json["summary"]["total_packages"].should eq(1)
         json["summary"]["total_vulnerabilities"].should eq(1)
         json["packages"].as_a.size.should eq(1)
@@ -348,7 +348,7 @@ module Shards
         json["$schema"].as_s.should contain("sarif")
         runs = json["runs"].as_a
         runs.size.should eq(1)
-        runs.first["tool"]["driver"]["name"].should eq("shards-alpha audit")
+        runs.first["tool"]["driver"]["name"].should eq("minecart audit")
       end
     end
   end

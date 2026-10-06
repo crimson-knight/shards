@@ -19,7 +19,7 @@ module Shards
     # ## AI Documentation Distribution
     #
     # Shards can distribute AI coding agent documentation alongside library
-    # code. When you run `shards install`, AI docs from dependencies are
+    # code. When you run `minecart install`, AI docs from dependencies are
     # automatically installed into the project's `.claude/` directory.
     #
     # ### How It Works
@@ -101,7 +101,7 @@ module Shards
     # - **First install**: the script runs automatically, and its hash is recorded
     # - **Subsequent installs** (same script): skipped silently
     # - **Script changed**: a warning is emitted, the user must run
-    #   `shards run-script <shard>` explicitly
+    #   `minecart run-script <shard>` explicitly
     #
     # This prevents unexpected re-execution of potentially destructive scripts
     # while still notifying users when scripts change.
@@ -160,9 +160,9 @@ module Shards
 
     # ## MCP Server Lifecycle Management
     #
-    # The `shards mcp` command manages the runtime lifecycle of MCP servers
+    # The `minecart mcp` command manages the runtime lifecycle of MCP servers
     # distributed via `.mcp-shards.json`. This completes the pipeline from
-    # distribution (handled by `shards install`) to execution.
+    # distribution (handled by `minecart install`) to execution.
     #
     # ### Commands
     #
@@ -176,7 +176,7 @@ module Shards
     #
     # ### Runtime state
     #
-    # All managed state lives in `.shards/mcp/`:
+    # All managed state lives in `.minecart/mcp/` (or the existing `.shards/mcp/`):
     # - `servers.json`: PID, port, timestamps per server
     # - `<name>.log`: per-server stdout/stderr logs
     # - `bin/`: cached builds for `crystal_main` servers
@@ -204,17 +204,17 @@ module Shards
     #
     # | Command | Description |
     # |---|---|
-    # | `shards install` | Install dependencies from `shard.yml` |
-    # | `shards update [names...]` | Update dependencies to latest compatible |
-    # | `shards build [targets...]` | Build targets defined in `shard.yml` |
-    # | `shards run [target]` | Build and run a target |
-    # | `shards check` | Verify all dependencies are installed |
-    # | `shards list [--tree]` | List installed dependencies |
-    # | `shards lock [--update]` | Lock dependencies without installing |
+    # | `minecart install` | Install dependencies from `shard.yml` |
+    # | `minecart update [names...]` | Update dependencies to latest compatible |
+    # | `minecart build [targets...]` | Build targets defined in `shard.yml` |
+    # | `minecart run [target]` | Build and run a target |
+    # | `minecart check` | Verify all dependencies are installed |
+    # | `minecart list [--tree]` | List installed dependencies |
+    # | `minecart lock [--update] [--rekey]` | Lock dependencies without installing |
     # | `shards outdated [--pre]` | Show outdated dependencies |
     # | `shards prune` | Remove unused dependencies |
     # | `shards version [path]` | Print the shard version |
-    # | `shards init` | Generate a new `shard.yml` |
+    # | `minecart init` | Generate a new `shard.yml` |
     #
     # ### AI docs commands
     #
@@ -225,19 +225,19 @@ module Shards
     # | `shards ai-docs reset <shard> [file]` | Reset to upstream version |
     # | `shards ai-docs update [shard]` | Force re-install AI docs |
     # | `shards ai-docs merge-mcp` | Merge shard MCP configs into `.mcp.json` |
-    # | `shards run-script [names...]` | Run pending postinstall scripts |
-    # | `shards docs [options]` | Generate themed docs with AI buttons |
-    # | `shards sbom [options]` | Generate SBOM (SPDX/CycloneDX) |
+    # | `minecart run-script [names...]` | Run pending postinstall scripts |
+    # | `minecart docs [options]` | Generate themed docs with AI buttons |
+    # | `minecart sbom [options]` | Generate SBOM (SPDX/CycloneDX) |
     #
     # ### MCP lifecycle commands
     #
     # | Command | Description |
     # |---|---|
-    # | `shards mcp` | Show MCP server status (default) |
-    # | `shards mcp start [name]` | Start all or one MCP server |
-    # | `shards mcp stop [name]` | Stop all or one MCP server |
-    # | `shards mcp restart [name]` | Restart all or one MCP server |
-    # | `shards mcp logs <name>` | Tail server logs (`--no-follow`, `--lines=N`) |
+    # | `minecart mcp` | Show MCP server status (default) |
+    # | `minecart mcp start [name]` | Start all or one MCP server |
+    # | `minecart mcp stop [name]` | Stop all or one MCP server |
+    # | `minecart mcp restart [name]` | Restart all or one MCP server |
+    # | `minecart mcp logs <name>` | Tail server logs (`--no-follow`, `--lines=N`) |
     #
     # ### Global flags
     #
@@ -387,7 +387,7 @@ module Shards
 
     # ## Documentation Generation and Theming
     #
-    # The `shards docs` command wraps `crystal docs` to add theming support,
+    # The `minecart docs` command wraps `crystal docs` to add theming support,
     # AI assistant integration buttons, LLM-oriented text exports, and
     # publishable copies of project agent files.
     #
@@ -405,7 +405,7 @@ module Shards
     #
     # ### Theming with CSS Variables
     #
-    # `shards docs` injects CSS custom properties into the generated
+    # `minecart docs` injects CSS custom properties into the generated
     # stylesheet. To create a custom theme, create `docs-theme/style.css`
     # in your project root and override the variables:
     #
@@ -441,7 +441,7 @@ module Shards
     # the documentation easily consumable by AI coding assistants,
     # CLI tools, and any system that prefers plain text.
     #
-    # `shards docs` also emits:
+    # `minecart docs` also emits:
     # - `llms.txt` — concise machine-oriented index of the generated docs
     # - `llms-full.txt` — concatenated markdown export of the docs set
     # - `llms.json` — manifest of markdown and agent resources
@@ -456,7 +456,7 @@ module Shards
 
     # ## Software Bill of Materials (SBOM) Generation
     #
-    # The `shards sbom` command generates a machine-readable inventory of all
+    # The `minecart sbom` command generates a machine-readable inventory of all
     # dependencies in SPDX 2.3 or CycloneDX 1.6 JSON format for compliance
     # auditing (SOC 2, ISO 27001).
     #

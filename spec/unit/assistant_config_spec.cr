@@ -14,13 +14,27 @@ module Shards
         files.keys.any? { |k| k.includes?("CLAUDE.md") }.should be_true
         files.keys.any? { |k| k.includes?("settings.json") }.should be_true
         files.keys.any? { |k| k.includes?("skills/audit/SKILL.md") }.should be_true
+        files.keys.any? { |k| k.includes?("skills/minecart-cli/SKILL.md") }.should be_true
+        files.keys.any? { |k| k.includes?("skills/shards-cli/") }.should be_false
         files.keys.any? { |k| k.includes?("agents/compliance-checker.md") }.should be_true
+      end
+
+      it "keeps historical resources at their original shards-cli paths" do
+        historical = AssistantVersions::VERSIONS["2025.11.25.2"]
+        old_paths = [
+          "./.claude/skills/shards-cli/SKILL.md",
+          "./.claude/skills/shards-cli/reference/ai-docs-guide.md",
+          "./.claude/skills/shards-cli/reference/commands.md",
+          "./.claude/skills/shards-cli/reference/shard-yml-format.md",
+        ]
+        old_paths.each { |path| historical.has_key?(path).should be_true }
+        historical.has_key?("./.claude/skills/minecart-cli/SKILL.md").should be_false
       end
     end
 
     describe ".latest_version" do
       it "returns a version string" do
-        AssistantVersions.latest_version.should eq("2025.11.25.2")
+        AssistantVersions.latest_version.should eq("2025.11.25.3")
       end
     end
 
@@ -42,6 +56,13 @@ module Shards
       it "returns all files when given a version before all known versions" do
         changed = AssistantVersions.files_changed_since("0.0.0")
         changed.size.should eq(14)
+      end
+
+      it "returns Minecart paths and no deletion metadata after version 2025.11.25.2" do
+        changed = AssistantVersions.files_changed_since("2025.11.25.2")
+        changed.size.should eq(4)
+        changed.keys.all?(&.includes?("skills/minecart-cli/")).should be_true
+        changed.has_key?(AssistantVersions::REMOVED_FILES_KEY).should be_false
       end
     end
   end

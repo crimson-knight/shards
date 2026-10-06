@@ -4,14 +4,14 @@ require "json"
 describe "compliance-report" do
   it "generates JSON report with all sections" do
     with_shard({dependencies: {web: "*", pg: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --no-color"
 
       File.exists?("test-compliance-report.json").should be_true
       json = JSON.parse(File.read("test-compliance-report.json"))
 
       json["report"]["version"].as_s.should eq("1.0")
-      json["report"]["generator"].as_s.should contain("shards-alpha")
+      json["report"]["generator"].as_s.should contain("Minecart")
       json["report"]["project"]["name"].as_s.should eq("test")
       json["report"]["summary"]["total_dependencies"].as_i.should be >= 2
       json["report"]["summary"]["direct_dependencies"].as_i.should eq(2)
@@ -22,8 +22,8 @@ describe "compliance-report" do
 
   it "generates HTML report" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --format=html --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --format=html --no-color"
 
       File.exists?("test-compliance-report.html").should be_true
       content = File.read("test-compliance-report.html")
@@ -34,8 +34,8 @@ describe "compliance-report" do
 
   it "generates Markdown report" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --format=markdown --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --format=markdown --no-color"
 
       File.exists?("test-compliance-report.md").should be_true
       content = File.read("test-compliance-report.md")
@@ -46,8 +46,8 @@ describe "compliance-report" do
 
   it "writes to custom output path" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --output=custom-report.json --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --output=custom-report.json --no-color"
 
       File.exists?("custom-report.json").should be_true
     end
@@ -55,8 +55,8 @@ describe "compliance-report" do
 
   it "includes only selected sections" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --sections=sbom --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --sections=sbom --no-color"
 
       json = JSON.parse(File.read("test-compliance-report.json"))
       json["report"]["sections"]["sbom"]?.should_not be_nil
@@ -65,8 +65,8 @@ describe "compliance-report" do
 
   it "includes reviewer in attestation" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --reviewer=security@company.com --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --reviewer=security@company.com --no-color"
 
       json = JSON.parse(File.read("test-compliance-report.json"))
       json["report"]["attestation"]["reviewer"].as_s.should eq("security@company.com")
@@ -74,36 +74,38 @@ describe "compliance-report" do
     end
   end
 
-  it "archives report to .shards/audit/reports/" do
+  it "archives report to .minecart/audit/reports/" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --no-color"
 
-      Dir.exists?(".shards/audit/reports").should be_true
-      archived = Dir.glob(".shards/audit/reports/*.json")
+      state_directory = Shards.state_directory_path(application_path)
+      reports_directory = File.join(state_directory, "audit", "reports")
+      Dir.exists?(reports_directory).should be_true
+      archived = Dir.glob(File.join(reports_directory, "*.json"))
       archived.size.should be >= 1
     end
   end
 
   it "fails without lock file" do
     with_shard({dependencies: {web: "*"}}) do
-      ex = expect_raises(FailedCommand) { run "shards-alpha compliance-report --no-color" }
+      ex = expect_raises(FailedCommand) { run "minecart compliance-report --no-color" }
       (ex.stdout + ex.stderr).should contain("Missing shard.lock")
     end
   end
 
   it "fails with unknown format" do
     with_shard({dependencies: {web: "*"}}) do
-      run "shards-alpha install --no-color"
-      ex = expect_raises(FailedCommand) { run "shards-alpha compliance-report --format=pdf --no-color" }
+      run "minecart install --no-color"
+      ex = expect_raises(FailedCommand) { run "minecart compliance-report --format=pdf --no-color" }
       (ex.stdout + ex.stderr).should contain("Unknown report format")
     end
   end
 
   it "produces valid parseable JSON" do
     with_shard({dependencies: {web: "*", orm: "*"}}) do
-      run "shards-alpha install --no-color"
-      run "shards-alpha compliance-report --no-color"
+      run "minecart install --no-color"
+      run "minecart compliance-report --no-color"
 
       content = File.read("test-compliance-report.json")
       json = JSON.parse(content)

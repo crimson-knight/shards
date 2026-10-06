@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "${MINECART_NO_DEPRECATION:-}" != "1" ]; then
+  printf '%s\n' 'shards-alpha is now minecart; this alias will be removed in a future release' >&2
+fi
+
+exec "$(dirname "$0")/minecart" "$@"

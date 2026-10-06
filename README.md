@@ -1,16 +1,12 @@
-# Ashard
+# Minecart
 
 [![CI](https://github.com/crystal-lang/shards/workflows/CI/badge.svg)](https://github.com/crystal-lang/shards/actions?query=workflow%3ACI+event%3Apush+branch%3Amaster)
 
-Ashard is the public name for this Shards-compatible fork of the
-[Crystal language](https://crystal-lang.org) dependency manager.
-
-The name is meant to read naturally as "a shard": tooling that wraps around a
-shard, stays compatible with the `Shards` ecosystem, and adds the agent-first
-workflows we want for Amber v2 and the broader amberverse. We may personify the
-name more in the future as the Amber v2 tool family takes shape, but the
-current promise is simple: Ashard should still feel like home to anyone who
-already knows Shards.
+Minecart is a drop-in compatible fork of Crystal's [`shards`](https://crystal-lang.org)
+dependency manager, with additional supply-chain and developer tooling. It was
+formerly distributed as `shards-alpha`; that command remains as a deprecated
+alias. Existing `shard.yml`, `shard.lock`, and `lib/` workflows remain readable
+by stock `shards`.
 
 ## Usage
 
@@ -26,8 +22,8 @@ dependencies:
     path: vendors/amber_support
 
 development_dependencies:
-  ashard_spec:
-    path: tools/ashard_spec
+  spec_helper:
+    path: tools/spec_helper
 
 license: MIT
 ```
@@ -42,75 +38,61 @@ Please see the [SPEC](docs/shard.yml.adoc) for more details about the
 
 ## Install
 
-Upstream Shards is usually distributed with Crystal itself. This fork is
-currently distributed as `shards-alpha` while the public product name remains
-**Ashard**.
+Upstream Shards is usually distributed with Crystal itself. Minecart uses the
+`minecart` command. The old `shards-alpha` alias prints a one-line deprecation
+notice; set `MINECART_NO_DEPRECATION=1` to suppress it.
 
 You can download a source tarball from the same page (or clone the repository)
-then run `make release=1`and copy `bin/shards-alpha` into your `PATH`. For
-example `/usr/local/bin`.
+then run `make release=1` and copy `bin/minecart` and `bin/shards-alpha` into
+your `PATH`. For example `/usr/local/bin`.
 
 You are now ready to create a `shard.yml` for your projects (see details in
-[SPEC](docs/shard.yml.adoc)). You can type `shards-alpha init` to have an example
+[SPEC](docs/shard.yml.adoc)). You can type `minecart init` to have an example
 `shard.yml` file created for your project.
 
-Run `shards-alpha install` to install your dependencies, which will lock your
+Run `minecart install` to install your dependencies, which will lock your
 dependencies into a `shard.lock` file. You should check both `shard.yml` and
-`shard.lock` into version control, so further `shards-alpha install` will always
+`shard.lock` into version control, so further `minecart install` will always
 install locked versions, achieving reproducible installations across computers.
 
-Run `shards-alpha --help` to list other commands with their options.
+Run `minecart --help` to list other commands with their options.
 
 Happy Hacking!
 
-## Public Name
+## Project and command names
 
-The public name for this additive fork is **Ashard**.
-
-For the current release-candidate period, the shipped binary and package names
-remain `shards-alpha` so existing installs and automation keep working. The
-product story we should publish is:
-
-- **Ashard** is the public project name
-- **`shards-alpha`** is the current compatibility-preserving binary/package name
-
-More specifically:
-
-- **Ashard** is intended to read as "a shard" in ordinary English
-- The name signals tooling that sits around a shard instead of replacing the
-  shard ecosystem with a separate one
-- The codebase still exposes the `Shards` namespace because compatibility is
-  the contract
-- Over time we may personify the name more, alongside the rest of the Amber v2
-  tooling family, for people building inside the amberverse
+The product and command are both named **Minecart** (`minecart`). The manifest's
+shard name remains `shards-alpha` so existing package references keep their
+identity. The deprecated `shards-alpha` executable runs the same command.
 
 For the docs publishing story, see
 [docs/crystal-docs-gap-analysis.md](docs/crystal-docs-gap-analysis.md). It
-explains what Crystal Docs already provides and what Ashard adds on top.
+explains what Crystal Docs already provides and what Minecart adds on top.
 
 ## Compatibility Promise
 
 This repository has two operating modes:
 
 - `master` mirrors upstream `crystal-lang/shards`
-- `alpha` carries additive tooling currently distributed as `shards-alpha`
+- `alpha` carries additive tooling currently distributed as `minecart`
 
-The goal is not to replace core Shards behavior. The goal is to stay
-compatible with normal `shards` dependency-management workflows while layering
-additional tooling on top.
+Minecart is a drop-in replacement for `shards` dependency management. It reads
+stock manifests and locks, and stock `shards` reads Minecart-written manifests
+and locks. The goal is to preserve normal Shards behavior while adding
+additional tooling.
 
 We now validate that promise against `amber_cli` before treating upstream syncs
 or release-facing changes as safe. See
 [docs/upstream-compatibility.md](docs/upstream-compatibility.md) for the local
 and CI workflow, including `make compatibility`.
 
-## Ashard Features
+## Minecart Features
 
-Ashard currently ships as the `shards-alpha` binary and extends the standard
+Minecart currently ships as the `minecart` binary and extends the standard
 Crystal dependency manager with features
 for AI-assisted development. It distributes AI documentation and MCP server
 configurations alongside library code, so consuming projects get everything
-they need from `shards-alpha install`.
+they need from `minecart install`.
 
 ### AI Documentation Distribution
 
@@ -119,8 +101,8 @@ commands) that are automatically installed into the consumer's `.claude/`
 directory with shard-namespaced paths.
 
 ```sh
-shards-alpha install          # AI docs are installed alongside dependencies
-shards-alpha ai-docs          # Check status of installed AI documentation
+minecart install          # AI docs are installed alongside dependencies
+minecart ai-docs          # Check status of installed AI documentation
 ```
 
 Auto-detected locations in each dependency:
@@ -141,14 +123,14 @@ Every installed AI doc file is tracked in `.claude/.ai-docs-info.yml` with:
 - The **dependency version** from `shard.lock` (e.g., `kemal: 1.3.0`)
 - A **dual-checksum** per file: the upstream checksum (as shipped by the shard) and the installed checksum (as it exists on disk)
 
-When you run `shards update` and a dependency version changes:
+When you run `minecart update` and a dependency version changes:
 
 - **Unmodified files** (checksums match) are silently updated to the new version
 - **Locally modified files** (checksums differ) are preserved — the new upstream version is saved as `<file>.upstream` so you can merge manually
 
 This means you can safely customize AI docs from your dependencies without
-losing changes on update. Use `shards-alpha ai-docs diff <shard>` to compare
-your modifications against upstream, or `shards-alpha ai-docs reset <shard>` to
+losing changes on update. Use `minecart ai-docs diff <shard>` to compare
+your modifications against upstream, or `minecart ai-docs reset <shard>` to
 discard changes and restore the original.
 
 ### MCP Server Distribution & Lifecycle
@@ -159,11 +141,11 @@ names are namespaced as `<shard>/<server>` and paths are rewritten
 automatically.
 
 ```sh
-shards-alpha mcp              # Show server status
-shards-alpha mcp start        # Start all MCP servers
-shards-alpha mcp stop         # Stop all MCP servers
-shards-alpha mcp restart      # Restart servers
-shards-alpha mcp logs <name>  # Tail server logs
+minecart mcp              # Show server status
+minecart mcp start        # Start all MCP servers
+minecart mcp stop         # Stop all MCP servers
+minecart mcp restart      # Restart servers
+minecart mcp logs <name>  # Tail server logs
 ```
 
 ### Postinstall Script Tracking
@@ -172,8 +154,8 @@ Postinstall scripts are tracked by content hash. Changed scripts emit a
 warning instead of running automatically, requiring explicit approval:
 
 ```sh
-shards-alpha run-script              # Run all pending postinstall scripts
-shards-alpha run-script <shard>      # Run for a specific shard
+minecart run-script              # Run all pending postinstall scripts
+minecart run-script <shard>      # Run for a specific shard
 ```
 
 ### SBOM Generation
@@ -181,8 +163,8 @@ shards-alpha run-script <shard>      # Run for a specific shard
 Generate a Software Bill of Materials for your project's dependency tree:
 
 ```sh
-shards-alpha sbom                      # SPDX 2.3 JSON (default)
-shards-alpha sbom --format=cyclonedx   # CycloneDX 1.6 JSON
+minecart sbom                      # SPDX 2.3 JSON (default)
+minecart sbom --format=cyclonedx   # CycloneDX 1.6 JSON
 ```
 
 ### Documentation Generation
@@ -190,7 +172,7 @@ shards-alpha sbom --format=cyclonedx   # CycloneDX 1.6 JSON
 Generate Crystal API documentation with optional theming:
 
 ```sh
-shards-alpha docs
+minecart docs
 ```
 
 ### For Shard Authors
@@ -211,7 +193,7 @@ Set up Claude Code with compliance skills, agents, and settings for your
 project in one command:
 
 ```sh
-shards-alpha assistant init       # Install skills, agents, settings, and MCP config
+minecart assistant init       # Install skills, agents, settings, and MCP config
 ```
 
 This creates:
@@ -231,10 +213,10 @@ detect and preserve your local modifications.
 #### Managing the assistant config
 
 ```sh
-shards-alpha assistant status     # Show version, components, modified files
-shards-alpha assistant update     # Upgrade to latest (preserves local edits)
-shards-alpha assistant update --dry-run  # Preview what would change
-shards-alpha assistant remove     # Remove all tracked files
+minecart assistant status     # Show version, components, modified files
+minecart assistant update     # Upgrade to latest (preserves local edits)
+minecart assistant update --dry-run  # Preview what would change
+minecart assistant remove     # Remove all tracked files
 ```
 
 #### Selective installation
@@ -242,23 +224,23 @@ shards-alpha assistant remove     # Remove all tracked files
 Skip components you don't need:
 
 ```sh
-shards-alpha assistant init --no-agents    # Skip agent definitions
-shards-alpha assistant init --no-mcp       # Skip .mcp.json configuration
-shards-alpha assistant init --no-skills    # Skip skill files
-shards-alpha assistant init --no-settings  # Skip settings.json and CLAUDE.md
+minecart assistant init --no-agents    # Skip agent definitions
+minecart assistant init --no-mcp       # Skip .mcp.json configuration
+minecart assistant init --no-skills    # Skip skill files
+minecart assistant init --no-settings  # Skip settings.json and CLAUDE.md
 ```
 
 #### Automatic setup via shard.yml
 
 Projects can opt in to automatic assistant configuration during
-`shards-alpha install` by adding an `ai_assistant` section to `shard.yml`:
+`minecart install` by adding an `ai_assistant` section to `shard.yml`:
 
 ```yaml
 ai_assistant:
   auto_install: true
 ```
 
-When enabled, `shards-alpha install` will:
+When enabled, `minecart install` will:
 - Run `assistant init` if no assistant config exists
 - Run `assistant update` if the installed version is older than the binary
 
@@ -266,15 +248,15 @@ Skip auto-configuration with `--skip-ai-assistant`.
 
 #### Upgrading from `mcp-server init`
 
-If you previously used `shards-alpha mcp-server init` to set up skills
+If you previously used `minecart mcp-server init` to set up skills
 and agents, running `assistant init` will detect the existing files,
 adopt them into the tracking system, and create any missing files. Your
 local modifications are preserved.
 
 ## Supply Chain Compliance
 
-Ashard includes a suite of supply chain security tools, currently distributed
-through `shards-alpha`, designed for
+Minecart includes a suite of supply chain security tools, currently distributed
+through `minecart`, designed for
 SOC2 and ISO 27001 compliance. These commands can be used individually or
 combined into a unified compliance report.
 
@@ -287,16 +269,17 @@ Scan locked dependencies against the [OSV](https://osv.dev/) vulnerability
 database:
 
 ```sh
-shards-alpha audit                        # Colored terminal output
-shards-alpha audit --format=json          # Machine-readable JSON
-shards-alpha audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
-shards-alpha audit --severity=high        # Only show high/critical
-shards-alpha audit --fail-above=critical  # Exit 1 only for critical vulns
-shards-alpha audit --ignore=GHSA-xxxx     # Suppress specific advisories
-shards-alpha audit --offline              # Use cached data only
+minecart audit                        # Colored terminal output
+minecart audit --format=json          # Machine-readable JSON
+minecart audit --format=sarif         # SARIF 2.1.0 for GitHub Code Scanning
+minecart audit --severity=high        # Only show high/critical
+minecart audit --fail-above=critical  # Exit 1 only for critical vulns
+minecart audit --ignore=GHSA-xxxx     # Suppress specific advisories
+minecart audit --offline              # Use cached data only
 ```
 
-Suppressions can be managed in `.shards-audit-ignore`:
+Suppressions can be managed in `.minecart-audit-ignore`. The legacy
+`.shards-audit-ignore` name remains supported:
 
 ```yaml
 - id: GHSA-xxxx-yyyy-zzzz
@@ -306,18 +289,20 @@ Suppressions can be managed in `.shards-audit-ignore`:
 
 ### Integrity Verification
 
-Every `shards-alpha install` and `shards-alpha update` records SHA-256 checksums in
-`shard.lock`. Subsequent installs verify that installed files match.
+Git dependencies use `git-tree:<hash>` in `shard.lock`. Minecart reads the tree
+hash from the resolved commit's Git object database and verifies it before any
+postinstall script runs. Path, Mercurial, and Fossil dependencies keep their
+directory `sha256:` checksum. Existing `sha256:` lock checksums continue to
+verify; `minecart update` or `minecart lock --rekey` rewrites Git checksums to
+tree hashes. Stock `shards` safely ignores this additive checksum field.
 
-```sh
-shards-alpha install               # Checksums computed and verified automatically
-shards-alpha install --skip-verify # Bypass verification (logs a warning)
-```
+During this release, `minecart install --frozen` warns if a lock entry has no
+checksum. A later release will make that condition an error.
 
 Tampered dependencies produce a clear error:
 
 ```
-E: Checksum mismatch for web: expected sha256:abc123... got sha256:def456...
+E: Checksum verification failed for web. The resolved source may have changed
 ```
 
 ### License Compliance
@@ -325,45 +310,75 @@ E: Checksum mismatch for web: expected sha256:abc123... got sha256:def456...
 List licenses for all locked dependencies with optional policy enforcement:
 
 ```sh
-shards-alpha licenses                     # Colored table
-shards-alpha licenses --format=json       # Machine-readable JSON
-shards-alpha licenses --format=csv        # CSV export
-shards-alpha licenses --format=markdown   # Markdown table
-shards-alpha licenses --detect            # Heuristic detection from LICENSE files
-shards-alpha licenses --check             # Exit 1 on policy violations
-shards-alpha licenses --policy=path.yml   # Use custom license policy
+minecart licenses                     # Colored table
+minecart licenses --format=json       # Machine-readable JSON
+minecart licenses --format=csv        # CSV export
+minecart licenses --format=markdown   # Markdown table
+minecart licenses --detect            # Heuristic detection from LICENSE files
+minecart licenses --check             # Exit 1 on policy violations
+minecart licenses --policy=path.yml   # Use custom license policy
 ```
 
 ### Dependency Policy
 
 Define and enforce rules about what dependencies are allowed in your
-project. Create a `.shards-policy.yml` file:
+project. Create a `.minecart-policy.yml` file:
 
 ```sh
-shards-alpha policy init    # Create a starter policy file
-shards-alpha policy check   # Check dependencies against policy
-shards-alpha policy show    # Display current policy summary
+minecart policy init    # Create a starter policy file
+minecart policy check   # Check dependencies against policy
+minecart policy show    # Display current policy summary
 ```
 
 Policy rules include source host restrictions, blocked dependencies,
 minimum version requirements, and postinstall script controls. Policies
-are automatically enforced during `shards-alpha install` and `shards-alpha update`
-when a `.shards-policy.yml` file is present.
+are automatically enforced during `minecart install` and `minecart update`
+when a `.minecart-policy.yml` or legacy `.shards-policy.yml` file is present.
+
+### Dependency Pinning
+
+`install` and `update` check only the root project's runtime dependencies.
+Development dependencies, path dependencies, and transitive dependencies are
+skipped. Missing selectors, branches, and version ranges produce one warning
+per dependency; exact versions are accepted with an advisory that a commit plus
+the lock checksum is stronger. Use `--strict-pinning` to make unpinned
+dependencies errors now. The default is designed to become an error in a later
+release.
+
+Libraries that publish version ranges can set
+`rules.dependencies.publishes_version_ranges: true` in
+`.minecart-policy.yml`. Minecart then checks that `shard.lock` is committed and
+is not gitignored, warning normally and erroring with `--strict-pinning`. The
+legacy `pinning: library` shard.yml key remains supported for now and emits a
+deprecation warning. A policy can also control root
+dependency pinning with `rules.dependencies.require_exact`:
+
+```yaml
+version: 1
+rules:
+  dependencies:
+    require_exact: warn # true, warn, or false
+    publishes_version_ranges: true # library declaration; requires a committed shard.lock
+```
+
+Minecart prefers `.minecart-policy.yml`, `.minecart-audit-ignore`,
+`.minecart-license-policy.yml`, and `.minecart/` when both Minecart and legacy
+`.shards-*`/`.shards/` names exist. Legacy names continue to work.
 
 ### Change Audit Trail
 
 Compare dependency states between lockfile versions:
 
 ```sh
-shards-alpha diff                              # Compare HEAD vs current shard.lock
-shards-alpha diff --from=HEAD --to=current     # Same as above (explicit)
-shards-alpha diff --from=v1.0.0                # Compare against a git tag
-shards-alpha diff --from=old.lock              # Compare against a saved lockfile
-shards-alpha diff --format=json                # Machine-readable output
-shards-alpha diff --format=markdown            # Markdown table for PR descriptions
+minecart diff                              # Compare HEAD vs current shard.lock
+minecart diff --from=HEAD --to=current     # Same as above (explicit)
+minecart diff --from=v1.0.0                # Compare against a git tag
+minecart diff --from=old.lock              # Compare against a saved lockfile
+minecart diff --format=json                # Machine-readable output
+minecart diff --format=markdown            # Markdown table for PR descriptions
 ```
 
-An audit log is automatically maintained at `.shards/audit/changelog.json`
+An audit log is automatically maintained at `.minecart/audit/changelog.json`
 with timestamped entries for every `install` and `update` that modifies
 the lock file.
 
@@ -373,24 +388,24 @@ Generate a unified report combining all compliance data into a single
 document suitable for auditors:
 
 ```sh
-shards-alpha compliance-report                           # JSON (default)
-shards-alpha compliance-report --format=html             # Professional HTML report
-shards-alpha compliance-report --format=markdown         # Markdown report
-shards-alpha compliance-report --output=report.json      # Custom output path
-shards-alpha compliance-report --sections=sbom,integrity # Only specific sections
-shards-alpha compliance-report --reviewer=security@co.com # Add attestation
+minecart compliance-report                           # JSON (default)
+minecart compliance-report --format=html             # Professional HTML report
+minecart compliance-report --format=markdown         # Markdown report
+minecart compliance-report --output=report.json      # Custom output path
+minecart compliance-report --sections=sbom,integrity # Only specific sections
+minecart compliance-report --reviewer=security@co.com # Add attestation
 ```
 
 The report aggregates SBOM data, vulnerability findings, license inventory,
 policy compliance status, integrity verification, and change history into a
 single document with an executive summary and overall pass/fail status.
-Reports are automatically archived to `.shards/audit/reports/`.
+Reports are automatically archived to `.minecart/audit/reports/`.
 
 ## Developers
 
 ### Requirements
 
-These requirements are only necessary for compiling Ashard.
+These requirements are only necessary for compiling Minecart.
 
 * Crystal
 
@@ -412,10 +427,10 @@ These requirements are only necessary for compiling Ashard.
 
 ### Getting started
 
-It is strongly recommended to use `make` for building Ashard and developing it.
+It is strongly recommended to use `make` for building Minecart and developing it.
 The [`Makefile`](./Makefile) contains recipes for compiling and testing.
 
-Run `make bin/shards-alpha` to build the binary.
+Run `make bin/minecart` to build the binary.
 * `release=1` for a release build (applies optimizations)
 * `static=1` for static linking (only works with musl-libc)
 * `debug=1` for full symbolic debug info
@@ -424,7 +439,7 @@ Run `make install` to install the binary. Target path can be adjusted with `PREF
 
 Run `make test` to run the test suites:
 * `make test_unit` runs unit tests (`./spec/unit`)
-* `make test_integration` runs integration tests (`./spec/integration`) on `bin/shards-alpha`
+* `make test_integration` runs integration tests (`./spec/integration`) on `bin/minecart`
 
 Run `make docs` to build the manpages.
 

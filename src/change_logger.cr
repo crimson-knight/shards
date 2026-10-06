@@ -4,8 +4,8 @@ require "./lockfile_differ"
 
 module Shards
   class ChangeLogger
-    AUDIT_DIR = ".shards/audit"
-    LOG_FILE  = "changelog.json"
+    AUDIT_SUBDIRECTORY = "audit"
+    LOG_FILE           = "changelog.json"
 
     def self.record(
       project_path : String,
@@ -28,7 +28,7 @@ module Shards
     end
 
     def self.load(project_path : String) : Array(JSON::Any)
-      log_path = File.join(project_path, AUDIT_DIR, LOG_FILE)
+      log_path = File.join(Shards.state_directory_path(project_path), AUDIT_SUBDIRECTORY, LOG_FILE)
       return [] of JSON::Any unless File.exists?(log_path)
 
       parsed = JSON.parse(File.read(log_path))
@@ -84,7 +84,7 @@ module Shards
     end
 
     private def self.write_log(project_path : String, entries : Array(JSON::Any)) : Nil
-      dir = File.join(project_path, AUDIT_DIR)
+      dir = File.join(Shards.state_directory_path(project_path), AUDIT_SUBDIRECTORY)
       Dir.mkdir_p(dir)
       log_path = File.join(dir, LOG_FILE)
       tmp_path = "#{log_path}.tmp"

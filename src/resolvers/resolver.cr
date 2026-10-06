@@ -56,6 +56,12 @@ module Shards
 
     abstract def available_releases : Array(Version)
 
+    # Returns a source identity checksum when the resolver has one that is
+    # independent of the installed directory.
+    def checksum_for(version : Version) : String?
+      nil
+    end
+
     def latest_version_for_ref(ref : Ref?) : Version
       raise "Unsupported ref type for this resolver: #{ref}"
     end

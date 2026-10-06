@@ -73,7 +73,7 @@ module Shards
       end
 
       private def archive_report(report_path : String)
-        archive_dir = File.join(path, ".shards", "audit", "reports")
+        archive_dir = File.join(Shards.state_directory_path(path), "audit", "reports")
         Dir.mkdir_p(archive_dir)
 
         timestamp = Time.utc.to_s("%Y%m%d-%H%M%S")

@@ -31,7 +31,9 @@ module Shards
 
   def self.display_help_and_exit(opts)
     puts <<-HELP
-      shards [<options>...] [<command>]
+      minecart [<options>...] [<command>]
+
+      Minecart was formerly distributed as shards-alpha and is drop-in compatible with stock shards.
 
       Commands:
           build [<targets>] [<build_options>]  - Build the specified <targets> in `bin` path, all build_options are delegated to `crystal build`.
@@ -40,7 +42,7 @@ module Shards
           init                                 - Initialize a `shard.yml` file.
           install                              - Install dependencies, creating or using the `shard.lock` file.
           list [--tree]                        - List installed dependencies.
-          lock [--update] [<shards>...]        - Lock dependencies in `shard.lock` but doesn't install them.
+          lock [--update] [--rekey] [<shards>...] - Lock dependencies without installing; `--rekey` writes Git tree checksums.
           outdated [--pre]                     - List dependencies that are outdated.
           prune                                - Remove unused dependencies from `lib` folder.
           run [<target>] [<options>]           - Build and run specified target
@@ -65,13 +67,16 @@ module Shards
   end
 
   def self.run
+    reject_verification_bypass_flags
+
     display_help = false
 
     OptionParser.parse(cli_options) do |opts|
       path = Dir.current
 
       opts.on("--no-color", "Disable colored output.") { self.colors = false }
-      opts.on("--version", "Print the `shards` version.") { puts self.version_string; exit }
+      opts.on("--version", "Print the Minecart version.") { puts self.version_string; exit }
+      opts.on("--strict-pinning", "Treat unpinned root dependencies as errors.") { self.strict_pinning = true }
       opts.on("--frozen", "Strictly installs locked versions from shard.lock.") do
         self.frozen = true
       end
@@ -93,12 +98,6 @@ module Shards
       end
       opts.on("--skip-ai-assistant", "Skip AI assistant auto-configuration") do
         self.skip_ai_assistant = true
-      end
-      opts.on("--skip-verify", "Skip checksum verification during install.") do
-        self.skip_verify = true
-      end
-      opts.on("--checksum-warn", "Warn instead of failing when an installed dependency's checksum differs from shard.lock.") do
-        self.checksum_warn = true
       end
       opts.on("--local", "Don't update remote repositories, use the local cache only.") { self.local = true }
       opts.on("--jobs=N", "Number of repository downloads to perform in parallel (default: 8). Currently only for git.") { |n| self.jobs = n.to_i }
@@ -138,7 +137,8 @@ module Shards
               path,
               args[1..-1].reject(&.starts_with?("--")),
               print: args.includes?("--print"),
-              update: args.includes?("--update")
+              update: args.includes?("--update"),
+              rekey: args.includes?("--rekey")
             )
           when "outdated"
             Commands::Outdated.run(
@@ -256,6 +256,13 @@ module Shards
     end
   end
 
+  private def self.reject_verification_bypass_flags
+    if option = ARGV.find { |arg| arg == "--skip-verify" || arg.starts_with?("--skip-verify=") ||
+       arg == "--checksum-warn" || arg.starts_with?("--checksum-warn=") }
+      raise Error.new("#{option} is no longer supported; checksum verification always fails closed")
+    end
+  end
+
   def self.cli_options
     shards_opts : Array(String)
     {% if compare_versions(Crystal::VERSION, "1.0.0-0") > 0 %}
@@ -295,6 +302,12 @@ module Shards
   end
 end
 
+{% if flag?(:shards_alpha_alias) %}
+  unless ENV["MINECART_NO_DEPRECATION"]? == "1"
+    STDERR.puts "shards-alpha is now minecart; this alias will be removed in a future release"
+  end
+{% end %}
+
 begin
   Shards.run
 rescue ex : OptionParser::InvalidOption
@@ -302,6 +315,8 @@ rescue ex : OptionParser::InvalidOption
   exit 1
 rescue ex : Shards::ParseError
   ex.to_s(STDERR)
+  exit 1
+rescue ex : Shards::PinningError
   exit 1
 rescue ex : Shards::Error
   Shards::Log.error(exception: ex) { ex.message }

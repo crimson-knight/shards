@@ -32,13 +32,13 @@ module Shards
           dep.resolver.spec(lock.version)
         rescue ex : Shards::Error
           # If the locked version is not available in the changed source,
-          # `shards update` should be used instead of `shards install`.
+          # `minecart update` should be used instead of `minecart install`.
           message = String.build do |io|
             io << "Locked version #{lock.version} for #{dep.name} was not found in #{dep.resolver}"
             if dep.resolver != lock.resolver
               io << " (locked source is #{lock.resolver})"
             end
-            io << ".\n\nPlease run `shards update`"
+            io << ".\n\nPlease run `minecart update`"
           end
           raise Shards::Error.new(message, cause: ex)
         end

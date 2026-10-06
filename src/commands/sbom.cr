@@ -56,7 +56,7 @@ module Shards
                   json.field "created", Time.utc.to_rfc3339
                   json.field "creators" do
                     json.array do
-                      json.string "Tool: shards-#{VERSION}"
+                      json.string "Tool: minecart-#{VERSION}"
                     end
                   end
                   json.field "licenseListVersion", "3.25"

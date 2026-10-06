@@ -7,7 +7,8 @@ require "digest/sha256"
 module Shards
   module Commands
     class Audit < Command
-      IGNORE_FILENAME = ".shards-audit-ignore"
+      MINECART_IGNORE_FILENAME = ".minecart-audit-ignore"
+      IGNORE_FILENAME          = ".shards-audit-ignore"
 
       def run(
         format : String = "terminal",
@@ -96,7 +97,7 @@ module Shards
         end
 
         # Ignore file (explicit path or default)
-        file_path = ignore_file_path || File.join(path, IGNORE_FILENAME)
+        file_path = ignore_file_path || Shards.config_file_path(path, MINECART_IGNORE_FILENAME, IGNORE_FILENAME)
         rules.concat(VulnerabilityScanner.load_ignore_rules(file_path))
 
         rules

@@ -55,7 +55,7 @@ describe "policy" do
     metadata = {dependencies: {web: "*"}}
     with_shard(metadata) do
       run "shards policy init"
-      File.exists?(".shards-policy.yml").should be_true
+      File.exists?(".minecart-policy.yml").should be_true
     end
   end
 

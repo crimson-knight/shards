@@ -265,12 +265,13 @@ jobs:
             depends_on "crystal"
 
             def install
-              system "make", "bin/shards-alpha", "release=1"
+              system "make", "bin/minecart", "bin/shards-alpha", "release=1"
+              bin.install "bin/minecart"
               bin.install "bin/shards-alpha"
             end
 
             test do
-              assert_match "Shards Alpha", shell_output("#{bin}/shards-alpha --version")
+              assert_match "Minecart", shell_output("#{bin}/minecart --version")
             end
           end
           FORMULA_EOF
@@ -330,9 +331,9 @@ jobs:
 
           ### Verification
           - [x] `./scripts/validate_amber_cli_compatibility.sh`
-          - [ ] `brew upgrade shards-alpha` installs the new version
-          - [ ] `shards-alpha assistant status` works correctly
-          - [ ] `shards-alpha audit` works correctly
+          - [ ] `brew upgrade minecart` installs the new version
+          - [ ] `minecart assistant status` works correctly
+          - [ ] `minecart audit` works correctly
 
           ---
           *Automated by upstream-sync workflow*
@@ -425,7 +426,7 @@ jobs:
           git add <resolved-files>
           git rebase --continue
           # Verify
-          crystal build src/shards.cr -o bin/shards-alpha
+          make bin/minecart bin/shards-alpha
           crystal spec spec/unit/
           git push origin alpha --force-with-lease
           ```

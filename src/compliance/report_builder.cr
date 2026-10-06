@@ -80,7 +80,7 @@ module Shards
                      @reviewer = nil, @attestation = nil,
                      @version = "1.0",
                      @generated_at = Time.utc,
-                     @generator = "shards-alpha #{VERSION}")
+                     @generator = "Minecart #{VERSION}")
       end
     end
 
@@ -184,7 +184,7 @@ module Shards
                 json.object do
                   json.field "created", Time.utc.to_rfc3339
                   json.field "creators" do
-                    json.array { json.string "Tool: shards-alpha #{VERSION}" }
+                    json.array { json.string "Tool: Minecart #{VERSION}" }
                   end
                 end
               end
@@ -291,7 +291,7 @@ module Shards
 
       private def collect_policy_compliance : JSON::Any?
         try_collect("policy_compliance") do
-          policy_path = File.join(path, ".shards-policy.yml")
+          policy_path = Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
           return nil unless File.exists?(policy_path)
           run_subcommand(["policy", "check", "--format=json"])
         end
@@ -299,7 +299,7 @@ module Shards
 
       private def collect_change_history : JSON::Any?
         try_collect("change_history") do
-          log_path = File.join(path, ".shards", "audit", "changelog.json")
+          log_path = File.join(Shards.state_directory_path(path), "audit", "changelog.json")
           if File.exists?(log_path)
             JSON.parse(File.read(log_path))
           else
@@ -358,9 +358,9 @@ module Shards
       private def run_subcommand(args : Array(String)) : JSON::Any?
         output = IO::Memory.new
         error = IO::Memory.new
-        # Try shards-alpha first (our binary name)
+        program = Process.find_executable("minecart") ? "minecart" : "shards-alpha"
         status = Process.run(
-          "shards-alpha", args,
+          program, args,
           output: output, error: error, chdir: path
         )
         if status.success?

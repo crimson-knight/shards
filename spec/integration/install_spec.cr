@@ -433,7 +433,7 @@ describe "install" do
 
           ex = expect_raises(FailedCommand) { run "shards install --#{flag} --no-color" }
           ex.stdout.should contain("Locked version 0.1.0.git.commit.1234567890 for awesome was not found in git: #{git_url(:awesome)}")
-          ex.stdout.should contain("Please run `shards update`")
+          ex.stdout.should contain("Please run `minecart update`")
           ex.stderr.should be_empty
         end
       end
@@ -450,7 +450,7 @@ describe "install" do
 
           ex = expect_raises(FailedCommand) { run "shards install --#{flag} --no-color" }
           ex.stdout.should contain("Locked version 0.3.0 for awesome was not found in git: #{git_url(:forked_awesome)} (locked source is git: #{git_url(:awesome)})")
-          ex.stdout.should contain("Please run `shards update`")
+          ex.stdout.should contain("Please run `minecart update`")
           ex.stderr.should be_empty
         end
       end

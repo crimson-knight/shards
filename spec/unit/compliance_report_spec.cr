@@ -39,7 +39,7 @@ module Shards
         report.project.version.should eq("1.0.0")
         report.project.crystal_version.should eq("1.10.0")
         report.version.should eq("1.0")
-        report.generator.should contain("shards-alpha")
+        report.generator.should contain("Minecart")
         report.reviewer.should be_nil
         report.attestation.should be_nil
       end

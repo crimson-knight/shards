@@ -4,10 +4,10 @@ module Shards
   module Commands
     class Assistant
       HELP_TEXT = <<-HELP
-      shards-alpha assistant — Manage Claude Code assistant configuration
+      minecart assistant — Manage Claude Code assistant configuration
 
       Usage:
-          shards-alpha assistant [command] [options]
+          minecart assistant [command] [options]
 
       Commands:
           init     Install skills, agents, settings, and MCP config

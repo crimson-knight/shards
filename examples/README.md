@@ -1,6 +1,6 @@
-# Shards-Alpha Examples
+# Minecart Examples
 
-This directory contains a hands-on walkthrough of shards-alpha's features:
+This directory contains a hands-on walkthrough of Minecart's features:
 AI documentation distribution, MCP server management, and SBOM generation.
 
 ## What's Here
@@ -13,7 +13,7 @@ demo-app/            A consumer project that depends on demo-shard
 ## Prerequisites
 
 - Crystal (>= 1.0.0)
-- shards-alpha (`shards` or `shards-alpha` binary built from this repo)
+- Minecart (`minecart` or the deprecated `shards-alpha` command built from this repo)
 
 ## Step 1: Examine the Demo Shard
 
@@ -29,7 +29,7 @@ demo-shard/
   src/mcp_server.cr                           # MCP server source
 ```
 
-**Auto-detected locations** — shards-alpha scans each dependency for:
+**Auto-detected locations** — Minecart scans each dependency for:
 
 | Path | What it does |
 |------|-------------|

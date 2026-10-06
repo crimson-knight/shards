@@ -9,6 +9,8 @@
 # Shards cache
 /.crystal
 /.shards
+/.minecart
+/.crystal-cache
 
 # Test artifacts
 /spec/.repositories
@@ -19,6 +21,7 @@
 # Build artifacts
 /bin/shards
 /bin/shards-alpha
+/bin/minecart
 *.o
 *.ll
 *.s

@@ -10,7 +10,7 @@ That split is intentional. Crystal Docs already does the hard part well:
 - emits `index.json`
 - supports core metadata like project name, version, and canonical URLs
 
-For the Ashard release story, we need a little more than raw API docs. We need
+For the Minecart release story, we need a little more than raw API docs. We need
 publishable documentation that works for humans, agents, and downstream tools.
 
 ## What Crystal Docs already provides
@@ -21,7 +21,7 @@ publishable documentation that works for humans, agents, and downstream tools.
 - source URL linking
 - template support inside the Crystal compiler project
 
-## What Ashard adds today through `shards docs`
+## What Minecart adds today through `minecart docs`
 
 - project theme overrides from `docs-theme/style.css`
 - AI action buttons in generated HTML pages
@@ -46,7 +46,7 @@ ever want the compiler tool to natively own the full publishing story:
 5. A stable theme override interface that does not require template patching
 6. A publish mode for GitHub Pages or static-site deployment targets
 
-## Why we are keeping this in Ashard for now
+## Why we are keeping this in Minecart for now
 
 Keeping these features in `shards docs` has three advantages:
 
@@ -57,8 +57,8 @@ Keeping these features in `shards docs` has three advantages:
 
 ## Recommended release message
 
-For the Amber v2 and Ashard release notes, the accurate wording is:
+For the Amber v2 and Minecart release notes, the accurate wording is:
 
-> Crystal Docs remains the API documentation engine. Ashard adds the publishing
+> Crystal Docs remains the API documentation engine. Minecart adds the publishing
 > layer that turns those docs into a distributable site with Markdown, JSON,
 > `llms.txt`, and agent-file exports.

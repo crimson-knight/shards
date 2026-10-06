@@ -1,10 +1,10 @@
 name: shards-alpha
-version: 2025.11.25.6
+version: 2025.11.25.7
 description: |
- Fork of Crystal's Shards package manager with alpha features:
- AI docs distribution, SBOM generation, MCP server distribution,
- Claude Code assistant config, supply chain compliance tools,
- docs theming, and postinstall script tracking.
+ Minecart is a drop-in compatible fork of Crystal's Shards package manager,
+ formerly distributed as shards-alpha. It adds AI docs distribution,
+ SBOM generation, MCP server distribution, assistant configuration,
+ supply chain compliance tools, docs theming, and postinstall tracking.
 
 authors:
   - Julien Portalier <julien@portalier.com>
@@ -22,6 +22,8 @@ dependencies:
     commit: 27bdfecc2988fbdab325d6d5a5e84f57adceb07c
 
 targets:
+  minecart:
+    main: src/shards.cr
   shards-alpha:
     main: src/shards.cr
 

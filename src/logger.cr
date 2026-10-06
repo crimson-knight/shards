@@ -2,13 +2,7 @@ require "colorize"
 require "log"
 
 module Shards
-  class_property? colors : Bool = begin
-    {% if compare_versions(Crystal::VERSION, "1.17.0") >= 0 %}
-      Colorize.enabled?
-    {% else %}
-      Colorize.on_tty_only!
-    {% end %}
-  end
+  class_property? colors : Bool = Colorize.default_enabled?(STDOUT, STDERR)
 end
 
 Log.setup_from_env(

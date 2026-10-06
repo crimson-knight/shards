@@ -2,7 +2,7 @@
 
 # Recipes for this Makefile
 
-## Build shards
+## Build Minecart and compatibility commands
 ##   $ make -f Makefile.win
 ## Build shards in release mode
 ##   $ make -f Makefile.win release=1
@@ -55,30 +55,45 @@ BINDIR ?= $(prefix)
 all: build
 
 .PHONY: build
-build: bin\shards.exe
+build: bin\minecart.exe bin\shards-alpha.exe bin\shards.exe
 
 .PHONY: clean
 clean: ## Remove build artifacts
 clean:
+	$(call RM,"bin\minecart.exe")
+	$(call RM,"bin\shards-alpha.exe")
 	$(call RM,"bin\shards.exe")
 
-bin\shards.exe: $(SOURCES) $(TEMPLATES)
+bin\minecart.exe: $(SOURCES) $(TEMPLATES)
 	@$(call MKDIR,"bin")
 	$(call export_vars)
-	$(CRYSTAL) build $(FLAGS) -o bin\shards.exe src\shards.cr
+	$(CRYSTAL) build $(FLAGS) -o bin\minecart.exe src\shards.cr
+
+bin\shards-alpha.exe: $(SOURCES) $(TEMPLATES)
+	@$(call MKDIR,"bin")
+	$(call export_vars)
+	$(CRYSTAL) build $(FLAGS) -Dshards_alpha_alias -o bin\shards-alpha.exe src\shards.cr
+
+bin\shards.exe: FORCE bin\minecart.exe
+	copy /Y bin\minecart.exe bin\shards.exe >NUL
+
+.PHONY: FORCE
+FORCE:
 
 .PHONY: install
-install: ## Install shards
-install: bin\shards.exe
+install: ## Install Minecart and compatibility commands
+install: bin\minecart.exe bin\shards-alpha.exe bin\shards.exe
 	$(call MKDIR,"$(BINDIR)")
+	$(call INSTALL,"bin\minecart.exe","$(BINDIR)\minecart.exe")
+	$(call INSTALL,"bin\shards-alpha.exe","$(BINDIR)\shards-alpha.exe")
 	$(call INSTALL,"bin\shards.exe","$(BINDIR)\shards.exe")
-	$(call INSTALL,"bin\shards.pdb","$(BINDIR)\shards.pdb")
 
 .PHONY: uninstall
 uninstall: ## Uninstall shards
 uninstall:
+	$(call RM,"$(BINDIR)\minecart.exe")
+	$(call RM,"$(BINDIR)\shards-alpha.exe")
 	$(call RM,"$(BINDIR)\shards.exe")
-	$(call RM,"$(BINDIR)\shards.pdb")
 
 .PHONY: test
 test: ## Run all tests
@@ -90,7 +105,7 @@ test_unit: ## Run unit tests
 
 .PHONY: test_integration
 test_integration: ## Run integration tests
-test_integration: bin\shards.exe
+test_integration: bin\shards.exe bin\shards-alpha.exe
 	$(CRYSTAL) spec .\spec\integration
 
 .PHONY: help

@@ -232,6 +232,20 @@ module Shards
       capture("git log -n 1 --pretty=%H #{Process.quote(ref.to_git_ref)}").strip
     end
 
+    # Hash the commit's root tree object from the Git mirror. This is stable
+    # across machines and does not depend on installed files or postinstall
+    # output.
+    def checksum_for(version : Version) : String
+      "git-tree:#{tree_hash_for(version)}"
+    end
+
+    def tree_hash_for(version : Version) : String
+      update_local_cache
+      git_version = parse_git_version(version)
+      commit = git_version.commit || commit_sha1_at(git_ref(version))
+      capture("git rev-parse --verify #{Process.quote("#{commit}^{tree}")}").strip
+    end
+
     def local_path
       @local_path ||= begin
         uri = parse_uri(git_url)
@@ -323,7 +337,7 @@ module Shards
       # The git-config option core.askPass is set to a command that is to be
       # called when git needs to ask for credentials (for example on a 401
       # response over HTTP). Setting the command to `true` effectively
-      # disables the credential prompt, because `shards install` is not to
+      # disables the credential prompt, because `minecart install` is not to
       # be used interactively.
       # This configuration can be overridden by defining the environment
       # variable `GIT_ASKPASS`.
@@ -334,7 +348,9 @@ module Shards
 
     private def fetch_repository
       git_retry(err: "Failed to update #{git_url}") do
-        run "git fetch --all --quiet"
+        # A moved tag must update in the mirror so a locked tree checksum can
+        # detect the changed source instead of continuing to trust stale data.
+        run "git fetch --all --quiet --force"
       end
     end
 

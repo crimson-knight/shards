@@ -9,6 +9,8 @@ module Shards
   module Commands
     class Install < Command
       def run
+        check_pinning
+
         if Shards.frozen? && !lockfile?
           raise Error.new("Missing shard.lock")
         end
@@ -27,13 +29,7 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
 
-        # Propagate checksums from lock file to resolved packages
-        if lockfile?
-          lock_checksums = locks.shards.to_h { |p| {p.name, p.checksum} }
-          packages.each do |pkg|
-            pkg.checksum = lock_checksums[pkg.name]?
-          end
-        end
+        copy_matching_locked_checksums(packages)
 
         check_policy(packages)
 
@@ -48,11 +44,7 @@ module Shards
         # fires after attacker-supplied code has executed is not a control.
         # This pass covers only what that loop did not: packages that were
         # already present, and therefore ran no script this session.
-        unless Shards.skip_verify?
-          verify_or_compute_checksums(packages, verified)
-        else
-          Log.warn { "Checksum verification skipped (--skip-verify)" }
-        end
+        verify_or_compute_checksums(packages, verified)
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -112,13 +104,9 @@ module Shards
           # first install the dependency:
           next unless install(package)
 
-          # verify the freshly-installed files against the locked checksum
-          # BEFORE running any code they contain. Fails the install by
-          # default; --checksum-warn downgrades to a warning.
-          unless Shards.skip_verify?
-            verify_checksum_before_scripts(package)
-            verified << package.name
-          end
+          # Verify the source identity before running any dependency code.
+          verify_checksum_before_scripts(package)
+          verified << package.name
 
           # then execute the postinstall script
           # (with access to all transitive dependencies):
@@ -129,33 +117,6 @@ module Shards
           package.install_executables
         end
         verified
-      end
-
-      # Pre-script checksum gate for a single freshly-installed package.
-      # Mismatch raises by default: the files on disk are not the files the
-      # lock was written against, and the next thing that would happen to
-      # them is script execution. --checksum-warn downgrades to a warning so
-      # a knowingly-moved dependency can still be installed deliberately.
-      private def verify_checksum_before_scripts(package : Package)
-        return if package.resolver.is_a?(PathResolver) && !Shards.frozen?
-
-        if expected = package.checksum
-          actual = package.compute_checksum
-          if actual && actual != expected
-            if Shards.checksum_warn?
-              Log.warn { "Checksum mismatch for #{package.name} (expected #{expected}, got #{actual}) — continuing because --checksum-warn is set" }
-            else
-              raise ChecksumMismatch.new(package.name, expected, actual)
-            end
-          else
-            Log.debug { "Checksum verified for #{package.name} before scripts" }
-          end
-        elsif computed = package.compute_checksum
-          # No checksum in the lock yet (migration case): record what was
-          # actually installed so the next install has something to verify.
-          package.checksum = computed
-          Log.debug { "Computed checksum for #{package.name}: #{computed}" }
-        end
       end
 
       private def install(package : Package)
@@ -180,44 +141,6 @@ module Shards
         return true if locks.shards.any? { |pkg| pkg.checksum.nil? }
 
         packages.index_by(&.name) != locks.shards.index_by(&.name)
-      end
-
-      private def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new)
-        packages.each do |package|
-          next unless package.installed?
-          # Already settled pre-script during this run. Re-checking now would
-          # compare against a directory the package's own postinstall script
-          # may have written into (build artifacts, compiled binaries), which
-          # is a guaranteed false mismatch, not a detection.
-          next if already_verified.includes?(package.name)
-          # A package that was already present and declares a postinstall
-          # script carries that script's artifacts from an earlier run, so its
-          # on-disk state cannot be compared to a source checksum. Nothing is
-          # executed for it this run, so there is no pre-execution gate to make.
-          next if !package.spec.scripts["postinstall"]?.nil?
-          # Path dependencies in non-frozen mode are symlinks, skip verification
-          # but in frozen mode they should still be verified
-          next if package.resolver.is_a?(PathResolver) && !Shards.frozen?
-
-          if expected = package.checksum
-            # Verify against locked checksum
-            actual = package.compute_checksum
-            if actual && actual != expected
-              if Shards.checksum_warn?
-                Log.warn { "Checksum mismatch for #{package.name} (expected #{expected}, got #{actual}) — continuing because --checksum-warn is set" }
-              else
-                raise ChecksumMismatch.new(package.name, expected, actual)
-              end
-            end
-            Log.debug { "Checksum verified for #{package.name}" }
-          else
-            # No checksum in lock file yet (migration case) -- compute and store
-            if computed = package.compute_checksum
-              package.checksum = computed
-              Log.debug { "Computed checksum for #{package.name}: #{computed}" }
-            end
-          end
-        end
       end
     end
   end

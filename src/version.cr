@@ -9,9 +9,9 @@ module Shards
 
   def self.version_string
     if BUILD_SHA1.empty?
-      "Shards Alpha #{VERSION} (#{BUILD_DATE})"
+      "Minecart #{VERSION} (#{BUILD_DATE})"
     else
-      "Shards Alpha #{VERSION} [#{BUILD_SHA1}] (#{BUILD_DATE})"
+      "Minecart #{VERSION} [#{BUILD_SHA1}] (#{BUILD_DATE})"
     end
   end
 end

@@ -10,13 +10,13 @@ module Shards
 
         # when more than one target was specified
         if targets.size > 1
-          raise Error.new("Error please specify only one target. If you meant to pass arguments you may use 'shards run target -- args'")
+          raise Error.new("Error please specify only one target. If you meant to pass arguments you may use 'minecart run target -- args'")
         end
 
         # when no target was specified
         if targets.empty?
           if spec.targets.size > 1
-            raise Error.new("Error please specify the target with 'shards run target'")
+            raise Error.new("Error please specify the target with 'minecart run target'")
           else
             name = spec.targets.first.name
           end

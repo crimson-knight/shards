@@ -37,8 +37,8 @@ We treat compatibility as a release gate, not a best-effort guideline.
    successfully with this fork.
 5. Upstream sync and release-facing changes must document the rationale,
    verification, and rollback story in the PR itself.
-6. `shards-alpha` remains a working distribution name until we choose a final
-   public name. Naming can change later, but compatibility expectations do not.
+6. Public naming is recorded in ADR 0003. The compatibility expectations above
+   do not depend on the distribution name.
 
 ## Consequences
 

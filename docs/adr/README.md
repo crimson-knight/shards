@@ -4,6 +4,9 @@ This directory records the durable "why" behind changes that affect how this
 fork tracks upstream Crystal Shards, how additive features are introduced, and
 how releases are validated.
 
+The current public name is Minecart. See [ADR 0003](0003-public-name-minecart.md);
+it supersedes [ADR 0002](0002-public-name-ashard.md).
+
 ## When to add an ADR
 
 Create or update an ADR when a change affects any of these:

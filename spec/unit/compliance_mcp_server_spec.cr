@@ -190,7 +190,7 @@ module Shards
 
     describe "HELP_TEXT" do
       it "includes usage information" do
-        ComplianceMCPServer::HELP_TEXT.should contain("shards-alpha mcp-server")
+        ComplianceMCPServer::HELP_TEXT.should contain("minecart mcp-server")
       end
 
       it "lists all 6 tool names" do
@@ -205,7 +205,7 @@ module Shards
       it "includes init command and examples" do
         ComplianceMCPServer::HELP_TEXT.should contain("init")
         ComplianceMCPServer::HELP_TEXT.should contain("Configure .mcp.json for MCP server")
-        ComplianceMCPServer::HELP_TEXT.should contain("shards-alpha assistant init")
+        ComplianceMCPServer::HELP_TEXT.should contain("minecart assistant init")
       end
 
       it "documents --interactive and --help flags" do

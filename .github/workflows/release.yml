@@ -18,13 +18,10 @@ jobs:
         include:
           - os: macos-15
             arch: arm64
-            artifact: shards-alpha-darwin-arm64
-          - os: macos-15-intel
-            arch: x86_64
-            artifact: shards-alpha-darwin-x86_64
+            artifact: minecart-darwin-arm64
           - os: ubuntu-24.04
             arch: x86_64
-            artifact: shards-alpha-linux-x86_64
+            artifact: minecart-linux-x86_64
 
     runs-on: ${{ matrix.os }}
 
@@ -45,11 +42,12 @@ jobs:
         run: crystal run scripts/verify_vendored_dependencies.cr
 
       - name: Build release binary
-        run: make bin/shards-alpha release=1
+        run: make bin/minecart bin/shards-alpha release=1
 
       - name: Package binary
         run: |
           mkdir -p dist
+          cp bin/minecart dist/
           cp bin/shards-alpha dist/
           cp LICENSE dist/
           cp man/shards.1 dist/ 2>/dev/null || true
@@ -81,7 +79,10 @@ jobs:
         run: |
           mkdir -p release_assets
           cp artifacts/*/*.tar.gz release_assets/
-          curl --fail --location "https://codeload.github.com/${GITHUB_REPOSITORY}/tar.gz/refs/tags/${GITHUB_REF_NAME}" -o release_assets/shards-alpha-source.tar.gz
+          version="${GITHUB_REF_NAME#v}"
+          source_archive="minecart-source-${version}.tar.gz"
+          git archive --format=tar.gz --prefix="minecart-${version}/" -o "release_assets/${source_archive}" HEAD
+          (cd release_assets && sha256sum "${source_archive}" > "${source_archive}.sha256")
           git rev-parse HEAD > release_assets/SOURCE_COMMIT.txt
           (cd release_assets && sha256sum *.tar.gz > SHA256SUMS)
 
@@ -100,34 +101,34 @@ jobs:
           fi
 
           cat > release_notes.md <<EOF
-          ## Shards Alpha $VERSION
+          ## Minecart $VERSION
 
-          A [Crystal Shards](https://github.com/crystal-lang/shards)-compatible fork.
-          This release preserves unchanged AI documentation and shared APFS storage.
-          Customized documentation stays intact across repeated installs; explicit
-          \`ai-docs update\` still restores upstream content.
+          Minecart is a drop-in compatible fork of
+          [Crystal Shards](https://github.com/crystal-lang/shards), formerly
+          distributed as \`shards-alpha\`.
 
           Source commit: \`$(git rev-parse HEAD)\`.
           Verify downloaded archives against the attached \`SHA256SUMS\` file.
 
           ### Alpha Features
-          - **AI docs distribution**: \`shards install\` copies AI docs from dependencies
-          - **SBOM generation**: \`shards sbom\` produces SPDX 2.3 / CycloneDX 1.6 JSON
+          - **AI docs distribution**: \`minecart install\` copies AI docs from dependencies
+          - **SBOM generation**: \`minecart sbom\` produces SPDX 2.3 / CycloneDX 1.6 JSON
           - **MCP server distribution**: Dependencies can ship MCP server configs
-          - **Docs theming**: \`shards docs\` with CSS theming and AI assistant buttons
+          - **Docs theming**: \`minecart docs\` with CSS theming and AI assistant buttons
           - **Postinstall tracking**: Version-aware script execution
 
           ### Install via Homebrew
           \`\`\`
           brew tap crimson-knight/tap
-          brew install shards-alpha
+          brew install minecart
           \`\`\`
 
           ### Documentation
           [https://crimson-knight.github.io/shards](https://crimson-knight.github.io/shards)
 
           ### Install from binary
-          Download the archive for your platform and extract \`shards-alpha\` to your PATH.
+          Download the archive for your platform and extract \`minecart\` and
+          \`shards-alpha\` to your PATH. The alias prints a deprecation notice.
 
           ### Changes
           \`\`\`
@@ -140,7 +141,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ github.ref_name }}" \
-            --title "Shards Alpha ${{ steps.notes.outputs.version }}" \
+            --title "Minecart ${{ steps.notes.outputs.version }}" \
             --notes-file release_notes.md \
             --prerelease \
             release_assets/*

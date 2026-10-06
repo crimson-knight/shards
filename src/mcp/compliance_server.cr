@@ -68,7 +68,7 @@ module Shards
       ),
       MCProtocol::Tool.new(
         name: "policy_check",
-        description: "Check dependencies against policy rules defined in .shards-policy.yml. Validates allowed licenses, version constraints, and source requirements.",
+        description: "Check dependencies against policy rules in .minecart-policy.yml or the legacy .shards-policy.yml. Validates allowed licenses, version constraints, and source requirements.",
         inputSchema: MCProtocol::ToolInputSchema.new(
           properties: JSON::Any.new({
             "strict" => JSON::Any.new({
@@ -130,10 +130,10 @@ module Shards
     ]
 
     HELP_TEXT = <<-HELP
-    shards-alpha mcp-server — MCP compliance server (JSON-RPC 2.0 over stdio)
+    minecart mcp-server — MCP compliance server (JSON-RPC 2.0 over stdio)
 
     Usage:
-        shards-alpha mcp-server [command] [options]
+        minecart mcp-server [command] [options]
 
     Commands:
         init               Configure .mcp.json for MCP server
@@ -152,12 +152,12 @@ module Shards
         sbom               Generate Software Bill of Materials (SPDX/CycloneDX)
 
     Examples:
-        shards-alpha mcp-server init          # Configure .mcp.json
-        shards-alpha mcp-server               # Start server (for MCP clients)
-        shards-alpha mcp-server --interactive  # Manual testing mode
+        minecart mcp-server init          # Configure .mcp.json
+        minecart mcp-server               # Start server (for MCP clients)
+        minecart mcp-server --interactive  # Manual testing mode
 
     For Claude Code skills, agents, and settings, use:
-        shards-alpha assistant init
+        minecart assistant init
     HELP
 
     MCP_SERVER_NAME = "shards-compliance"
@@ -180,7 +180,7 @@ module Shards
       if args.includes?("init")
         init_mcp_config(path)
         puts ""
-        puts "MCP server configured. Run 'shards-alpha assistant init' for skills, agents, and Claude Code config."
+        puts "MCP server configured. Run 'minecart assistant init' for skills, agents, and Claude Code config."
         return
       end
 
@@ -261,7 +261,11 @@ module Shards
     end
 
     private def self.find_executable_for_config : String
-      # Prefer shards-alpha on PATH for portability
+      # Prefer the current executable name, with the deprecated command as a
+      # compatibility fallback.
+      if Process.find_executable("minecart")
+        return "minecart"
+      end
       if Process.find_executable("shards-alpha")
         return "shards-alpha"
       end
@@ -271,7 +275,7 @@ module Shards
         return path
       end
 
-      "shards-alpha"
+      "minecart"
     end
 
     def run
@@ -604,7 +608,10 @@ module Shards
         return path
       end
 
-      # Fall back to finding shards-alpha on PATH
+      # Fall back to the deprecated alias for existing installations.
+      if path = Process.find_executable("minecart")
+        return path
+      end
       if path = Process.find_executable("shards-alpha")
         return path
       end
@@ -614,7 +621,7 @@ module Shards
         return path
       end
 
-      raise "Could not find shards-alpha executable"
+      raise "Could not find minecart executable"
     end
 
     private def send_response(response, *, pretty : Bool = false)

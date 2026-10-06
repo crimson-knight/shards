@@ -2,9 +2,9 @@
 
 # Recipes for this Makefile
 
-## Build shards-alpha
+## Build Minecart
 ##   $ make
-## Build shards-alpha in release mode
+## Build Minecart in release mode
 ##   $ make release=1
 ## Run tests
 ##   $ make test
@@ -16,11 +16,11 @@
 ##   $ make docs_site
 ## Validate compatibility with amber_cli
 ##   $ make compatibility
-## Install shards-alpha
+## Install Minecart and its compatibility alias
 ##   $ make install
-## Uninstall shards-alpha
+## Uninstall Minecart and its compatibility alias
 ##   $ make uninstall
-## Build and install shards-alpha
+## Build and install Minecart
 ##   $ make build && sudo make install
 
 release ?=      ## Compile in release mode
@@ -65,7 +65,7 @@ all: build
 include docs.mk
 
 .PHONY: build
-build: bin/shards-alpha$(EXE)
+build: bin/minecart$(EXE) bin/shards-alpha$(EXE)
 
 .PHONY: docs_site
 docs_site: ## Build the publishable docs site
@@ -78,35 +78,49 @@ compatibility: ## Validate amber_cli compatibility
 .PHONY: clean
 clean: ## Remove build artifacts
 clean: clean_docs
-	rm -f bin/shards-alpha$(EXE) bin/shards$(EXE)
+	rm -f bin/minecart$(EXE) bin/shards-alpha$(EXE) bin/shards$(EXE)
 
-bin/shards-alpha$(EXE): $(SOURCES) $(TEMPLATES)
+bin/minecart$(EXE): $(SOURCES) $(TEMPLATES)
 	@mkdir -p bin
 	$(EXPORTS) $(CRYSTAL) build $(FLAGS) src/shards.cr -o "$@"
 
+ifeq ($(WINDOWS),1)
+bin/shards-alpha$(EXE): $(SOURCES) $(TEMPLATES)
+	@mkdir -p bin
+	$(EXPORTS) $(CRYSTAL) build $(FLAGS) -Dshards_alpha_alias src/shards.cr -o "$@"
+else
+bin/shards-alpha$(EXE): bin/minecart$(EXE) scripts/shards-alpha
+	@mkdir -p bin
+	cp scripts/shards-alpha "$@"
+	chmod +x "$@"
+endif
+
 # Symlink for test compatibility (integration tests call `shards`, not `shards-alpha`)
-bin/shards$(EXE): bin/shards-alpha$(EXE)
-	ln -sf shards-alpha$(EXE) bin/shards$(EXE)
+.PHONY: FORCE
+FORCE:
+
+bin/shards$(EXE): FORCE bin/minecart$(EXE)
+	ln -sf minecart$(EXE) bin/shards$(EXE)
 
 .PHONY: install
-install: ## Install shards-alpha
-install: bin/shards-alpha$(EXE) man/shards.1.gz man/shard.yml.5.gz
+install: ## Install Minecart and the compatibility alias
+install: bin/minecart$(EXE) bin/shards-alpha$(EXE) man/shards.1.gz man/shard.yml.5.gz
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(BINDIR)" "$(DESTDIR)$(MANDIR)/man1" "$(DESTDIR)$(MANDIR)/man5"
-	$(INSTALL) -m 0755 bin/shards-alpha$(EXE) "$(DESTDIR)$(BINDIR)"
+	$(INSTALL) -m 0755 bin/minecart$(EXE) bin/shards-alpha$(EXE) "$(DESTDIR)$(BINDIR)"
 	$(INSTALL) -m 0644 man/shards.1.gz "$(DESTDIR)$(MANDIR)/man1"
 	$(INSTALL) -m 0644 man/shard.yml.5.gz "$(DESTDIR)$(MANDIR)/man5"
 
 ifeq ($(WINDOWS),1)
 .PHONY: install_dlls
-install_dlls: bin/shards-alpha$(EXE) ## Install the dependent DLLs at DESTDIR (Windows only)
+install_dlls: bin/minecart$(EXE) ## Install the dependent DLLs at DESTDIR (Windows only)
 	$(INSTALL) -d -m 0755 "$(BINDIR)/"
-	@ldd bin/shards-alpha$(EXE) | grep -iv ' => /c/windows/system32' | sed 's/.* => //; s/ (.*//' | xargs -t -i $(INSTALL) -m 0755 '{}' "$(BINDIR)/"
+	@ldd bin/minecart$(EXE) | grep -iv ' => /c/windows/system32' | sed 's/.* => //; s/ (.*//' | xargs -t -i $(INSTALL) -m 0755 '{}' "$(BINDIR)/"
 endif
 
 .PHONY: uninstall
-uninstall: ## Uninstall shards-alpha
+uninstall: ## Uninstall Minecart and its compatibility alias
 uninstall:
-	rm -f "$(DESTDIR)$(BINDIR)/shards-alpha"
+	rm -f "$(DESTDIR)$(BINDIR)/minecart" "$(DESTDIR)$(BINDIR)/shards-alpha"
 	rm -f "$(DESTDIR)$(MANDIR)/man1/shards.1.gz"
 	rm -f "$(DESTDIR)$(MANDIR)/man5/shard.yml.5.gz"
 
