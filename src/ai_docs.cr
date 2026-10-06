@@ -240,14 +240,22 @@ module Shards
       installed_files << relative_dest
 
       if File.exists?(dest)
-        if file_entry = entry.files[relative_dest]?
-          installed_checksum = AIDocsInfo.checksum_file(dest)
+        installed_checksum = AIDocsInfo.checksum_file(dest)
+        if installed_checksum == upstream_checksum
+          # Preserve APFS shared blocks and timestamps when no bytes changed.
+          entry.files[relative_dest] = AIDocsInfo::FileEntry.new(upstream_checksum, upstream_checksum)
+          return
+        end
 
-          if installed_checksum != file_entry.installed_checksum && installed_checksum != upstream_checksum
+        if file_entry = entry.files[relative_dest]?
+          if file_entry.user_modified? || installed_checksum != file_entry.installed_checksum
             # User has modified the file
             Log.warn { "#{relative_dest} has local modifications, keeping user version" }
             # Save upstream copy for comparison
-            File.write("#{dest}.upstream", content)
+            upstream_path = "#{dest}.upstream"
+            unless File.exists?(upstream_path) && AIDocsInfo.checksum_file(upstream_path) == upstream_checksum
+              File.write(upstream_path, content)
+            end
             entry.files[relative_dest] = AIDocsInfo::FileEntry.new(upstream_checksum, installed_checksum)
             return
           end

@@ -16,8 +16,10 @@ repository: https://github.com/crimson-knight/shards
 dependencies:
   molinillo:
     github: crystal-lang/crystal-molinillo
+    commit: 6246872e187bd88cafda44743cbec263e59e5841
   mcprotocol:
     github: crimson-knight/mcprotocol
+    commit: 27bdfecc2988fbdab325d6d5a5e84f57adceb07c
 
 targets:
   minecart:
