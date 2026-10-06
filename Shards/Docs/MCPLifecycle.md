@@ -26,7 +26,7 @@ All managed state lives in `.minecart/mcp/` (or the existing `.shards/mcp/`):
 ### Process management
 
 Servers are spawned via `Process.new` (non-blocking) with output
-redirected to log files. PID tracking uses `LibC.kill(pid, 0)`.
+redirected to log files. PID tracking uses `Process.exists?(pid)`.
 Shutdown sends SIGTERM, waits 5 seconds, then SIGKILL if needed.
 Stale PIDs are detected and cleaned on every status check.
 

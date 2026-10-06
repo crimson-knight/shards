@@ -1033,7 +1033,7 @@ shards mcp logs &lt;name&gt; [--no-follow] [--lines=N]</code></pre>
   </svg>
 </a>Process management</h3>
 <p>Servers are spawned via <code>Process.new</code> (non-blocking) with output
-redirected to log files. PID tracking uses <code>LibC.kill(pid, 0)</code>.
+redirected to log files. PID tracking uses <code>Process.exists?(pid)</code>.
 Shutdown sends SIGTERM, waits 5 seconds, then SIGKILL if needed.
 Stale PIDs are detected and cleaned on every status check.</p>
 <h3><a id="name-resolution" class="anchor" href="#name-resolution">
