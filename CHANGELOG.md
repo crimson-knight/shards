@@ -1,5 +1,16 @@
 # Changelog
 
+## Minecart 2025.11.25.8 (2026-10-06)
+
+- Build on Windows: MCP server process checks use `Process.exists?`, and stopping a server uses `taskkill` on Windows and signals elsewhere.
+
+## Minecart 2025.11.25.7 (2026-10-06)
+
+- Rename the fork to Minecart; `shards-alpha` remains as an alias binary.
+- Move library range declarations from `shard.yml` into the policy file.
+- Pin molinillo and mcprotocol by commit in `shard.yml`.
+- Publish a `git archive` source tarball with a SHA-256 sidecar, and build Apple Silicon macOS and Linux binaries.
+
 ## Shards Alpha 2025.11.25.6 (2026-10-01)
 
 - Preserve unchanged dependency AI documentation and its timestamps, avoiding writes that break APFS shared storage.

@@ -304,8 +304,7 @@ module Shards
 
       Log.info { "Stopping #{entry.name} (PID #{pid})..." }
 
-      # Send SIGTERM
-      send_signal(pid, Signal::TERM)
+      request_stop(pid)
 
       # Wait up to 5 seconds
       50.times do
@@ -315,8 +314,8 @@ module Shards
 
       # Force kill if still alive
       if process_alive?(pid)
-        Log.warn { "Server #{entry.name} did not stop gracefully, sending SIGKILL" }
-        send_signal(pid, Signal::KILL)
+        Log.warn { "Server #{entry.name} did not stop gracefully, forcing it to stop" }
+        force_stop(pid)
         sleep 0.2.seconds
       end
 
@@ -329,13 +328,28 @@ module Shards
     end
 
     private def process_alive?(pid : Int64) : Bool
-      LibC.kill(pid.to_i32, 0) == 0
+      Process.exists?(pid)
     end
 
-    private def send_signal(pid : Int64, signal : Signal)
-      LibC.kill(pid.to_i32, signal.value)
-    rescue
-      # Process may have already exited
+    # Asks the server to exit: SIGTERM on POSIX; Windows has no signals, so taskkill.
+    private def request_stop(pid : Int64) : Nil
+      {% if flag?(:win32) %}
+        Process.run("taskkill", ["/PID", pid.to_s, "/T"])
+      {% else %}
+        Process.signal(Signal::TERM, pid)
+      {% end %}
+    rescue RuntimeError | IO::Error
+      # The process already exited.
+    end
+
+    private def force_stop(pid : Int64) : Nil
+      {% if flag?(:win32) %}
+        Process.run("taskkill", ["/PID", pid.to_s, "/T", "/F"])
+      {% else %}
+        Process.signal(Signal::KILL, pid)
+      {% end %}
+    rescue RuntimeError | IO::Error
+      # The process already exited.
     end
 
     # Creates a FIFO (named pipe) for a stdio server's stdin.
