@@ -62,17 +62,36 @@ module Shards
     def compute_checksum : String?
       return nil unless File.exists?(install_path)
 
-      if checksum.try(&.starts_with?("git-tree:"))
+      if checksum.try(&.starts_with?(LEGACY_GIT_TREE_PREFIX))
         return resolver.checksum_for(version)
       end
 
       Checksum.compute(install_path)
     end
 
-    # Prefer the resolver's stable source identity, falling back to the
-    # directory checksum used by path, Mercurial, and Fossil dependencies.
+    # The `sha256:` checksum over the installed files. Callers record it right
+    # after installation, before any postinstall script can change the directory.
+    # Legacy `git-tree:` lock entries are verified by `compute_checksum` instead.
     def computed_checksum : String?
-      resolver.checksum_for(version) || compute_checksum
+      return nil unless File.exists?(install_path)
+
+      Checksum.compute(install_path)
+    end
+
+    # The `sha256:` checksum of the files a fresh install of this version writes.
+    # The sources are written to a temporary directory, so postinstall output in
+    # the installed copy never enters the checksum. Path dependencies are hashed
+    # where they are, because their source is the directory itself.
+    def pristine_checksum : String?
+      return computed_checksum if resolver.is_a?(PathResolver)
+
+      directory = File.tempname("minecart-checksum-#{name}")
+      begin
+        resolver.install_sources(version, directory)
+        Checksum.compute(directory)
+      ensure
+        Helpers.rm_rf(directory) if File.exists?(directory)
+      end
     end
 
     def install

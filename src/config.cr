@@ -3,10 +3,12 @@ require "./ai_docs_info"
 require "./postinstall_info"
 
 module Shards
-  SPEC_FILENAME             = "shard.yml"
-  LOCK_FILENAME             = "shard.lock"
-  OVERRIDE_FILENAME         = "shard.override.yml"
-  MINECART_POLICY_FILENAME  = ".minecart-policy.yml"
+  SPEC_FILENAME            = "shard.yml"
+  LOCK_FILENAME            = "shard.lock"
+  OVERRIDE_FILENAME        = "shard.override.yml"
+  MINECART_POLICY_FILENAME = ".minecart-policy.yml"
+  # Lock checksums written before sha256 for Git dependencies: Git's SHA-1 tree id.
+  LEGACY_GIT_TREE_PREFIX    = "git-tree:"
   POLICY_FILENAME           = ".shards-policy.yml"
   MINECART_STATE_DIRECTORY  = ".minecart"
   LEGACY_STATE_DIRECTORY    = ".shards"
@@ -162,6 +164,8 @@ module Shards
   class_property? skip_ai_docs = false
   class_property? skip_ai_assistant = false
   class_property? strict_pinning = false
+  # Opt-out for lock entries that have no checksum. Mismatched checksums still fail.
+  class_property? allow_missing_checksums = false
 
   class_property jobs : Int32 = 8
 

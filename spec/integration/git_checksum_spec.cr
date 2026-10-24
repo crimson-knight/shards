@@ -1,33 +1,31 @@
 require "./spec_helper"
 
-describe "Git tree lock checksums" do
-  it "writes a git-tree checksum for a Git dependency" do
+describe "Git dependency lock checksums" do
+  it "writes a sha256 checksum for a Git dependency" do
     metadata = {dependencies: {web: "1.2.0"}}
     with_shard(metadata) do
       run "shards install --no-color"
 
-      File.read("shard.lock").should contain("checksum: git-tree:")
+      File.read("shard.lock").should contain("checksum: #{fixture_lock_checksum(git_url(:web), "1.2.0")}")
     end
   end
 
-  it "rekeys a directory checksum without installing dependencies" do
+  it "rekeys every Git checksum to the sha256 of its current source" do
     metadata = {dependencies: {web: "1.2.0"}}
-    with_shard(metadata) do
-      run "shards install --no-color"
+    with_shard(metadata, {web: "1.2.0"}, lock_checksum_kind: :git_tree) do
       fake_sha = "a" * 64
       lock_before = File.read("shard.lock").gsub(/checksum: git-tree:[0-9a-f]+/, "checksum: sha256:#{fake_sha}")
       File.write("shard.lock", lock_before)
-      lock_before.should contain("checksum: sha256:")
 
       run "shards lock --rekey --no-color"
 
       lock_after = File.read("shard.lock")
-      lock_after.should contain("checksum: git-tree:")
-      lock_after.should_not contain("checksum: sha256:")
+      lock_after.should contain("checksum: #{fixture_lock_checksum(git_url(:web), "1.2.0")}")
+      lock_after.should_not contain(fake_sha)
     end
   end
 
-  it "writes the same tree hash from two independent Git clones and installs" do
+  it "writes the same sha256 from two independent Git clones and installs" do
     first_project = File.join(application_path, "tree-install-one")
     second_project = File.join(application_path, "tree-install-two")
     second_clone = File.join(application_path, "web-independent-clone")
@@ -49,8 +47,8 @@ describe "Git tree lock checksums" do
     first_output.should contain("Installing web")
     second_output.should contain("Installing web")
 
-    first_checksum = /checksum: (git-tree:[0-9a-f]+)/.match(File.read(File.join(first_project, "shard.lock"))).not_nil![1]
-    second_checksum = /checksum: (git-tree:[0-9a-f]+)/.match(File.read(File.join(second_project, "shard.lock"))).not_nil![1]
+    first_checksum = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(first_project, "shard.lock"))).not_nil![1]
+    second_checksum = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(second_project, "shard.lock"))).not_nil![1]
     first_checksum.should eq(second_checksum)
   end
 

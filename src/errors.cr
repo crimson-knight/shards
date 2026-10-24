@@ -68,6 +68,24 @@ module Shards
     end
   end
 
+  class MissingLockChecksum < Error
+    def initialize(list_of_unchecksummed_names : Array(String), list_of_legacy_checksum_names : Array(String))
+      message = String.build do |io|
+        unless list_of_unchecksummed_names.empty?
+          io << LOCK_FILENAME << " has no checksum for: " << list_of_unchecksummed_names.join(", ") << ".\n"
+          io << "Run `minecart update " << list_of_unchecksummed_names.join(" ") << "` to re-resolve these dependencies and record sha256 checksums.\n"
+        end
+        unless list_of_legacy_checksum_names.empty?
+          io << LOCK_FILENAME << " has only a legacy git-tree (SHA-1) checksum for: " << list_of_legacy_checksum_names.join(", ") << "; --frozen requires sha256.\n"
+          io << "Run `minecart lock --update-checksums` to verify each git-tree id and record sha256 checksums.\n"
+        end
+        io << "Review the change and commit " << LOCK_FILENAME << ". "
+        io << "To install this once without sha256 checksums, pass --allow-missing-checksums."
+      end
+      super message
+    end
+  end
+
   class ChecksumMismatch < Error
     def initialize(package_name : String, expected : String, actual : String)
       super "Checksum verification failed for #{package_name}.\n" \

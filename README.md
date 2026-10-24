@@ -289,15 +289,20 @@ Suppressions can be managed in `.minecart-audit-ignore`. The legacy
 
 ### Integrity Verification
 
-Git dependencies use `git-tree:<hash>` in `shard.lock`. Minecart reads the tree
-hash from the resolved commit's Git object database and verifies it before any
-postinstall script runs. Path, Mercurial, and Fossil dependencies keep their
-directory `sha256:` checksum. Existing `sha256:` lock checksums continue to
-verify; `minecart update` or `minecart lock --rekey` rewrites Git checksums to
-tree hashes. Stock `shards` safely ignores this additive checksum field.
+Every dependency gets a `sha256:<hash>` checksum in `shard.lock`, computed over
+its installed files and verified before any postinstall script runs. Stock
+`shards` safely ignores this additive checksum field.
 
-During this release, `minecart install --frozen` warns if a lock entry has no
-checksum. A later release will make that condition an error.
+- A `shard.lock` entry without a checksum fails `minecart install`; run
+  `minecart update <name>` to record one.
+- `minecart install --frozen` accepts only `sha256:` entries. Older locks with
+  `git-tree:<hash>` (Git's SHA-1 tree id) still verify in a normal install, with
+  a notice; `minecart lock --update-checksums` upgrades them to sha256.
+- New dependencies are trusted on first use and named in a
+  `TRUST ON FIRST USE` warning.
+- `--allow-missing-checksums` installs once without sha256 checksums, with a
+  warning. `security.require_checksum: true` in `.minecart-policy.yml` turns a
+  missing checksum into a policy error that this flag cannot override.
 
 Tampered dependencies produce a clear error:
 

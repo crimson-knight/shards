@@ -15,8 +15,10 @@ module Shards
       @report = PolicyReport.new
     end
 
-    # Main entry point: check all packages against all rules
-    def check(packages : Array(Package)) : PolicyReport
+    # Main entry point: check all packages against all rules.
+    # Packages named in *checksum_exempt_names* are about to record their first
+    # checksum, so `require_checksum` does not apply to them.
+    def check(packages : Array(Package), checksum_exempt_names = Set(String).new) : PolicyReport
       @report = PolicyReport.new
 
       packages.each do |package|
@@ -24,6 +26,7 @@ module Shards
         check_sources(package)
         check_minimum_version(package)
         check_security(package)
+        check_checksum(package) unless checksum_exempt_names.includes?(package.name)
         check_custom(package)
         check_freshness(package)
       end
@@ -105,6 +108,19 @@ module Shards
           )
         end
       end
+    end
+
+    private def check_checksum(package : Package)
+      return unless policy.security.require_checksum?
+      return if package.resolver.is_a?(PathResolver)
+      return if package.checksum
+
+      @report.add_violation(
+        package: package.name,
+        rule: "require_checksum",
+        severity: PolicyReport::Severity::Error,
+        message: "Dependency '#{package.name}' has no checksum in #{LOCK_FILENAME}; run `minecart update #{package.name}` to record one"
+      )
     end
 
     private def check_security(package : Package)

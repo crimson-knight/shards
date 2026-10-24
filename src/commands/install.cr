@@ -29,9 +29,12 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
 
-        copy_matching_locked_checksums(packages)
+        list_of_locked_packages = copy_matching_locked_checksums(packages)
+        locked_names = list_of_locked_packages.map(&.name).to_set
+        list_of_new_names = packages.map(&.name).to_set - locked_names
 
-        check_policy(packages)
+        check_policy(packages, list_of_new_names)
+        require_locked_checksums(list_of_locked_packages)
 
         if Shards.frozen?
           validate(packages)

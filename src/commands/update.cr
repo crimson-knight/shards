@@ -25,7 +25,8 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
         copy_matching_locked_checksums(packages)
-        check_policy(packages)
+        # update records a checksum for every package from its current source.
+        check_policy(packages, packages.map(&.name).to_set)
         install(packages)
 
         AIDocsInstaller.new(path).install(packages)
@@ -56,7 +57,7 @@ module Shards
           if installed
             verify_checksum_before_scripts(package)
             newly_installed << package
-          elsif package.checksum.try(&.starts_with?("git-tree:")) || package.spec.scripts["postinstall"]?.nil?
+          elsif package.checksum.try(&.starts_with?(LEGACY_GIT_TREE_PREFIX)) || package.spec.scripts["postinstall"]?.nil?
             verify_checksum_before_scripts(package)
           end
         end
@@ -89,9 +90,15 @@ module Shards
         !Shards.frozen?
       end
 
+      # Records a sha256 checksum for every package that lacks one. A checksum
+      # copied from the lock was verified above (or belongs to an unchanged
+      # installed copy) and stays. Legacy `git-tree:` entries, verified above,
+      # are upgraded. Path dependencies are re-hashed because their source moves.
       private def compute_checksums(packages : Array(Package))
         packages.each do |package|
-          if computed = package.computed_checksum
+          next if package.checksum.try(&.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")) && !package.resolver.is_a?(PathResolver)
+
+          if computed = package.pristine_checksum
             package.checksum = computed
           end
         end

@@ -392,9 +392,14 @@ describe "install" do
         shards:  {web: {git: git_url(:web), commit: git_commits(:web).first}},
       })
 
-      run "shards install"
+      # A 1.0 lock cannot carry checksums, so upgrading it is an explicit opt-out.
+      ex = expect_raises(FailedCommand) { run "shards install --no-color" }
+      (ex.stdout + ex.stderr).should contain("shard.lock has no checksum for: web")
+
+      run "shards install --allow-missing-checksums"
       Shards::Lock.from_file("shard.lock").version.should eq(Shards::Lock::CURRENT_VERSION)
       assert_locked "web", "2.1.0", git: git_commits(:web).first
+      File.read("shard.lock").should contain("checksum: sha256:")
     end
   end
 
@@ -520,7 +525,11 @@ describe "install" do
 
         with_shard(metadata) do
           File.write "shard.lock", {version: "1.0", shards: {web: {git: git_url(:web), commit: git_commits(:web).first}}}
-          run "shards install --#{flag}"
+          # A 1.0 lock cannot carry checksums, so a frozen install needs the opt-out.
+          ex = expect_raises(FailedCommand) { run "shards install --#{flag} --no-color" }
+          (ex.stdout + ex.stderr).should contain("shard.lock has no checksum for: web")
+
+          run "shards install --#{flag} --allow-missing-checksums"
           assert_installed "web", "2.1.0", git: git_commits(:web).first
         end
       end

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Record `sha256:` checksums for Git dependencies, computed over the installed files before postinstall. Existing `git-tree:` (SHA-1) entries still verify, with a notice; `minecart lock --update-checksums` verifies each tree id and upgrades it to sha256.
+- `minecart install` fails when a reused `shard.lock` entry has no checksum, and `--frozen`/`--production` also require that checksum to be sha256. Only dependencies new to the lock are trusted on first use, with a `TRUST ON FIRST USE` warning.
+- Add `--allow-missing-checksums` to install once without sha256 checksums (with a warning). Mismatched checksums still fail.
+- Enforce `security.require_checksum` from the policy file during install and in `minecart policy check`; `--allow-missing-checksums` cannot override it.
+- `minecart lock` keeps the recorded checksum of every unchanged entry; `minecart lock --rekey` now writes sha256 checksums.
+
 ## Minecart 2025.11.25.8 (2026-10-06)
 
 - Build on Windows: MCP server process checks use `Process.exists?`, and stopping a server uses `taskkill` on Windows and signals elsewhere.

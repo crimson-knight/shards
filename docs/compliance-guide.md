@@ -83,17 +83,32 @@ minecart audit --format=sarif --fail-above=critical > results.sarif
 
 ## 2. Integrity Verification
 
-Minecart stores source checksums in `shard.lock` and verifies them before a
-dependency's postinstall script runs. Git dependencies use the root tree hash
-from the resolved commit's Git object database (`git-tree:<hash>`), so the
-checksum is independent of the installed directory. Path, Mercurial, and Fossil
-dependencies continue to use a deterministic directory `sha256:<hash>`.
+Minecart stores a `sha256:<hash>` checksum for every dependency in
+`shard.lock`: a deterministic SHA-256 over the dependency's installed files,
+recorded and verified before its postinstall script runs. Stock `shards`
+ignores the additive `checksum:` field.
 
-Existing `sha256:` lock entries remain valid. `minecart update` and
-`minecart lock --rekey` convert Git entries to tree checksums. Stock `shards`
-ignores the additive `checksum:` field. In this release,
-`minecart install --frozen` warns when a lock entry has no checksum; a later
-release will make that an error.
+Lock entries written by Minecart 2025.11.25.8 and earlier may hold
+`git-tree:<hash>` (Git's SHA-1 tree id) for Git dependencies. Minecart still
+verifies those against the Git mirror and prints a notice;
+`minecart lock --update-checksums` verifies each tree id and then records the
+sha256 checksum of the same version.
+
+Checksum rules for `minecart install`:
+
+- Every `shard.lock` entry the install reuses must have a checksum, or the
+  install fails and names the `minecart update <names>` command that records one.
+- `--frozen` (and `--production`) also requires that checksum to be `sha256:`.
+- A dependency new to `shard.lock` is trusted on first use: its sha256 is
+  recorded and a `TRUST ON FIRST USE` warning names it. Review it before you
+  commit the lock.
+- `--allow-missing-checksums` accepts entries without a sha256 checksum for one
+  install and warns about each. A checksum that does not match always fails.
+- `security.require_checksum: true` in `.minecart-policy.yml` makes a lock
+  entry without a checksum a policy error that `--allow-missing-checksums`
+  cannot override; `minecart policy check` reports it too.
+- Path dependencies are local source and are governed by
+  `sources.deny_path_dependencies` instead.
 
 A mismatch stops installation before postinstall scripts run. Verification
 bypasses are not supported.

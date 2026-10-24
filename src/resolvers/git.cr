@@ -232,11 +232,10 @@ module Shards
       capture("git log -n 1 --pretty=%H #{Process.quote(ref.to_git_ref)}").strip
     end
 
-    # Hash the commit's root tree object from the Git mirror. This is stable
-    # across machines and does not depend on installed files or postinstall
-    # output.
+    # The commit's root tree id from the Git mirror, used to verify legacy
+    # `git-tree:` lock entries. New lock entries record `sha256:` instead.
     def checksum_for(version : Version) : String
-      "git-tree:#{tree_hash_for(version)}"
+      "#{LEGACY_GIT_TREE_PREFIX}#{tree_hash_for(version)}"
     end
 
     def tree_hash_for(version : Version) : String

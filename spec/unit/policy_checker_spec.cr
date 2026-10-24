@@ -181,6 +181,62 @@ module Shards
       end
     end
 
+    describe "#check_checksum" do
+      require_checksum_policy = <<-YAML
+      version: 1
+      rules:
+        security:
+          require_checksum: true
+      YAML
+
+      it "flags a lock entry that has no checksum as an error" do
+        create_git_repository "unchecksummed", "1.0.0"
+        resolver = GitResolver.new("unchecksummed", git_url(:unchecksummed))
+        package = Package.new("unchecksummed", resolver, Version.new("1.0.0"))
+
+        report = PolicyChecker.new(Policy.from_yaml(require_checksum_policy)).check([package])
+        report.has_errors?.should be_true
+        report.errors[0].rule.should eq("require_checksum")
+        report.errors[0].message.should contain("minecart update unchecksummed")
+      end
+
+      it "accepts a lock entry that has a checksum" do
+        create_git_repository "checksummed", "1.0.0"
+        resolver = GitResolver.new("checksummed", git_url(:checksummed))
+        package = Package.new("checksummed", resolver, Version.new("1.0.0"), checksum: "git-tree:#{"a" * 40}")
+
+        report = PolicyChecker.new(Policy.from_yaml(require_checksum_policy)).check([package])
+        report.clean?.should be_true
+      end
+
+      it "exempts packages that are about to record their first checksum" do
+        create_git_repository "brand_new", "1.0.0"
+        resolver = GitResolver.new("brand_new", git_url(:brand_new))
+        package = Package.new("brand_new", resolver, Version.new("1.0.0"))
+
+        report = PolicyChecker.new(Policy.from_yaml(require_checksum_policy)).check([package], Set{"brand_new"})
+        report.clean?.should be_true
+      end
+
+      it "exempts path dependencies" do
+        create_git_repository "local_dep", "1.0.0"
+        resolver = PathResolver.new("local_dep", git_path("local_dep"))
+        package = Package.new("local_dep", resolver, Version.new("1.0.0"))
+
+        report = PolicyChecker.new(Policy.from_yaml(require_checksum_policy)).check([package])
+        report.clean?.should be_true
+      end
+
+      it "does nothing when require_checksum is off" do
+        create_git_repository "relaxed", "1.0.0"
+        resolver = GitResolver.new("relaxed", git_url(:relaxed))
+        package = Package.new("relaxed", resolver, Version.new("1.0.0"))
+
+        report = PolicyChecker.new(Policy.from_yaml("version: 1\n")).check([package])
+        report.clean?.should be_true
+      end
+    end
+
     describe "#check_custom" do
       it "custom rules match dependency names" do
         create_git_repository "crypto_lib", "1.0.0"

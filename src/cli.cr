@@ -42,7 +42,7 @@ module Shards
           init                                 - Initialize a `shard.yml` file.
           install                              - Install dependencies, creating or using the `shard.lock` file.
           list [--tree]                        - List installed dependencies.
-          lock [--update] [--rekey] [<shards>...] - Lock dependencies without installing; `--rekey` writes Git tree checksums.
+          lock [--update] [--rekey] [--update-checksums] [<shards>...] - Lock dependencies without installing; `--update-checksums` upgrades verified git-tree checksums to sha256, `--rekey` re-records sha256 checksums from current sources.
           outdated [--pre]                     - List dependencies that are outdated.
           prune                                - Remove unused dependencies from `lib` folder.
           run [<target>] [<options>]           - Build and run specified target
@@ -79,6 +79,9 @@ module Shards
       opts.on("--strict-pinning", "Treat unpinned root dependencies as errors.") { self.strict_pinning = true }
       opts.on("--frozen", "Strictly installs locked versions from shard.lock.") do
         self.frozen = true
+      end
+      opts.on("--allow-missing-checksums", "Installs shard.lock entries that have no checksum by trusting their current source. A checksum that does not match still fails.") do
+        self.allow_missing_checksums = true
       end
       opts.on("--without-development", "Does not install development dependencies.") do
         self.with_development = false
@@ -138,7 +141,8 @@ module Shards
               args[1..-1].reject(&.starts_with?("--")),
               print: args.includes?("--print"),
               update: args.includes?("--update"),
-              rekey: args.includes?("--rekey")
+              rekey: args.includes?("--rekey"),
+              update_checksums: args.includes?("--update-checksums")
             )
           when "outdated"
             Commands::Outdated.run(
