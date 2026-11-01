@@ -23,7 +23,7 @@ module Shards
       package.installed?.should be_true
     end
 
-    it "reads spec from installed dir" do
+    it "reads spec from the source, never from an edited installed copy" do
       package = Package.new("repo", git_resolver("repo"), version "0.1.2")
       package.install
 
@@ -31,14 +31,15 @@ module Shards
         f.puts "license: FOO"
       end
 
-      package.spec.license.should eq("FOO")
+      package.spec.license.should_not eq("FOO")
+      package.installed_spec.license.should eq("FOO")
     end
 
-    it "fallback to resolver to read spec" do
+    it "fallback to resolver to read the installed spec" do
       package = Package.new("repo", git_resolver("repo"), version "0.1.2")
       package.install
       File.delete install_path("repo", "shard.yml")
-      package.spec.version.should eq(version "0.1.2")
+      package.installed_spec.version.should eq(version "0.1.2")
     end
 
     it "reads spec from resolver if not installed" do

@@ -3,6 +3,7 @@ ENV["SHARDS_CACHE_PATH"] = ".shards"
 
 require "spec"
 require "../../src/config"
+require "../../src/checksum"
 require "../../src/helpers"
 require "../../src/lock"
 require "../../src/spec"

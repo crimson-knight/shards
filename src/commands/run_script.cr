@@ -35,17 +35,49 @@ module Shards
       private def run_for(name : String)
         installed = Shards.info.installed[name]?
         raise Error.new("Shard #{name.inspect} is not installed") unless installed
+        raise Error.new("Shard #{name.inspect} has no postinstall script") unless installed.spec.scripts["postinstall"]?
 
-        command = installed.spec.scripts["postinstall"]?
+        check_postinstall_policy(name)
+        package = installed.resolver.is_a?(PathResolver) ? installed : reinstall_verified(installed)
+
+        command = package.spec.scripts["postinstall"]?
         raise Error.new("Shard #{name.inspect} has no postinstall script") unless command
 
         Log.info { "Running postinstall of #{name}: #{command}" }
-        Script.run(installed.install_path, command, "postinstall", name)
+        Script.run(package.install_path, command, "postinstall", name)
 
         script_hash = PostinstallInfo.hash_script(command)
         info = Shards.postinstall_info
         info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: true)
         info.save
+      end
+
+      private def check_postinstall_policy(name : String)
+        current_policy = policy
+        return unless current_policy && current_policy.security.block_postinstall?
+
+        raise Error.new("#{policy_path} blocks postinstall scripts (security.block_postinstall); not running the script of #{name.inspect}")
+      end
+
+      # The installed copy may have been edited since it was verified, so the
+      # script runs from a fresh install of the locked version, verified
+      # against its lock entry the way `install` verifies it.
+      private def reinstall_verified(installed : Package) : Package
+        raise Error.new("No #{LOCK_FILENAME} found; run `minecart install` before running postinstall scripts") unless lockfile?
+
+        locked = locks.shards.find { |package| package.name == installed.name }
+        unless locked && locked.resolver == installed.resolver && locked.version == installed.version
+          raise Error.new("Installed #{installed.name.inspect} does not match #{LOCK_FILENAME}; run `minecart install` first")
+        end
+
+        unless locked.checksum || Shards.allow_missing_checksums?
+          raise MissingLockChecksum.new([locked.name])
+        end
+
+        Log.info { "Reinstalling #{locked.name} (#{locked.report_version}) from its locked source" }
+        locked.install
+        verify_checksum_before_scripts(locked)
+        locked
       end
     end
   end

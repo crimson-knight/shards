@@ -29,22 +29,25 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
 
-        copy_matching_locked_checksums(packages)
+        list_of_locked_packages = copy_matching_locked_checksums(packages)
+        locked_names = list_of_locked_packages.map(&.name).to_set
+        list_of_new_names = packages.map(&.name).to_set - locked_names
 
-        check_policy(packages)
+        check_policy(packages, list_of_new_names)
+        require_locked_checksums(list_of_locked_packages)
 
         if Shards.frozen?
           validate(packages)
         end
 
-        verified = install(packages)
+        # Every source is fetched and checked against the lock before any
+        # dependency code runs: a check that fires after a postinstall script
+        # has executed is not a control.
+        verified_sources = verify_reused_sources(list_of_locked_packages)
+        list_of_newly_installed = install(packages)
+        verify_or_compute_checksums(packages, list_of_newly_installed.map(&.name).to_set, verified_sources)
 
-        # Checksums for freshly-installed packages are verified INSIDE the
-        # install loop, before each postinstall script runs — a check that
-        # fires after attacker-supplied code has executed is not a control.
-        # This pass covers only what that loop did not: packages that were
-        # already present, and therefore ran no script this session.
-        verify_or_compute_checksums(packages, verified)
+        run_postinstall_scripts(list_of_newly_installed)
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -93,30 +96,35 @@ module Shards
         raise LockConflict.new("#{package.name} requirements changed")
       end
 
-      # Returns the names of packages whose checksum was settled pre-script, so
-      # the later pass does not re-check them against a directory their own
-      # postinstall script has since modified.
-      private def install(packages : Array(Package)) : Set(String)
-        verified = Set(String).new
+      # Installs every package that is missing and verifies each fresh copy
+      # against its lock entry (or records it on first use). No script runs
+      # here. Returns the packages installed by this run.
+      private def install(packages : Array(Package)) : Array(Package)
+        list_of_newly_installed = [] of Package
         # packages are returned by the solver in reverse topological order,
         # so transitive dependencies are installed first
         packages.each do |package|
-          # first install the dependency:
           next unless install(package)
 
-          # Verify the source identity before running any dependency code.
           verify_checksum_before_scripts(package)
-          verified << package.name
+          list_of_newly_installed << package
+        end
+        list_of_newly_installed
+      end
 
-          # then execute the postinstall script
-          # (with access to all transitive dependencies):
+      # Runs the postinstall script of each newly installed package (with
+      # access to all transitive dependencies). Each copy is verified again
+      # right before its own script, because an earlier script may have
+      # changed it.
+      private def run_postinstall_scripts(list_of_newly_installed : Array(Package))
+        list_of_newly_installed.each do |package|
+          verify_checksum_before_scripts(package)
           package.postinstall
 
           # always install executables because the path resolver never actually
           # installs dependencies:
           package.install_executables
         end
-        verified
       end
 
       private def install(package : Package)

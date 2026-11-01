@@ -30,7 +30,7 @@ module Shards
         graph = {} of String => Array(String)
 
         packages.each do |pkg|
-          deps = pkg.spec.dependencies
+          deps = pkg.installed_spec.dependencies
             .map(&.name)
             .select { |name| locked_names.includes?(name) }
           graph[pkg.name] = deps
@@ -77,8 +77,8 @@ module Shards
                     purl = PurlGenerator.generate(pkg)
 
                     write_spdx_package(json, spdx_id, pkg.name, pkg.version.to_s,
-                      source_url, pkg.spec.license, pkg.spec.description,
-                      pkg.spec.authors.first?.try(&.name), purl)
+                      source_url, pkg.installed_spec.license, pkg.installed_spec.description,
+                      pkg.installed_spec.authors.first?.try(&.name), purl)
                   end
                 end
               end
@@ -249,11 +249,11 @@ module Shards
                         json.field "purl", purl
                       end
 
-                      if description = pkg.spec.description
+                      if description = pkg.installed_spec.description
                         json.field "description", description unless description.empty?
                       end
 
-                      if license = pkg.spec.license
+                      if license = pkg.installed_spec.license
                         unless license.empty?
                           json.field "licenses" do
                             json.array do

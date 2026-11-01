@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- New `shard.lock` entries record `sha256-v2:` checksums for every fetched dependency: a SHA-256 over each file's path, bytes and mode (regular, executable or symlink), with symlinks recorded by their link text and never followed. A real top-level `lib/` directory is covered; only the `lib` link Minecart writes is left out. A shard that ships a symlink to an absolute path (asset_pipeline does) installs and verifies.
+- Existing `sha256:` (v1) and `git-tree:` (Git SHA-1 tree id) entries keep verifying under their original rules, `--frozen` included, with a notice. `minecart update` rewrites an entry as `sha256-v2:` only when it re-resolves that dependency; `minecart lock --update-checksums` verifies legacy entries and upgrades them.
+- Every source is fetched and verified against `shard.lock` before any postinstall script runs, in `install` and `update`. A moved tag (even one whose new `shard.yml` adds a dependency) fails before any dependency code executes; installed copies are checked against a fresh checkout of the locked version.
+- `minecart install` fails when a reused `shard.lock` entry has no checksum. Only dependencies new to the lock are trusted on first use, with a `TRUST ON FIRST USE` warning. `--allow-missing-checksums` installs once without them (with a warning); mismatched checksums still fail.
+- Enforce `security.require_checksum` from the policy file during install and in `minecart policy check`; `--allow-missing-checksums` cannot override it.
+- `minecart lock` keeps the recorded checksum of every unchanged entry; `minecart lock --rekey` re-records `sha256-v2:` checksums from current sources.
+- `minecart update` verifies each new copy again right before its own postinstall script, records checksums from a fresh checkout instead of the installed copy, and fails when an installed copy it keeps no longer matches its checksum.
+- `minecart run-script` obeys `security.block_postinstall`, reinstalls the locked version, verifies it against `shard.lock`, and runs the script from that fresh copy.
+- `minecart lock` records a `sha256-v2:` checksum for every entry new to the lock.
+
 ## Minecart 2025.11.25.8 (2026-10-06)
 
 - Build on Windows: MCP server process checks use `Process.exists?`, and stopping a server uses `taskkill` on Windows and signals elsewhere.

@@ -68,6 +68,22 @@ module Shards
     end
   end
 
+  class MissingLockChecksum < Error
+    def initialize(list_of_unchecksummed_names : Array(String))
+      super "#{LOCK_FILENAME} has no checksum for: #{list_of_unchecksummed_names.join(", ")}.\n" \
+            "Run `minecart update #{list_of_unchecksummed_names.join(" ")}` to re-resolve these dependencies and record checksums.\n" \
+            "Review the change and commit #{LOCK_FILENAME}. " \
+            "To install this once without checksums, pass --allow-missing-checksums."
+    end
+  end
+
+  class InstalledCopyModified < Error
+    def initialize(package_name : String, install_path : String)
+      super "Checksum verification failed for #{package_name}: the installed copy in #{install_path} no longer matches its locked source.\n" \
+            "No dependency scripts were run. Remove #{install_path} and run `minecart install` to reinstall it from the verified source."
+    end
+  end
+
   class ChecksumMismatch < Error
     def initialize(package_name : String, expected : String, actual : String)
       super "Checksum verification failed for #{package_name}.\n" \

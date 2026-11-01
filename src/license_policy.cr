@@ -169,8 +169,8 @@ module Shards
     end
 
     private def self.evaluate_package(pkg, policy, detect) : DependencyResult
-      # 1. Get declared license from pkg.spec.license
-      declared_license = pkg.spec.license
+      # 1. Get declared license from pkg.installed_spec.license
+      declared_license = pkg.installed_spec.license
 
       # 2. Check for policy override
       override = policy.try(&.overrides[pkg.name]?)

@@ -634,7 +634,7 @@ module Shards
     Lock dependencies without installing.
 
     ```
-    minecart lock [--print] [--update [shards...]] [--rekey]
+    minecart lock [--print] [--update [shards...]] [--rekey] [--update-checksums]
     ```
 
     ## minecart outdated

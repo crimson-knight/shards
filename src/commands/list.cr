@@ -24,7 +24,7 @@ module Shards
           puts "#{indent}* #{package}"
 
           indent_level = @tree ? level + 1 : level
-          list(package.spec.dependencies, indent_level)
+          list(package.installed_spec.dependencies, indent_level)
         end
       end
 
