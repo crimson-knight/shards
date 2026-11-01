@@ -170,6 +170,21 @@ module Shards
         end
       end
 
+      it "refuses a symlinked directory that points outside the shard" do
+        path = File.tempname("checksum", "test")
+        outside = File.tempname("checksum", "outside")
+        Dir.mkdir_p(path)
+        Dir.mkdir_p(outside)
+        begin
+          File.write(File.join(outside, "payload.sh"), "echo outside")
+          File.symlink(outside, File.join(path, "vendor"))
+          expect_raises(UnsafeSymlink, "vendor links to") { Checksum.compute(path) }
+        ensure
+          Shards::Helpers.rm_rf(path)
+          Shards::Helpers.rm_rf(outside)
+        end
+      end
+
       it "hashes any other symlinked directory by its link text" do
         path = File.tempname("checksum", "test")
         Dir.mkdir_p(File.join(path, "first"))

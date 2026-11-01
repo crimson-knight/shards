@@ -68,6 +68,7 @@ module Shards
         # Set lock checksums from source state before any postinstall can
         # modify installed files.
         compute_checksums(packages, locked_names)
+        verify_reused_installed_copies(packages, newly_installed)
 
         # then execute the postinstall script of installed dependencies (with
         # access to all transitive dependencies). Each copy is verified again
@@ -81,6 +82,25 @@ module Shards
         # always install executables because the path resolver never actually
         # installs dependencies:
         packages.each(&.install_executables)
+      end
+
+      # An installed copy that `update` keeps (no postinstall output to allow
+      # for) must match the checksum about to be locked, so a locally modified
+      # copy fails instead of hiding behind a clean lock entry.
+      private def verify_reused_installed_copies(packages : Array(Package), newly_installed : Array(Package))
+        packages.each do |package|
+          next if newly_installed.includes?(package)
+          next if package.resolver.is_a?(PathResolver)
+          next if package.spec.scripts["postinstall"]?
+
+          expected = package.checksum
+          next unless expected && expected.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")
+
+          actual = package.computed_checksum
+          unless actual == expected
+            raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
+          end
+        end
       end
 
       private def install(package : Package)

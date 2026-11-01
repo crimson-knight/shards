@@ -86,6 +86,15 @@ module Shards
     end
   end
 
+  # A shard ships a symlink to a directory outside itself. Its target is not
+  # part of the shard's source, so no checksum could cover it.
+  class UnsafeSymlink < Error
+    def initialize(relative_path : String, target : String)
+      super "#{relative_path} links to #{target}, a directory outside the shard. " \
+            "Its contents cannot be covered by the lock checksum, so the shard is refused."
+    end
+  end
+
   class ChecksumMismatch < Error
     def initialize(package_name : String, expected : String, actual : String)
       super "Checksum verification failed for #{package_name}.\n" \

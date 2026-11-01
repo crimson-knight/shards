@@ -113,6 +113,20 @@ Checksum rules for `minecart install`:
 A mismatch stops installation before postinstall scripts run. Verification
 bypasses are not supported.
 
+What the checksum covers: it proves that the source Minecart fetches for a
+locked version is the source recorded in `shard.lock`, so a moved tag, a
+force-pushed branch or a changed mirror is caught. The digest includes a
+shard's own `lib/` directory and records symlinked directories by their link
+text; a shard that links to a directory outside itself is refused, because no
+checksum could cover that directory. An installed copy that `update` keeps
+must still match its checksum. An installed copy whose postinstall script has
+run is checked against a fresh checkout of the locked version instead.
+
+What it does not cover: a person or program that can already write to the
+project (its `lib/` directory, `shard.lock` itself, or code a postinstall
+script runs) can change dependencies after they are verified. Review
+postinstall scripts before trusting them, or set `security.block_postinstall`.
+
 ### Lock File Format
 
 ```yaml

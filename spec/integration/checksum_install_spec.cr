@@ -408,14 +408,25 @@ describe "checksum pinning" do
     end
   end
 
-  it "update locks the sha256 of the source, never of a locally modified installed copy" do
+  it "update records the sha256 of the source, not of the installed copy" do
     with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}, lock_checksum_kind: :none) do
       run "shards install --frozen --allow-missing-checksums --no-color"
       File.read("shard.lock").should_not contain("checksum:")
-      File.write(install_path("web", "src/web.cr"), "# locally modified\n")
 
       run "shards update --no-color"
       File.read("shard.lock").should contain("checksum: #{fixture_lock_checksum(git_url(:web), "2.1.0")}")
+    end
+  end
+
+  it "update fails on a locally modified installed copy and leaves the lock unchanged" do
+    with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}, lock_checksum_kind: :none) do
+      run "shards install --frozen --allow-missing-checksums --no-color"
+      lock_before = File.read("shard.lock")
+      File.write(install_path("web", "src/web.cr"), "# locally modified\n")
+
+      ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+      (ex.stdout + ex.stderr).should contain("Checksum verification failed for web")
+      File.read("shard.lock").should eq(lock_before)
     end
   end
 

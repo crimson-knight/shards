@@ -10,6 +10,7 @@
 - The sha256 directory digest now covers a real top-level `lib/` directory and records every symlinked directory by its link text; only the `lib` link Minecart itself writes is left out. A sha256 entry for a shard that ships either one changes: re-record it with `minecart update <name>` after reviewing that shard.
 - An installed dependency whose postinstall script already ran is checked against a fresh checkout of its locked version during `install` and `update`, so a changed lock checksum is caught.
 - `minecart update` verifies each new copy again right before its own postinstall script, and records checksums from a fresh checkout instead of the installed copy.
+- A shard that links to a directory outside itself is refused, because its checksum cannot cover that directory. `minecart update` fails when an installed copy it keeps no longer matches the checksum it would lock.
 - `minecart run-script` obeys `security.block_postinstall` and verifies the lock entry against a fresh checkout before running a script.
 
 ## Minecart 2025.11.25.8 (2026-10-06)

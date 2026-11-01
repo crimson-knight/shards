@@ -1,4 +1,5 @@
 require "digest/sha256"
+require "./errors"
 
 module Shards
   module Checksum
@@ -12,7 +13,7 @@ module Shards
     # Returns a string like "sha256:abcdef1234..."
     def self.compute(path : String) : String
       digest = Digest::SHA256.new
-      files = collect_files(path)
+      files = collect_files(path, File.realpath(path))
       files.sort! # lexicographic sort for determinism
 
       files.each do |relative_path|
@@ -50,7 +51,7 @@ module Shards
 
     # Collect all files recursively, returning relative paths.
     # Excludes VCS metadata directories.
-    private def self.collect_files(base_path : String, prefix : String = "") : Array(String)
+    private def self.collect_files(base_path : String, real_root : String, prefix : String = "") : Array(String)
       files = [] of String
 
       Dir.each_child(base_path) do |entry|
@@ -62,18 +63,27 @@ module Shards
           # install path; it is not the shard's source. Any other symlinked
           # directory is part of the source and is hashed by its link text.
           next if prefix.empty? && entry == INSTALL_DIR && File.readlink(full) == INSTALLED_LIB_LINK_TARGET
+          # Its link text stands in for its contents only when those contents
+          # are inside the shard and so hashed on their own.
+          unless inside?(File.realpath(full), real_root)
+            raise UnsafeSymlink.new(relative, File.readlink(full))
+          end
           files << relative
         elsif File.directory?(full)
           next if EXCLUDED_DIRS.includes?(entry)
           # A real top-level `lib/` directory ships with the shard (Minecart
           # keeps it instead of linking), so its files are hashed like any other.
-          files.concat(collect_files(full, relative))
+          files.concat(collect_files(full, real_root, relative))
         elsif File.file?(full) || File.symlink?(full)
           files << relative
         end
       end
 
       files
+    end
+
+    private def self.inside?(real_path : String, real_root : String) : Bool
+      real_path == real_root || real_path.starts_with?(real_root + File::SEPARATOR)
     end
   end
 end
