@@ -120,7 +120,7 @@ module Shards
 
       Log.debug { "Link #{Shards.install_path} to #{lib_path}" }
       Dir.mkdir_p(File.dirname(lib_path))
-      target = File.join(Path.new(Shards::INSTALL_DIR).parts.map { ".." })
+      target = Checksum::INSTALLED_LIB_LINK_TARGET
       File.symlink(target, lib_path)
     end
 

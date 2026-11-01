@@ -24,10 +24,11 @@ module Shards
         solver.prepare(development: Shards.with_development?)
 
         packages = handle_resolver_errors { solver.solve }
-        copy_matching_locked_checksums(packages)
+        # Names whose checksum came from the lock; every other checksum is recorded fresh.
+        locked_names = copy_matching_locked_checksums(packages).select(&.checksum).map(&.name).to_set
         # update records a checksum for every package from its current source.
         check_policy(packages, packages.map(&.name).to_set)
-        install(packages)
+        install(packages, locked_names)
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -50,25 +51,32 @@ module Shards
         check_crystal_version(packages)
       end
 
-      private def install(packages : Array(Package))
+      private def install(packages : Array(Package), locked_names : Set(String))
         newly_installed = [] of Package
         packages.each do |package|
-          installed = install(package)
-          if installed
+          if install(package)
             verify_checksum_before_scripts(package)
             newly_installed << package
-          elsif package.checksum.try(&.starts_with?(LEGACY_GIT_TREE_PREFIX)) || package.spec.scripts["postinstall"]?.nil?
+          elsif package.spec.scripts["postinstall"]?
+            # Its postinstall already ran, so check the lock against the source.
+            verify_locked_source(package)
+          else
             verify_checksum_before_scripts(package)
           end
         end
 
         # Set lock checksums from source state before any postinstall can
         # modify installed files.
-        compute_checksums(packages)
+        compute_checksums(packages, locked_names)
 
         # then execute the postinstall script of installed dependencies (with
-        # access to all transitive dependencies):
-        newly_installed.each(&.postinstall)
+        # access to all transitive dependencies). Each copy is verified again
+        # right before its own script, because an earlier script may have
+        # changed it.
+        newly_installed.each do |package|
+          verify_checksum_before_scripts(package)
+          package.postinstall
+        end
 
         # always install executables because the path resolver never actually
         # installs dependencies:
@@ -90,13 +98,18 @@ module Shards
         !Shards.frozen?
       end
 
-      # Records a sha256 checksum for every package that lacks one. A checksum
-      # copied from the lock was verified above (or belongs to an unchanged
-      # installed copy) and stays. Legacy `git-tree:` entries, verified above,
+      # Records the sha256 checksum of a fresh checkout for every package whose
+      # checksum did not come from the lock, so a locally modified installed copy
+      # is never what gets locked. A sha256 checksum reused from the lock was
+      # verified above and stays. Legacy `git-tree:` entries, verified above,
       # are upgraded. Path dependencies are re-hashed because their source moves.
-      private def compute_checksums(packages : Array(Package))
+      private def compute_checksums(packages : Array(Package), locked_names : Set(String))
         packages.each do |package|
-          next if package.checksum.try(&.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")) && !package.resolver.is_a?(PathResolver)
+          recorded = package.checksum
+          is_reused_sha256 = locked_names.includes?(package.name) &&
+                             !recorded.nil? &&
+                             recorded.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")
+          next if is_reused_sha256 && !package.resolver.is_a?(PathResolver)
 
           if computed = package.pristine_checksum
             package.checksum = computed

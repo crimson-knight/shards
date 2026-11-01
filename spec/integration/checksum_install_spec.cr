@@ -362,4 +362,101 @@ describe "checksum pinning" do
       end
     end
   end
+
+  describe "an installed package whose postinstall script already ran" do
+    it "is checked against a fresh checkout, so a tampered lock checksum fails install" do
+      with_shard({dependencies: {post: "*"}}) do
+        run "shards install"
+        File.exists?(install_path("post", "made.txt")).should be_true
+
+        File.write("shard.lock", File.read("shard.lock").gsub(SHA256_CHECKSUM, "checksum: sha256:#{"0" * 64}"))
+
+        ex = expect_raises(FailedCommand) { run "shards install --no-color" }
+        (ex.stdout + ex.stderr).should contain("Checksum verification failed for post")
+      end
+    end
+
+    it "is checked against a fresh checkout, so a tampered lock checksum fails update" do
+      with_shard({dependencies: {post: "*"}}) do
+        run "shards install"
+        File.write("shard.lock", File.read("shard.lock").gsub(SHA256_CHECKSUM, "checksum: sha256:#{"0" * 64}"))
+
+        ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+        (ex.stdout + ex.stderr).should contain("Checksum verification failed for post")
+      end
+    end
+  end
+
+  # `tamper_b` depends on `tamper_a`, so `update` runs tamper_a's postinstall
+  # first, and that script rewrites tamper_b's source through the shared `lib`.
+  it "update verifies each copy again right before its own postinstall script" do
+    create_git_repository "tamper_a"
+    create_file "tamper_a", "Makefile", "all:\n\techo '# tampered' >> lib/tamper_b/src/tamper_b.cr\n"
+    create_git_release "tamper_a", "0.1.0", {scripts: {postinstall: "make"}}
+
+    create_git_repository "tamper_b"
+    create_file "tamper_b", "Makefile", "all:\n\ttouch made.txt\n"
+    create_git_release "tamper_b", "0.1.0", {
+      dependencies: {tamper_a: {git: git_url(:tamper_a), version: "0.1.0"}},
+      scripts:      {postinstall: "make"},
+    }
+
+    with_shard({dependencies: {tamper_b: "0.1.0"}}) do
+      ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+      (ex.stdout + ex.stderr).should contain("Checksum verification failed for tamper_b")
+      File.exists?(install_path("tamper_b", "made.txt")).should be_false
+    end
+  end
+
+  it "update locks the sha256 of the source, never of a locally modified installed copy" do
+    with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}, lock_checksum_kind: :none) do
+      run "shards install --frozen --allow-missing-checksums --no-color"
+      File.read("shard.lock").should_not contain("checksum:")
+      File.write(install_path("web", "src/web.cr"), "# locally modified\n")
+
+      run "shards update --no-color"
+      File.read("shard.lock").should contain("checksum: #{fixture_lock_checksum(git_url(:web), "2.1.0")}")
+    end
+  end
+
+  describe "run-script" do
+    it "runs a postinstall script whose lock entry matches its source" do
+      with_shard({dependencies: {post: "*"}}) do
+        run "shards install"
+        File.delete(install_path("post", "made.txt"))
+
+        run "shards run-script post --no-color"
+        File.exists?(install_path("post", "made.txt")).should be_true
+      end
+    end
+
+    it "refuses when the lock checksum does not match the source" do
+      with_shard({dependencies: {post: "*"}}) do
+        run "shards install"
+        File.delete(install_path("post", "made.txt"))
+        File.write("shard.lock", File.read("shard.lock").gsub(SHA256_CHECKSUM, "checksum: sha256:#{"0" * 64}"))
+
+        ex = expect_raises(FailedCommand) { run "shards run-script post --no-color" }
+        (ex.stdout + ex.stderr).should contain("Checksum verification failed for post")
+        File.exists?(install_path("post", "made.txt")).should be_false
+      end
+    end
+
+    it "refuses under the block_postinstall policy" do
+      with_shard({dependencies: {post: "*"}}) do
+        run "shards install"
+        File.delete(install_path("post", "made.txt"))
+        File.write ".minecart-policy.yml", <<-YAML
+        version: 1
+        rules:
+          security:
+            block_postinstall: true
+        YAML
+
+        ex = expect_raises(FailedCommand) { run "shards run-script post --no-color" }
+        (ex.stdout + ex.stderr).should contain("block_postinstall")
+        File.exists?(install_path("post", "made.txt")).should be_false
+      end
+    end
+  end
 end

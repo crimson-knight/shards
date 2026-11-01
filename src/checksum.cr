@@ -4,6 +4,9 @@ module Shards
   module Checksum
     ALGORITHM_PREFIX = "sha256"
     EXCLUDED_DIRS    = {".git", ".hg", ".fossil", ".fslckout", "_FOSSIL_"}
+    # Target of the `lib` link `Package#install` writes from a shard to the
+    # project install path (one `..` per part of INSTALL_DIR).
+    INSTALLED_LIB_LINK_TARGET = File.join(Path.new(INSTALL_DIR).parts.map { ".." })
 
     # Compute a deterministic SHA-256 checksum for a directory of source files.
     # Returns a string like "sha256:abcdef1234..."
@@ -28,11 +31,11 @@ module Shards
 
     # A symlink whose target is missing cannot be read, and some shards ship
     # them (sample apps pointing at paths that only exist in the author's
-    # checkout). Hash the link text for those instead of crashing. Symlinks with
-    # a live target keep hashing their content, so existing checksums are
-    # unchanged.
+    # checkout). A symlink to a directory is not followed, to avoid loops. Both
+    # are hashed by their link text, so retargeting one changes the checksum.
+    # Symlinks to a live file keep hashing their content.
     private def self.file_content_for_checksum(full_path : String) : String
-      if File.symlink?(full_path) && !File.exists?(full_path)
+      if File.symlink?(full_path) && (!File.exists?(full_path) || File.directory?(full_path))
         "symlink:#{File.readlink(full_path)}"
       else
         File.read(full_path)
@@ -54,11 +57,16 @@ module Shards
         relative = prefix.empty? ? entry : File.join(prefix, entry)
         full = File.join(base_path, entry)
 
-        if File.directory?(full)
-          # Skip symlinked directories entirely (avoids infinite loops from lib symlink)
-          next if File.symlink?(full)
+        if File.symlink?(full) && File.directory?(full)
+          # The top-level `lib` link is the one Minecart writes to the project's
+          # install path; it is not the shard's source. Any other symlinked
+          # directory is part of the source and is hashed by its link text.
+          next if prefix.empty? && entry == INSTALL_DIR && File.readlink(full) == INSTALLED_LIB_LINK_TARGET
+          files << relative
+        elsif File.directory?(full)
           next if EXCLUDED_DIRS.includes?(entry)
-          next if entry == "lib" && prefix.empty?
+          # A real top-level `lib/` directory ships with the shard (Minecart
+          # keeps it instead of linking), so its files are hashed like any other.
           files.concat(collect_files(full, relative))
         elsif File.file?(full) || File.symlink?(full)
           files << relative

@@ -39,6 +39,8 @@ module Shards
         command = installed.spec.scripts["postinstall"]?
         raise Error.new("Shard #{name.inspect} has no postinstall script") unless command
 
+        verify_before_running(installed)
+
         Log.info { "Running postinstall of #{name}: #{command}" }
         Script.run(installed.install_path, command, "postinstall", name)
 
@@ -46,6 +48,31 @@ module Shards
         info = Shards.postinstall_info
         info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: true)
         info.save
+      end
+
+      # Applies the same gates as `install` before any dependency code runs:
+      # the `block_postinstall` policy, and a lock entry for this exact version
+      # whose checksum matches a fresh checkout of that version.
+      private def verify_before_running(installed : Package)
+        if current_policy = policy
+          if current_policy.security.block_postinstall?
+            raise Error.new("#{policy_path} blocks postinstall scripts (security.block_postinstall); not running the script of #{installed.name.inspect}")
+          end
+        end
+
+        return if installed.resolver.is_a?(PathResolver)
+        raise Error.new("No #{LOCK_FILENAME} found; run `minecart install` before running postinstall scripts") unless lockfile?
+
+        locked = locks.shards.find { |package| package.name == installed.name }
+        unless locked && locked.resolver == installed.resolver && locked.version == installed.version
+          raise Error.new("Installed #{installed.name.inspect} does not match #{LOCK_FILENAME}; run `minecart install` first")
+        end
+
+        unless locked.checksum || Shards.allow_missing_checksums?
+          raise MissingLockChecksum.new([locked.name], [] of String)
+        end
+
+        verify_locked_source(locked)
       end
     end
   end

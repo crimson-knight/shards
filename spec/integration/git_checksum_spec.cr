@@ -47,9 +47,13 @@ describe "Git dependency lock checksums" do
     first_output.should contain("Installing web")
     second_output.should contain("Installing web")
 
-    first_checksum = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(first_project, "shard.lock"))).not_nil![1]
-    second_checksum = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(second_project, "shard.lock"))).not_nil![1]
-    first_checksum.should eq(second_checksum)
+    first_match = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(first_project, "shard.lock")))
+    second_match = /checksum: (sha256:[0-9a-f]+)/.match(File.read(File.join(second_project, "shard.lock")))
+    first_match.should_not be_nil
+    second_match.should_not be_nil
+    if first_match && second_match
+      first_match[1].should eq(second_match[1])
+    end
   end
 
   it "rejects a force-pushed tag before running postinstall" do
@@ -73,6 +77,31 @@ describe "Git dependency lock checksums" do
       ex = expect_raises(FailedCommand) { run "shards install --no-color" }
       (ex.stdout + ex.stderr).should contain("Checksum verification failed for moving")
       File.exists?(install_path("moving", "made.txt")).should be_false
+    end
+  end
+
+  it "rejects a force-pushed tag that changes only a real top-level lib/ file" do
+    create_git_repository("libmoving")
+    create_file("libmoving", "lib/payload.sh", "echo original\n")
+    create_file("libmoving", "Makefile", "all:\n\tsh lib/payload.sh > made.txt\n")
+    create_git_release("libmoving", "0.1.0", {scripts: {postinstall: "make"}})
+
+    with_shard({dependencies: {libmoving: "0.1.0"}}) do
+      run "shards install --no-color"
+      File.exists?(install_path("libmoving", "made.txt")).should be_true
+
+      create_file("libmoving", "lib/payload.sh", "echo replaced\n")
+      create_git_commit("libmoving", "replace v0.1.0 lib payload")
+      Dir.cd(git_path("libmoving")) { run "git tag --force v0.1.0" }
+
+      Shards::Helpers.rm_rf(install_path("libmoving"))
+      File.delete(install_path(".shards.info")) if File.exists?(install_path(".shards.info"))
+      postinstall_info = install_path(".shards.postinstall")
+      File.delete(postinstall_info) if File.exists?(postinstall_info)
+
+      ex = expect_raises(FailedCommand) { run "shards install --no-color" }
+      (ex.stdout + ex.stderr).should contain("Checksum verification failed for libmoving")
+      File.exists?(install_path("libmoving", "made.txt")).should be_false
     end
   end
 end

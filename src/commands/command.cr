@@ -210,7 +210,14 @@ module Shards
       packages.each do |package|
         next unless package.installed?
         next if already_verified.includes?(package.name)
-        next if !package.spec.scripts["postinstall"]?.nil?
+
+        # A postinstall script has already changed this installed copy, so the
+        # lock is checked against a fresh checkout of the locked version.
+        if package.spec.scripts["postinstall"]?
+          verify_locked_source(package)
+          next
+        end
+
         next if package.resolver.is_a?(PathResolver) && !Shards.frozen?
 
         if expected = package.checksum
@@ -225,8 +232,33 @@ module Shards
       end
     end
 
-    private def record_checksum_on_first_use(package : Package)
-      computed = package.computed_checksum
+    # Verifies the lock entry of an installed package whose postinstall script
+    # has already run. Its directory no longer matches its source, so the
+    # locked version is checked out fresh (or, for a legacy `git-tree:` entry,
+    # its tree id is read from the mirror) and must match the recorded checksum.
+    # Without a recorded checksum, the fresh checkout's sha256 is trusted on
+    # first use. Path dependencies are local source and are not checked here.
+    protected def verify_locked_source(package : Package)
+      return if package.resolver.is_a?(PathResolver)
+
+      expected = package.checksum
+      unless expected
+        record_checksum_on_first_use(package, package.pristine_checksum)
+        return
+      end
+
+      actual = if expected.starts_with?(LEGACY_GIT_TREE_PREFIX)
+                 package.resolver.checksum_for(package.version)
+               else
+                 package.pristine_checksum
+               end
+      unless actual == expected
+        raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
+      end
+      Log.debug { "Checksum verified for #{package.name} against a fresh checkout of #{package.report_version}" }
+    end
+
+    private def record_checksum_on_first_use(package : Package, computed : String? = package.computed_checksum)
       return unless computed
 
       package.checksum = computed

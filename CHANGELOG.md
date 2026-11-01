@@ -7,6 +7,10 @@
 - Add `--allow-missing-checksums` to install once without sha256 checksums (with a warning). Mismatched checksums still fail.
 - Enforce `security.require_checksum` from the policy file during install and in `minecart policy check`; `--allow-missing-checksums` cannot override it.
 - `minecart lock` keeps the recorded checksum of every unchanged entry; `minecart lock --rekey` now writes sha256 checksums.
+- The sha256 directory digest now covers a real top-level `lib/` directory and records every symlinked directory by its link text; only the `lib` link Minecart itself writes is left out. A sha256 entry for a shard that ships either one changes: re-record it with `minecart update <name>` after reviewing that shard.
+- An installed dependency whose postinstall script already ran is checked against a fresh checkout of its locked version during `install` and `update`, so a changed lock checksum is caught.
+- `minecart update` verifies each new copy again right before its own postinstall script, and records checksums from a fresh checkout instead of the installed copy.
+- `minecart run-script` obeys `security.block_postinstall` and verifies the lock entry against a fresh checkout before running a script.
 
 ## Minecart 2025.11.25.8 (2026-10-06)
 

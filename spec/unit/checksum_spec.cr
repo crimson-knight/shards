@@ -137,18 +137,50 @@ module Shards
         end
       end
 
-      it "excludes lib directory at top level" do
+      it "excludes the lib link Minecart writes to the project install path" do
         path = File.tempname("checksum", "test")
         Dir.mkdir_p(path)
         begin
           File.write(File.join(path, "file.txt"), "hello")
           checksum1 = Checksum.compute(path)
 
-          Dir.mkdir_p(File.join(path, "lib", "some_dep"))
-          File.write(File.join(path, "lib", "some_dep", "main.cr"), "module SomeDep; end")
-          checksum2 = Checksum.compute(path)
+          File.symlink(Checksum::INSTALLED_LIB_LINK_TARGET, File.join(path, "lib"))
+          Checksum.compute(path).should eq(checksum1)
+        ensure
+          Shards::Helpers.rm_rf(path)
+        end
+      end
 
-          checksum1.should eq(checksum2)
+      it "hashes a real top-level lib directory that ships with the shard" do
+        path = File.tempname("checksum", "test")
+        Dir.mkdir_p(path)
+        begin
+          File.write(File.join(path, "file.txt"), "hello")
+          checksum1 = Checksum.compute(path)
+
+          Dir.mkdir_p(File.join(path, "lib"))
+          File.write(File.join(path, "lib", "payload.sh"), "echo original")
+          checksum2 = Checksum.compute(path)
+          checksum2.should_not eq(checksum1)
+
+          File.write(File.join(path, "lib", "payload.sh"), "echo replaced")
+          Checksum.compute(path).should_not eq(checksum2)
+        ensure
+          Shards::Helpers.rm_rf(path)
+        end
+      end
+
+      it "hashes any other symlinked directory by its link text" do
+        path = File.tempname("checksum", "test")
+        Dir.mkdir_p(File.join(path, "first"))
+        Dir.mkdir_p(File.join(path, "second"))
+        begin
+          File.symlink("first", File.join(path, "current"))
+          checksum1 = Checksum.compute(path)
+
+          File.delete(File.join(path, "current"))
+          File.symlink("second", File.join(path, "current"))
+          Checksum.compute(path).should_not eq(checksum1)
         ensure
           Shards::Helpers.rm_rf(path)
         end
