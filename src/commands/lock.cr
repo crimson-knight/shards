@@ -65,9 +65,10 @@ module Shards
 
         list_of_locked_packages.each do |package|
           recorded = package.checksum
-          next unless recorded && recorded.starts_with?(LEGACY_GIT_TREE_PREFIX)
+          next unless recorded
+          next if Checksum.current?(recorded)
 
-          actual = package.resolver.checksum_for(package.version)
+          actual = package.source_checksum_like(recorded)
           raise ChecksumMismatch.new(package.name, recorded, actual || "unavailable") unless actual == recorded
 
           package.checksum = package.pristine_checksum

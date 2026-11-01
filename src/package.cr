@@ -59,36 +59,63 @@ module Shards
       File.join(Shards.install_path, name)
     end
 
+    # The checksum of the installed copy, computed with the algorithm of the
+    # recorded checksum so any lock entry can be compared with it. A legacy
+    # `git-tree:` entry is checked against the Git mirror's tree id instead.
     def compute_checksum : String?
       return nil unless File.exists?(install_path)
 
-      if checksum.try(&.starts_with?(LEGACY_GIT_TREE_PREFIX))
+      recorded = checksum
+      if recorded && recorded.starts_with?(LEGACY_GIT_TREE_PREFIX)
         return resolver.checksum_for(version)
+      end
+      if recorded && Checksum.legacy_sha256?(recorded)
+        return Checksum.compute_legacy_sha256(install_path)
       end
 
       Checksum.compute(install_path)
     end
 
-    # The `sha256:` checksum over the installed files. Callers record it right
-    # after installation, before any postinstall script can change the directory.
-    # Legacy `git-tree:` lock entries are verified by `compute_checksum` instead.
+    # The current (`sha256-v2:`) checksum over the installed files. Callers
+    # record it right after installation, before any postinstall script can
+    # change the directory.
     def computed_checksum : String?
       return nil unless File.exists?(install_path)
 
       Checksum.compute(install_path)
     end
 
-    # The `sha256:` checksum of the files a fresh install of this version writes.
-    # The sources are written to a temporary directory, so postinstall output in
-    # the installed copy never enters the checksum. Path dependencies are hashed
-    # where they are, because their source is the directory itself.
+    # The current (`sha256-v2:`) checksum of the files a fresh install of this
+    # version writes. The sources are written to a temporary directory, so
+    # postinstall output in the installed copy never enters the checksum. Path
+    # dependencies are hashed where they are, because their source is the
+    # directory itself.
     def pristine_checksum : String?
       return computed_checksum if resolver.is_a?(PathResolver)
 
+      with_pristine_sources { |directory| Checksum.compute(directory) }
+    end
+
+    # The checksum of a fresh install of this version, computed with the
+    # algorithm that produced *expected*, so a lock entry of any kind can be
+    # compared with the source it names.
+    def source_checksum_like(expected : String) : String?
+      return resolver.checksum_for(version) if expected.starts_with?(LEGACY_GIT_TREE_PREFIX)
+      return pristine_checksum unless Checksum.legacy_sha256?(expected)
+
+      if resolver.is_a?(PathResolver)
+        return nil unless File.exists?(install_path)
+        return Checksum.compute_legacy_sha256(install_path)
+      end
+
+      with_pristine_sources { |directory| Checksum.compute_legacy_sha256(directory) }
+    end
+
+    private def with_pristine_sources(& : String -> String) : String
       directory = File.tempname("minecart-checksum-#{name}")
       begin
         resolver.install_sources(version, directory)
-        Checksum.compute(directory)
+        yield directory
       ensure
         Helpers.rm_rf(directory) if File.exists?(directory)
       end

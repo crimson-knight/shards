@@ -188,7 +188,14 @@ module Shards
       end
 
       unless list_of_legacy_checksum_names.empty?
-        Log.warn { "#{LOCK_FILENAME} has legacy git-tree (SHA-1) checksums for #{list_of_legacy_checksum_names.join(", ")}. They are still verified; run `minecart lock --update-checksums` to upgrade them to sha256." }
+        Log.warn { "#{LOCK_FILENAME} has legacy git-tree (SHA-1) checksums for #{list_of_legacy_checksum_names.join(", ")}. They are still verified; run `minecart lock --update-checksums` to upgrade them to #{Checksum::PREFIX.rchop(':')}." }
+      end
+
+      list_of_legacy_sha256_names = list_of_fetched_packages
+        .select { |package| (recorded = package.checksum) && Checksum.legacy_sha256?(recorded) }
+        .map(&.name)
+      unless list_of_legacy_sha256_names.empty?
+        Log.warn { "#{LOCK_FILENAME} has legacy sha256 (v1) checksums for #{list_of_legacy_sha256_names.join(", ")}. They are still verified; run `minecart lock --update-checksums` to upgrade them to #{Checksum::PREFIX.rchop(':')}." }
       end
     end
 
@@ -206,7 +213,7 @@ module Shards
       end
     end
 
-    protected def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new)
+    protected def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new, verified_sources = Set(String).new)
       packages.each do |package|
         next unless package.installed?
         next if already_verified.includes?(package.name)
@@ -214,7 +221,7 @@ module Shards
         # A postinstall script has already changed this installed copy, so the
         # lock is checked against a fresh checkout of the locked version.
         if package.spec.scripts["postinstall"]?
-          verify_locked_source(package)
+          verify_locked_source(package) unless verified_sources.includes?(package.name)
           next
         end
 
@@ -232,6 +239,23 @@ module Shards
       end
     end
 
+    # Before anything is installed or any script runs, checks that the source
+    # of every reused lock entry still matches its recorded checksum. The solver
+    # has already read these sources (for example to find their dependencies),
+    # so a moved tag must fail here, before a new transitive package's script
+    # could run. Returns the names it verified.
+    protected def verify_reused_sources(list_of_locked_packages : Array(Package)) : Set(String)
+      verified_names = Set(String).new
+      list_of_locked_packages.each do |package|
+        next if package.resolver.is_a?(PathResolver)
+        next unless package.checksum
+
+        verify_locked_source(package)
+        verified_names << package.name
+      end
+      verified_names
+    end
+
     # Verifies the lock entry of an installed package whose postinstall script
     # has already run. Its directory no longer matches its source, so the
     # locked version is checked out fresh (or, for a legacy `git-tree:` entry,
@@ -247,11 +271,7 @@ module Shards
         return
       end
 
-      actual = if expected.starts_with?(LEGACY_GIT_TREE_PREFIX)
-                 package.resolver.checksum_for(package.version)
-               else
-                 package.pristine_checksum
-               end
+      actual = package.source_checksum_like(expected)
       unless actual == expected
         raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
       end

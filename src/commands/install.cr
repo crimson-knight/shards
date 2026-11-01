@@ -40,6 +40,7 @@ module Shards
           validate(packages)
         end
 
+        verified_sources = verify_reused_sources(list_of_locked_packages)
         verified = install(packages)
 
         # Checksums for freshly-installed packages are verified INSIDE the
@@ -47,7 +48,7 @@ module Shards
         # fires after attacker-supplied code has executed is not a control.
         # This pass covers only what that loop did not: packages that were
         # already present, and therefore ran no script this session.
-        verify_or_compute_checksums(packages, verified)
+        verify_or_compute_checksums(packages, verified, verified_sources)
 
         AIDocsInstaller.new(path).install(packages)
 

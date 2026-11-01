@@ -25,10 +25,12 @@ module Shards
 
         packages = handle_resolver_errors { solver.solve }
         # Names whose checksum came from the lock; every other checksum is recorded fresh.
-        locked_names = copy_matching_locked_checksums(packages).select(&.checksum).map(&.name).to_set
+        list_of_locked_packages = copy_matching_locked_checksums(packages).select(&.checksum)
+        locked_names = list_of_locked_packages.map(&.name).to_set
         # update records a checksum for every package from its current source.
         check_policy(packages, packages.map(&.name).to_set)
-        install(packages, locked_names)
+        verified_sources = verify_reused_sources(list_of_locked_packages)
+        install(packages, locked_names, verified_sources)
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -51,7 +53,7 @@ module Shards
         check_crystal_version(packages)
       end
 
-      private def install(packages : Array(Package), locked_names : Set(String))
+      private def install(packages : Array(Package), locked_names : Set(String), verified_sources : Set(String))
         newly_installed = [] of Package
         packages.each do |package|
           if install(package)
@@ -59,7 +61,7 @@ module Shards
             newly_installed << package
           elsif package.spec.scripts["postinstall"]?
             # Its postinstall already ran, so check the lock against the source.
-            verify_locked_source(package)
+            verify_locked_source(package) unless verified_sources.includes?(package.name)
           else
             verify_checksum_before_scripts(package)
           end
@@ -94,9 +96,10 @@ module Shards
           next if package.spec.scripts["postinstall"]?
 
           expected = package.checksum
-          next unless expected && expected.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")
+          next unless expected
+          next if expected.starts_with?(LEGACY_GIT_TREE_PREFIX)
 
-          actual = package.computed_checksum
+          actual = package.compute_checksum
           unless actual == expected
             raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
           end
@@ -126,10 +129,10 @@ module Shards
       private def compute_checksums(packages : Array(Package), locked_names : Set(String))
         packages.each do |package|
           recorded = package.checksum
-          is_reused_sha256 = locked_names.includes?(package.name) &&
-                             !recorded.nil? &&
-                             recorded.starts_with?("#{Checksum::ALGORITHM_PREFIX}:")
-          next if is_reused_sha256 && !package.resolver.is_a?(PathResolver)
+          is_reused_current = locked_names.includes?(package.name) &&
+                              !recorded.nil? &&
+                              Checksum.current?(recorded)
+          next if is_reused_current && !package.resolver.is_a?(PathResolver)
 
           if computed = package.pristine_checksum
             package.checksum = computed
