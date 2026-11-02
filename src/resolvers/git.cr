@@ -225,7 +225,14 @@ module Shards
       ref = git_ref(version)
 
       Dir.mkdir_p(install_path)
-      run "git --work-tree=#{Process.quote(install_path)} checkout #{Process.quote(ref.to_git_ref)} -- ."
+      # A scratch index per checkout, so concurrent Minecart runs that share
+      # the mirror in the cache never contend for its index.lock.
+      index_file = File.tempname("minecart-git-index")
+      begin
+        run "git --work-tree=#{Process.quote(install_path)} checkout #{Process.quote(ref.to_git_ref)} -- .", env: {"GIT_INDEX_FILE" => index_file}
+      ensure
+        File.delete?(index_file)
+      end
     end
 
     def commit_sha1_at(ref : GitRef)
@@ -437,17 +444,17 @@ module Shards
       run(command, capture: true, path: path).not_nil!
     end
 
-    private def run(command, path = local_path, capture = false)
+    private def run(command, path = local_path, capture = false, env : Process::Env = nil)
       if Shards.local? && !Dir.exists?(path)
         dependency_name = File.basename(path, ".git")
         raise Error.new("Missing repository cache for #{dependency_name.inspect}. Please run without --local to fetch it.")
       end
-      run_in_folder(command, path, capture)
+      run_in_folder(command, path, capture, env)
     end
 
     # Chdir to a folder and run command.
     # Runs in current folder if `path` is nil.
-    private def run_in_folder(command, path : String? = nil, capture = false)
+    private def run_in_folder(command, path : String? = nil, capture = false, env : Process::Env = nil)
       unless GitResolver.has_git_command?
         raise Error.new("Error missing git command line tool. Please install Git first!")
       end
@@ -456,7 +463,7 @@ module Shards
 
       output = capture ? IO::Memory.new : Process::Redirect::Close
       error = IO::Memory.new
-      status = Process.run(command, shell: true, output: output, error: error, chdir: path)
+      status = Process.run(command, shell: true, env: env, output: output, error: error, chdir: path)
 
       if status.success?
         output.to_s if capture
