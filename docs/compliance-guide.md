@@ -83,20 +83,62 @@ minecart audit --format=sarif --fail-above=critical > results.sarif
 
 ## 2. Integrity Verification
 
-Minecart stores source checksums in `shard.lock` and verifies them before a
-dependency's postinstall script runs. Git dependencies use the root tree hash
-from the resolved commit's Git object database (`git-tree:<hash>`), so the
-checksum is independent of the installed directory. Path, Mercurial, and Fossil
-dependencies continue to use a deterministic directory `sha256:<hash>`.
+Minecart stores a `sha256-v2:<hash>` checksum for every fetched dependency in
+`shard.lock`: a deterministic SHA-256 over each file's relative path, bytes and
+Git-style mode (regular, executable or symlink). A symlink is recorded by its
+link text and never followed, so a link to an absolute path is pinned by where
+it points. Stock `shards` ignores the additive `checksum:` field.
 
-Existing `sha256:` lock entries remain valid. `minecart update` and
-`minecart lock --rekey` convert Git entries to tree checksums. Stock `shards`
-ignores the additive `checksum:` field. In this release,
-`minecart install --frozen` warns when a lock entry has no checksum; a later
-release will make that an error.
+Lock entries written by Minecart 2025.11.25.8 and earlier hold `sha256:` (v1)
+or `git-tree:<hash>` (Git's SHA-1 tree id). Minecart verifies both under their
+original rules, `--frozen` included, and prints a notice. `minecart update`
+rewrites an entry as `sha256-v2:` when it re-resolves that dependency;
+`minecart lock --update-checksums` verifies each legacy entry and then records
+the `sha256-v2:` checksum of the same version.
+
+Checksum rules for `minecart install`:
+
+- Every `shard.lock` entry the install reuses must have a checksum, or the
+  install fails and names the `minecart update <names>` command that records one.
+- Every source is fetched and verified before any postinstall script runs
+  anywhere in the dependency graph.
+- A dependency new to `shard.lock` is trusted on first use: its checksum is
+  recorded and a `TRUST ON FIRST USE` warning names it. Review it before you
+  commit the lock.
+- `--allow-missing-checksums` accepts entries without a checksum for one
+  install and warns about each. A checksum that does not match always fails.
+- `security.require_checksum: true` in `.minecart-policy.yml` makes a lock
+  entry without a checksum a policy error that `--allow-missing-checksums`
+  cannot override; `minecart policy check` reports it too.
+- Path dependencies are local source and are governed by
+  `sources.deny_path_dependencies` instead.
 
 A mismatch stops installation before postinstall scripts run. Verification
 bypasses are not supported.
+
+### Threat model
+
+Protected: changes on the remote side. A moved tag, a rewritten branch, a
+compromised Git host or mirror, or a dependency added upstream (including one
+that a moved tag's new `shard.yml` brings in) fails its lock checksum. Every
+source is fetched and verified against `shard.lock` before any dependency's
+code runs, and what runs is decided from that verified source: whether a
+package has a postinstall script, what it depends on, and what checksum is
+recorded all come from a fresh checkout, never from the installed copy.
+
+Outside the threat model: local write access to the project. Anyone who can
+write to `lib/`, `lib/.shards.info`, `shard.lock`, the project's own `src/`
+or its build can change what runs whatever the lock says, as with Cargo, npm
+and Bundler lockfiles. Review postinstall scripts before trusting them, or set
+`security.block_postinstall`.
+
+Best-effort extra check: each reused installed copy is compared against a
+fresh checkout of its locked version before any script runs. A package whose
+source declares a postinstall script may hold extra files (its script's
+output). The comparison skips VCS metadata directories (`.git`, `.hg`,
+`.fossil`, `.fslckout`, `_FOSSIL_`) and the `lib` link Minecart writes. This
+catches accidental edits and stale copies; it is defense in depth, not a
+guarantee against local tampering.
 
 ### Lock File Format
 
@@ -106,12 +148,12 @@ shards:
   web:
     git: https://github.com/example/web.git
     version: 1.2.0
-    checksum: git-tree:0123456789abcdef0123456789abcdef01234567
+    checksum: sha256-v2:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
   local_tool:
     path: tools/local_tool
     version: 0.3.0
-    checksum: sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
+    checksum: sha256-v2:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789
 ```
 
 ### Error Output
@@ -600,9 +642,10 @@ with timestamp, user, and detailed change list. Run `minecart diff`
 to compare any two lockfile states.
 
 **Q: Can you prove dependency integrity?**
-A: Git dependencies use the commit's `git-tree:` checksum, and path,
-Mercurial, and Fossil dependencies use directory SHA-256 checksums. Minecart
-verifies them before postinstall scripts. The compliance report's integrity
+A: Every dependency has a `sha256-v2:` checksum over its files, paths and
+modes in `shard.lock` (older locks may hold `sha256:` or `git-tree:` entries,
+which still verify). Minecart verifies every source before any postinstall
+script runs. The compliance report's integrity
 section shows verification status for each dependency.
 
 **Q: When was this last reviewed?**

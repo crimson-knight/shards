@@ -8,10 +8,14 @@ Spec.before_each do
   end
 end
 
-def with_shard(metadata, lock = nil, override = nil, &)
+# Fixture locks record each git fixture's `sha256-v2:` checksum, as a lock written
+# by `minecart install` would. *lock_checksum_kind* is `:sha256` (current), `:legacy_sha256`
+# or `:git_tree` (locks from Minecart 2025.11.25.8 or earlier), or `:none` (a lock
+# from before checksums).
+def with_shard(metadata, lock = nil, override = nil, *, lock_checksum_kind = :sha256, &)
   Dir.cd(application_path) do
     File.write "shard.yml", to_shard_yaml(metadata)
-    File.write "shard.lock", to_lock_yaml(lock) if lock
+    File.write "shard.lock", to_lock_yaml(lock, lock_checksum_kind) if lock
     File.write "shard.override.yml", to_override_yaml(override) if override
     yield
   end
@@ -82,7 +86,7 @@ private def write_dependencies(yml, key, value)
   end
 end
 
-def to_lock_yaml(lock)
+def to_lock_yaml(lock, lock_checksum_kind = :sha256)
   return unless lock
 
   YAML.dump({
@@ -95,9 +99,65 @@ def to_lock_yaml(lock)
         git = git_url(name)
         version = data
       end
-      {name, {git: git, version: version}}
+
+      checksum = fixture_lock_checksum(git, version, lock_checksum_kind)
+      if checksum
+        {name, {git: git, version: version, checksum: checksum}}
+      else
+        {name, {git: git, version: version}}
+      end
     end,
   })
+end
+
+# The lock checksum of a local git fixture at *version*, or nil when the fixture
+# or the version does not exist (specs that lock a missing version).
+def fixture_lock_checksum(git : String, version : String, lock_checksum_kind = :sha256) : String?
+  return if lock_checksum_kind == :none
+  return unless git.starts_with?("file://")
+
+  # `git_url` writes "file://" + a POSIX path ("C:/..." on Windows).
+  repository_path = git.lchop("file://")
+  return unless Dir.exists?(repository_path)
+
+  ref = if commit = version.split("+git.commit.", 2)[1]?
+          commit
+        else
+          "v#{version}"
+        end
+  tree_output = IO::Memory.new
+  status = Process.run("git", ["-C", repository_path, "rev-parse", "--verify", "--quiet", "#{ref}^{tree}"], output: tree_output)
+  return unless status.success?
+  return "#{Shards::LEGACY_GIT_TREE_PREFIX}#{tree_output.to_s.strip}" if lock_checksum_kind == :git_tree
+
+  fixture_source_sha256(repository_path, ref, legacy: lock_checksum_kind == :legacy_sha256)
+end
+
+# Checks *ref* out into a scratch directory with a scratch index, the way the git
+# resolver installs a dependency, and returns the checksum of those files
+# (`sha256-v2:`, or the v1 `sha256:` when *legacy* is true).
+def fixture_source_sha256(repository_path : String, ref : String, *, legacy = false) : String
+  scratch = File.tempname("fixture-checksum")
+  source_directory = File.join(scratch, "source")
+  Dir.mkdir_p(source_directory)
+  begin
+    env = {"GIT_INDEX_FILE" => File.join(scratch, "index")}
+    args = ["-C", repository_path, "--work-tree=#{source_directory}", "checkout", ref, "--", "."]
+    status = Process.run("git", args, env: env)
+    raise "git checkout #{ref} failed in #{repository_path}" unless status.success?
+    if legacy
+      # Minecart 2025.11.25.8 computed v1 over an installed copy, whose `lib`
+      # link points at the project's install path.
+      project_install_path = File.join(application_path, Shards::INSTALL_DIR)
+      Dir.mkdir_p(project_install_path)
+      File.symlink(project_install_path, File.join(source_directory, Shards::INSTALL_DIR)) unless File.exists?(File.join(source_directory, Shards::INSTALL_DIR))
+      Shards::Checksum.compute_legacy_sha256(source_directory)
+    else
+      Shards::Checksum.compute(source_directory)
+    end
+  ensure
+    Shards::Helpers.rm_rf(scratch)
+  end
 end
 
 module Shards::Specs

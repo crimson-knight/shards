@@ -16,6 +16,7 @@ module Shards
     @spec : Spec?
     @locks : Lock?
     @override : Override?
+    @policy : Shards::Policy?
 
     def initialize(path)
       if File.directory?(path)
@@ -113,15 +114,17 @@ module Shards
       File.touch(Shards.install_path)
     end
 
-    protected def check_policy(packages : Array(Package))
-      policy_path = Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
-      return unless File.exists?(policy_path)
+    # Packages named in *checksum_exempt_names* are about to record their first
+    # checksum (new dependencies, or every package during `update`), so the
+    # `require_checksum` rule applies only to the lock entries being reused.
+    protected def check_policy(packages : Array(Package), checksum_exempt_names = Set(String).new)
+      current_policy = policy
+      return unless current_policy
 
       Log.info { "Checking dependency policies" }
 
-      policy = Shards::Policy.from_file(policy_path)
-      checker = PolicyChecker.new(policy)
-      report = checker.check(packages)
+      checker = PolicyChecker.new(current_policy)
+      report = checker.check(packages, checksum_exempt_names)
 
       unless report.clean?
         report.to_terminal(STDERR)
@@ -132,12 +135,23 @@ module Shards
       end
     end
 
+    protected def policy_path : String
+      Shards.config_file_path(path, MINECART_POLICY_FILENAME, POLICY_FILENAME)
+    end
+
+    protected def policy : Shards::Policy?
+      @policy ||= Shards::Policy.from_file(policy_path) if File.exists?(policy_path)
+    end
+
     protected def check_pinning
       PinningChecker.new(path, spec, Shards.strict_pinning?).check
     end
 
-    protected def copy_matching_locked_checksums(packages : Array(Package))
-      return unless lockfile?
+    # Copies each recorded checksum onto the resolved package and returns the
+    # lock entries this resolution reuses unchanged (same name, source and version).
+    protected def copy_matching_locked_checksums(packages : Array(Package)) : Array(Package)
+      list_of_locked_packages = [] of Package
+      return list_of_locked_packages unless lockfile?
 
       previous_packages = locks.shards.to_h { |package| {package.name, package} }
       packages.each do |package|
@@ -146,40 +160,93 @@ module Shards
         next unless previous.resolver == package.resolver && previous.version == package.version
 
         package.checksum = previous.checksum
+        list_of_locked_packages << package
+      end
+      list_of_locked_packages
+    end
+
+    # Every reused lock entry must carry a checksum; only dependencies that are new
+    # to the lock are trusted on first use. Legacy entries (`git-tree:` and the
+    # v1 `sha256:`) are verified with their original rules, `--frozen` included,
+    # so existing lock files keep installing. Path dependencies are local source
+    # and are governed by the `deny_path_dependencies` policy instead.
+    protected def require_locked_checksums(list_of_locked_packages : Array(Package))
+      list_of_fetched_packages = list_of_locked_packages.reject(&.resolver.is_a?(PathResolver))
+      list_of_unchecksummed_names = list_of_fetched_packages.select(&.checksum.nil?).map(&.name)
+
+      unless list_of_unchecksummed_names.empty?
+        raise MissingLockChecksum.new(list_of_unchecksummed_names) unless Shards.allow_missing_checksums?
+
+        Log.warn { "--allow-missing-checksums: #{LOCK_FILENAME} has no checksum for #{list_of_unchecksummed_names.join(", ")}; trusting the current source of each." }
+      end
+
+      list_of_legacy_names = list_of_fetched_packages
+        .select { |package| (recorded = package.checksum) && Checksum.legacy?(recorded) }
+        .map(&.name)
+      unless list_of_legacy_names.empty?
+        Log.info { "#{LOCK_FILENAME} has legacy (git-tree or sha256 v1) checksums for #{list_of_legacy_names.join(", ")}. They are still verified; `minecart lock --update-checksums` upgrades them to #{Checksum::PREFIX.rchop(':')}." }
       end
     end
 
+    # Verifies an installed copy against its lock entry before any script can
+    # run. The first check also records the copy's full `sha256-v2:` digest;
+    # every later check (right before the package's own postinstall script)
+    # requires that digest unchanged, so an earlier script cannot rewrite the
+    # files this one runs, whatever kind of checksum the lock holds.
     protected def verify_checksum_before_scripts(package : Package)
       return if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+
+      if first_digest = package.first_verified_digest
+        actual = package.computed_checksum
+        unless actual == first_digest
+          raise ChecksumMismatch.new(package.name, first_digest, actual || "unavailable")
+        end
+        Log.debug { "Installed copy of #{package.name} unchanged since it was verified" }
+        return
+      end
 
       if expected = package.checksum
         actual = package.compute_checksum
         unless actual && actual == expected
           raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
         end
+        verify_installed_copy_matches_source(package) if Checksum.legacy?(expected)
         Log.debug { "Checksum verified for #{package.name} before scripts" }
       else
-        if Shards.frozen?
-          Log.warn { "Dependency '#{package.name}' has no checksum in shard.lock; re-run minecart update (this will become an error next release)" }
-        end
-        if computed = package.computed_checksum
-          package.checksum = computed
-          Log.debug { "Computed checksum for #{package.name}: #{computed}" }
-        end
+        record_checksum_on_first_use(package)
+      end
+      package.first_verified_digest = package.computed_checksum
+    end
+
+    # A legacy entry leaves parts of the installed copy unchecked (`git-tree:`
+    # is read from the Git mirror; v1 `sha256:` skips `lib/` and symlinked
+    # directories). Once the entry has verified the locked version, the
+    # installed copy must equal a fresh checkout of that version file for file.
+    private def verify_installed_copy_matches_source(package : Package)
+      return if package.resolver.is_a?(PathResolver)
+
+      installed = package.computed_checksum
+      source = package.pristine_checksum
+      unless installed && installed == source
+        raise ChecksumMismatch.new(package.name, source || "unavailable", installed || "unavailable")
       end
     end
 
-    protected def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new)
+    protected def verify_or_compute_checksums(packages : Array(Package), already_verified = Set(String).new, verified_sources = Set(String).new)
       packages.each do |package|
         next unless package.installed?
         next if already_verified.includes?(package.name)
 
-        if Shards.frozen? && package.checksum.nil?
-          Log.warn { "Dependency '#{package.name}' has no checksum in shard.lock; re-run minecart update (this will become an error next release)" }
+        # A reused copy is never trusted as it stands: it is compared with a
+        # fresh checkout that is verified against the lock (or, with no lock
+        # entry, trusted on first use), whatever its installed manifest says.
+        unless package.resolver.is_a?(PathResolver)
+          verify_locked_source(package) unless verified_sources.includes?(package.name)
+          next
         end
 
-        next if !package.spec.scripts["postinstall"]?.nil?
-        next if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+        # Path dependencies are their own source; `--frozen` checks them.
+        next unless Shards.frozen?
 
         if expected = package.checksum
           actual = package.compute_checksum
@@ -187,10 +254,68 @@ module Shards
             raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
           end
           Log.debug { "Checksum verified for #{package.name}" }
-        elsif computed = package.computed_checksum
-          package.checksum = computed
-          Log.debug { "Computed checksum for #{package.name}: #{computed}" }
+        else
+          record_checksum_on_first_use(package)
         end
+      end
+    end
+
+    # Before anything is installed or any script runs, checks that the source
+    # of every reused lock entry that is already installed still matches its
+    # recorded checksum. The solver has read these sources (for example to find
+    # their dependencies), so a moved tag must fail here, before a new
+    # transitive package's script could run, even though the installed copy
+    # still matches. Entries that are not installed yet are verified as they
+    # are installed, which also happens before any script runs. Returns the
+    # names it verified.
+    protected def verify_reused_sources(list_of_locked_packages : Array(Package)) : Set(String)
+      verified_names = Set(String).new
+      list_of_locked_packages.each do |package|
+        next if package.resolver.is_a?(PathResolver)
+        next unless package.checksum
+        next unless package.installed?
+
+        verify_locked_source(package)
+        verified_names << package.name
+      end
+      verified_names
+    end
+
+    # Verifies the lock entry of a reused installed package. The locked
+    # version is checked out fresh (or, for a legacy `git-tree:` entry, its
+    # tree id is read from the mirror) and must match the recorded checksum.
+    # Without a recorded checksum, the fresh checkout's checksum is trusted on
+    # first use. Either way, the installed copy may hold postinstall output,
+    # but every file of the fresh checkout must still be unchanged in it.
+    # Path dependencies are local source and are not checked here.
+    protected def verify_locked_source(package : Package)
+      return if package.resolver.is_a?(PathResolver)
+
+      if expected = package.checksum
+        actual = package.source_checksum_like(expected)
+        unless actual == expected
+          raise ChecksumMismatch.new(package.name, expected, actual || "unavailable")
+        end
+      else
+        record_checksum_on_first_use(package, package.pristine_checksum)
+      end
+
+      if File.exists?(package.install_path) && !package.installed_copy_matches_source?
+        raise InstalledCopyModified.new(package.name, package.install_path)
+      end
+      Log.debug { "Checksum verified for #{package.name} against a fresh checkout of #{package.report_version}" }
+    end
+
+    private def record_checksum_on_first_use(package : Package, computed : String? = package.computed_checksum)
+      return unless computed
+
+      package.checksum = computed
+      if package.resolver.is_a?(PathResolver)
+        Log.debug { "Computed checksum for path dependency #{package.name}: #{computed}" }
+      elsif Shards.frozen?
+        Log.warn { "TRUST ON FIRST USE: #{package.name} (#{package.report_version}) is trusted for this install only (#{computed}); #{LOCK_FILENAME} is not changed." }
+      else
+        Log.warn { "TRUST ON FIRST USE: #{package.name} (#{package.report_version}) has no recorded checksum; recording #{computed} in #{LOCK_FILENAME}. Review this dependency's source before you commit #{LOCK_FILENAME}." }
       end
     end
   end

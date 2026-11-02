@@ -165,7 +165,7 @@ module Shards
           dep_graph = {} of String => Array(String)
           packages.each do |pkg|
             deps = begin
-              pkg.spec.dependencies.map(&.name).select { |n| locked_names.includes?(n) }
+              pkg.installed_spec.dependencies.map(&.name).select { |n| locked_names.includes?(n) }
             rescue
               [] of String
             end
@@ -216,7 +216,7 @@ module Shards
                       json.field "downloadLocation", source_url
                       json.field "filesAnalyzed", false
                       license_val = begin
-                        l = pkg.spec.license
+                        l = pkg.installed_spec.license
                         (l && !l.empty?) ? l : "NOASSERTION"
                       rescue
                         "NOASSERTION"

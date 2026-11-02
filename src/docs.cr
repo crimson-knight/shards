@@ -210,7 +210,7 @@ module Shards
     # | `minecart run [target]` | Build and run a target |
     # | `minecart check` | Verify all dependencies are installed |
     # | `minecart list [--tree]` | List installed dependencies |
-    # | `minecart lock [--update] [--rekey]` | Lock dependencies without installing |
+    # | `minecart lock [--update] [--rekey] [--update-checksums]` | Lock dependencies without installing |
     # | `shards outdated [--pre]` | Show outdated dependencies |
     # | `shards prune` | Remove unused dependencies |
     # | `shards version [path]` | Print the shard version |

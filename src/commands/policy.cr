@@ -79,6 +79,7 @@ module Shards
         puts ""
         puts "Security rules:"
         puts "  Require license: #{policy.security.require_license?}"
+        puts "  Require checksum: #{policy.security.require_checksum?}"
         puts "  Block postinstall: #{policy.security.block_postinstall?}"
         puts "  Audit postinstall: #{policy.security.audit_postinstall?}"
       end
@@ -109,6 +110,7 @@ module Shards
 
         security:
           require_license: false
+          require_checksum: false # Set true to fail installs when a shard.lock entry has no checksum.
           block_postinstall: false
           audit_postinstall: false
       YAML

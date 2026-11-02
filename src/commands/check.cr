@@ -42,7 +42,7 @@ module Shards
           return false
         else
           return false unless lock.installed?
-          verify(lock.spec.dependencies)
+          verify(lock.installed_spec.dependencies)
           return true
         end
       end
