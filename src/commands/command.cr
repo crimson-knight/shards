@@ -312,29 +312,43 @@ module Shards
     # earlier script may have changed it. A script can also reach every other
     # installed tree through the shared `lib` link, so after each script that
     # ran, every other installed copy must still match the digest it had when
-    # the scripts began; its own copy may change (that is its build output).
-    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package), & : Package ->)
-      digests_of_installed_trees = digest_trees_scripts_can_reach(packages, list_of_newly_installed)
+    # the scripts began, and the install directory may hold no new entry
+    # outside the script's own copy. The script's own copy may change (that is
+    # its build output). On a failure, the script's copy, every changed copy
+    # and every new entry are removed, so no later install reuses them.
+    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package), & : Package ->) : Nil
+      trees_before_scripts = record_trees_scripts_can_reach(packages, list_of_newly_installed)
 
       list_of_newly_installed.each do |package|
         verify_checksum_before_scripts(package)
-        if package.postinstall && digests_of_installed_trees
-          verify_trees_unchanged_by_script(package, packages, digests_of_installed_trees)
+        if package.postinstall && trees_before_scripts
+          verify_trees_unchanged_by_script(package, packages, trees_before_scripts)
+          verify_no_lib_entry_added_by_script(package, packages, trees_before_scripts)
+          accept_own_output_of(package, trees_before_scripts)
         end
         yield package
       end
     end
 
-    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package))
+    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package)) : Nil
       run_postinstall_scripts(packages, list_of_newly_installed) { }
     end
 
-    # The `sha256-v2:` digest of every installed copy, taken after all of them
-    # were verified and before any script runs. Returns nil when no newly
-    # installed package declares a postinstall script, so no tree is hashed
-    # for nothing. Path dependencies are the project's own source and are
-    # left out unless `--frozen` checks them.
-    private def digest_trees_scripts_can_reach(packages : Array(Package), list_of_newly_installed : Array(Package)) : Hash(String, String)?
+    # What a postinstall script could change, recorded after every installed
+    # copy was verified and before any script runs: the `sha256-v2:` digest of
+    # each guarded copy by package name, and the names of the entries in the
+    # install directory.
+    private record TreesBeforeScripts,
+      digests_of_installed_trees : Hash(String, String),
+      list_of_lib_entries : Set(String)
+
+    # Files Minecart itself keeps in the install directory.
+    INSTALL_STATE_ENTRIES = {".shards.info", POSTINSTALL_INFO_FILENAME}
+
+    # Returns nil when no newly installed package declares a postinstall
+    # script, so no tree is hashed for nothing. Path dependencies are the
+    # project's own source and are left out unless `--frozen` checks them.
+    private def record_trees_scripts_can_reach(packages : Array(Package), list_of_newly_installed : Array(Package)) : TreesBeforeScripts?
       return nil if Shards.skip_postinstall?
       return nil unless list_of_newly_installed.any? { |package| package.spec.scripts["postinstall"]? }
 
@@ -345,25 +359,75 @@ module Shards
           digests[package.name] = digest
         end
       end
-      digests
+      TreesBeforeScripts.new(digests, list_lib_entries)
     end
 
-    private def verify_trees_unchanged_by_script(script_owner : Package, packages : Array(Package), digests_of_installed_trees : Hash(String, String))
-      packages.each do |package|
-        next unless expected = digests_of_installed_trees[package.name]?
-        actual = package.computed_checksum
+    private def verify_trees_unchanged_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil
+      digests = trees_before_scripts.digests_of_installed_trees
+      list_of_changed = packages.select do |package|
+        next false if package.name == script_owner.name
+        next false unless expected = digests[package.name]?
+        package.computed_checksum != expected
+      end
+      return if list_of_changed.empty?
 
-        if package.name == script_owner.name
-          # Its own output is accepted; later scripts must leave it alone.
-          digests_of_installed_trees[package.name] = actual if actual
-          next
-        end
+      first_changed = list_of_changed.first
+      actual = first_changed.computed_checksum || "missing"
+      list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
+      raise InstalledCopyChangedByScript.new(first_changed.name, first_changed.install_path, script_owner.name, digests[first_changed.name], actual, list_of_removed_paths)
+    end
 
-        unless actual == expected
-          raise InstalledCopyChangedByScript.new(package.name, package.install_path, script_owner.name, expected, actual || "missing")
-        end
+    private def verify_no_lib_entry_added_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil
+      list_of_new_entries = list_lib_entries - trees_before_scripts.list_of_lib_entries
+      list_of_new_entries.delete(script_owner.name)
+      return if list_of_new_entries.empty?
+
+      first_entry_path = File.join(Shards.install_path, list_of_new_entries.to_a.sort.first)
+      list_of_removed_paths = discard_what_script_touched(script_owner, [] of Package, packages, trees_before_scripts)
+      raise LibEntryAddedByScript.new(first_entry_path, script_owner.name, list_of_removed_paths)
+    end
+
+    # The script's own copy may hold its build output; later scripts must
+    # leave that output alone, so its digest moves to what the script wrote.
+    private def accept_own_output_of(script_owner : Package, trees_before_scripts : TreesBeforeScripts) : Nil
+      return unless trees_before_scripts.digests_of_installed_trees.has_key?(script_owner.name)
+
+      if digest = script_owner.computed_checksum
+        trees_before_scripts.digests_of_installed_trees[script_owner.name] = digest
       end
       Log.debug { "Postinstall script of #{script_owner.name} left every other installed copy unchanged" }
+    end
+
+    # Removes the script's own copy (its output was built from files that are
+    # not the verified ones), every changed copy, and every install-directory
+    # entry that appeared after the scripts began. Returns the removed paths.
+    private def discard_what_script_touched(script_owner : Package, list_of_changed : Array(Package), packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Array(String)
+      list_of_removed_paths = [] of String
+      ([script_owner] + list_of_changed).each do |package|
+        list_of_removed_paths << package.install_path
+        package.discard_installation
+      end
+
+      list_of_new_entries = list_lib_entries - trees_before_scripts.list_of_lib_entries
+      list_of_new_entries.to_a.sort.each do |entry_name|
+        entry_path = File.join(Shards.install_path, entry_name)
+        list_of_removed_paths << entry_path
+        Shards::Helpers.rm_rf(entry_path)
+        Shards.info.installed.delete(entry_name)
+      end
+      Shards.info.save unless list_of_new_entries.empty?
+
+      list_of_removed_paths
+    end
+
+    private def list_lib_entries : Set(String)
+      list_of_lib_entries = Set(String).new
+      return list_of_lib_entries unless Dir.exists?(Shards.install_path)
+
+      Dir.each_child(Shards.install_path) do |entry_name|
+        list_of_lib_entries << entry_name unless INSTALL_STATE_ENTRIES.includes?(entry_name)
+      end
+      list_of_lib_entries
     end
 
     private def guards_installed_tree?(package : Package) : Bool

@@ -600,7 +600,9 @@ describe "checksum pinning" do
         output = ex.stdout + ex.stderr
         output.should contain("Checksum verification failed for web")
         output.should contain("postinstall script of rewrites_version")
-        File.read(install_path("web", "shard.yml")).should contain("version: 1.0.0")
+        # The other version is never left in place for a later install to reuse.
+        Dir.exists?(install_path("web")).should be_false
+        Dir.exists?(install_path("rewrites_version")).should be_false
       end
     end
 
