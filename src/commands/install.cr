@@ -47,7 +47,11 @@ module Shards
         list_of_newly_installed = install(packages)
         verify_or_compute_checksums(packages, list_of_newly_installed.map(&.name).to_set, verified_sources)
 
-        run_postinstall_scripts(list_of_newly_installed)
+        run_postinstall_scripts(packages, list_of_newly_installed) do |package|
+          # always install executables because the path resolver never actually
+          # installs dependencies:
+          package.install_executables
+        end
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -110,21 +114,6 @@ module Shards
           list_of_newly_installed << package
         end
         list_of_newly_installed
-      end
-
-      # Runs the postinstall script of each newly installed package (with
-      # access to all transitive dependencies). Each copy is verified again
-      # right before its own script, because an earlier script may have
-      # changed it.
-      private def run_postinstall_scripts(list_of_newly_installed : Array(Package))
-        list_of_newly_installed.each do |package|
-          verify_checksum_before_scripts(package)
-          package.postinstall
-
-          # always install executables because the path resolver never actually
-          # installs dependencies:
-          package.install_executables
-        end
       end
 
       private def install(package : Package)

@@ -84,6 +84,19 @@ module Shards
     end
   end
 
+  # A postinstall script changed the installed copy of a different package
+  # after that copy was verified (for example a nested `shards build` that
+  # re-installs another version of a dependency through the shared `lib` link).
+  class InstalledCopyChangedByScript < Error
+    def initialize(package_name : String, install_path : String, script_owner_name : String, expected : String, actual : String)
+      super "Checksum verification failed for #{package_name}: the postinstall script of #{script_owner_name} changed the installed copy in #{install_path} after it was verified against #{LOCK_FILENAME}.\n" \
+            "  Expected: #{expected}\n" \
+            "  Got:      #{actual}\n" \
+            "No further dependency scripts were run. Remove #{install_path} and run `minecart install` to reinstall it from the verified source, " \
+            "and report the script of #{script_owner_name} to its maintainers if it installs dependencies itself."
+    end
+  end
+
   class ChecksumMismatch < Error
     def initialize(package_name : String, expected : String, actual : String)
       super "Checksum verification failed for #{package_name}.\n" \
