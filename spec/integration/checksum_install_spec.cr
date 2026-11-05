@@ -564,6 +564,59 @@ describe "checksum pinning" do
     end
   end
 
+  # A postinstall script can reach every installed tree through the shared
+  # `lib` link. Each `rewrites_*` fixture depends on `web`, so web is installed
+  # and verified first; its script then rewrites lib/web, the way a nested
+  # `shards build` re-installs another version of a dependency. web has no
+  # script of its own, so no later per-package check looks at it again.
+  describe "a postinstall script that rewrites another installed tree" do
+    it "fails --frozen when the script edits a verified dependency's files" do
+      create_git_repository "rewrites_files"
+      create_file "rewrites_files", "Makefile", "all:\n\techo '# replaced' > lib/web/src/web.cr\n"
+      create_git_release "rewrites_files", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {rewrites_files: "0.1.0"}}, {web: "2.1.0", rewrites_files: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Checksum verification failed for web")
+        output.should contain("postinstall script of rewrites_files")
+        output.should contain(install_path("web"))
+      end
+    end
+
+    it "fails --frozen when the script puts another version in place" do
+      create_git_repository "rewrites_version"
+      create_file "rewrites_version", "Makefile", "all:\n\tprintf 'name: web\\nversion: 1.0.0\\n' > lib/web/shard.yml\n"
+      create_git_release "rewrites_version", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {rewrites_version: "0.1.0"}}, {web: "2.1.0", rewrites_version: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Checksum verification failed for web")
+        output.should contain("postinstall script of rewrites_version")
+        File.read(install_path("web", "shard.yml")).should contain("version: 1.0.0")
+      end
+    end
+
+    it "passes when the script writes only inside its own tree" do
+      with_shard({dependencies: {web: "2.1.0", post: "*"}}) do
+        run "shards install --no-color"
+        reset_install("web")
+        reset_install("post")
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+        File.exists?(install_path("post", "made.txt")).should be_true
+      end
+    end
+  end
+
   it "`lock` records a sha256-v2 checksum for every new entry" do
     with_shard({dependencies: {web: "2.1.0", pg: "0.2.1"}}) do
       run "shards lock --no-color"

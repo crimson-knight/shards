@@ -74,14 +74,9 @@ module Shards
         # modify installed files.
         compute_checksums(packages, locked_names, re_resolved_names)
 
-        # then execute the postinstall script of installed dependencies (with
-        # access to all transitive dependencies). Each copy is verified again
-        # right before its own script, because an earlier script may have
-        # changed it.
-        newly_installed.each do |package|
-          verify_checksum_before_scripts(package)
-          package.postinstall
-        end
+        # then execute the postinstall script of installed dependencies; see
+        # Command#run_postinstall_scripts for what is verified around each one.
+        run_postinstall_scripts(packages, newly_installed)
 
         # always install executables because the path resolver never actually
         # installs dependencies:

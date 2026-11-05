@@ -195,13 +195,15 @@ module Shards
       Shards::Helpers.rm_rf(install_path)
     end
 
-    def postinstall
-      return unless installed?
-      return unless command = spec.scripts["postinstall"]?
+    # Runs the postinstall script when it is due. Returns true when a script ran
+    # (callers then check what it may have changed), false otherwise.
+    def postinstall : Bool
+      return false unless installed?
+      return false unless command = spec.scripts["postinstall"]?
 
       if Shards.skip_postinstall?
         Log.info { "Postinstall of #{name}: #{command} (skipped)" }
-        return
+        return false
       end
 
       script_hash = PostinstallInfo.hash_script(command)
@@ -210,13 +212,13 @@ module Shards
       if entry = info.shards[name]?
         if entry.has_run && entry.script_hash == script_hash
           # Already run and unchanged, skip silently
-          return
+          return false
         elsif entry.has_run && entry.script_hash != script_hash
           Log.warn { "Postinstall script for #{name} has changed." }
           Log.warn { "  Run `minecart run-script #{name}` to execute it." }
           info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: false)
           info.save
-          return
+          return false
         end
       end
 
@@ -224,6 +226,7 @@ module Shards
       Script.run(install_path, command, "postinstall", name)
       info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: true)
       info.save
+      true
     rescue ex : Script::Error
       cleanup_install_directory
       raise ex

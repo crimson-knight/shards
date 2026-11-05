@@ -306,6 +306,71 @@ module Shards
       Log.debug { "Checksum verified for #{package.name} against a fresh checkout of #{package.report_version}" }
     end
 
+    # Runs the postinstall script of each newly installed package (with access
+    # to all transitive dependencies) and yields each package after its turn.
+    # Each copy is verified again right before its own script, because an
+    # earlier script may have changed it. A script can also reach every other
+    # installed tree through the shared `lib` link, so after each script that
+    # ran, every other installed copy must still match the digest it had when
+    # the scripts began; its own copy may change (that is its build output).
+    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package), & : Package ->)
+      digests_of_installed_trees = digest_trees_scripts_can_reach(packages, list_of_newly_installed)
+
+      list_of_newly_installed.each do |package|
+        verify_checksum_before_scripts(package)
+        if package.postinstall && digests_of_installed_trees
+          verify_trees_unchanged_by_script(package, packages, digests_of_installed_trees)
+        end
+        yield package
+      end
+    end
+
+    protected def run_postinstall_scripts(packages : Array(Package), list_of_newly_installed : Array(Package))
+      run_postinstall_scripts(packages, list_of_newly_installed) { }
+    end
+
+    # The `sha256-v2:` digest of every installed copy, taken after all of them
+    # were verified and before any script runs. Returns nil when no newly
+    # installed package declares a postinstall script, so no tree is hashed
+    # for nothing. Path dependencies are the project's own source and are
+    # left out unless `--frozen` checks them.
+    private def digest_trees_scripts_can_reach(packages : Array(Package), list_of_newly_installed : Array(Package)) : Hash(String, String)?
+      return nil if Shards.skip_postinstall?
+      return nil unless list_of_newly_installed.any? { |package| package.spec.scripts["postinstall"]? }
+
+      digests = {} of String => String
+      packages.each do |package|
+        next unless guards_installed_tree?(package)
+        if digest = package.computed_checksum
+          digests[package.name] = digest
+        end
+      end
+      digests
+    end
+
+    private def verify_trees_unchanged_by_script(script_owner : Package, packages : Array(Package), digests_of_installed_trees : Hash(String, String))
+      packages.each do |package|
+        next unless expected = digests_of_installed_trees[package.name]?
+        actual = package.computed_checksum
+
+        if package.name == script_owner.name
+          # Its own output is accepted; later scripts must leave it alone.
+          digests_of_installed_trees[package.name] = actual if actual
+          next
+        end
+
+        unless actual == expected
+          raise InstalledCopyChangedByScript.new(package.name, package.install_path, script_owner.name, expected, actual || "missing")
+        end
+      end
+      Log.debug { "Postinstall script of #{script_owner.name} left every other installed copy unchanged" }
+    end
+
+    private def guards_installed_tree?(package : Package) : Bool
+      return false if package.resolver.is_a?(PathResolver) && !Shards.frozen?
+      package.installed?
+    end
+
     private def record_checksum_on_first_use(package : Package, computed : String? = package.computed_checksum)
       return unless computed
 
