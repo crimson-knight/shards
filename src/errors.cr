@@ -87,13 +87,27 @@ module Shards
   # A postinstall script changed the installed copy of a different package
   # after that copy was verified (for example a nested `shards build` that
   # re-installs another version of a dependency through the shared `lib` link).
+  # The install has already removed what the script touched.
   class InstalledCopyChangedByScript < Error
-    def initialize(package_name : String, install_path : String, script_owner_name : String, expected : String, actual : String)
+    def initialize(package_name : String, install_path : String, script_owner_name : String, expected : String, actual : String, list_of_removed_paths : Array(String))
       super "Checksum verification failed for #{package_name}: the postinstall script of #{script_owner_name} changed the installed copy in #{install_path} after it was verified against #{LOCK_FILENAME}.\n" \
             "  Expected: #{expected}\n" \
             "  Got:      #{actual}\n" \
-            "No further dependency scripts were run. Remove #{install_path} and run `minecart install` to reinstall it from the verified source, " \
-            "and report the script of #{script_owner_name} to its maintainers if it installs dependencies itself."
+            "No further dependency scripts were run. Removed #{list_of_removed_paths.join(", ")} so nothing built from the changed files is reused; " \
+            "run `minecart install` again to reinstall from the verified source. " \
+            "If it fails the same way, the script of #{script_owner_name} installs dependencies itself: report it to its maintainers."
+    end
+  end
+
+  # A postinstall script created an entry in the install directory that is
+  # outside its own copy and that the lock does not pin (for example a nested
+  # install that adds a dependency of its own). The install has already removed it.
+  class LibEntryAddedByScript < Error
+    def initialize(entry_path : String, script_owner_name : String, list_of_removed_paths : Array(String))
+      super "Checksum verification failed: the postinstall script of #{script_owner_name} created #{entry_path}, which #{LOCK_FILENAME} does not pin.\n" \
+            "No further dependency scripts were run. Removed #{list_of_removed_paths.join(", ")}; " \
+            "run `minecart install` again to reinstall from the verified source. " \
+            "If it fails the same way, the script of #{script_owner_name} installs dependencies itself: report it to its maintainers."
     end
   end
 

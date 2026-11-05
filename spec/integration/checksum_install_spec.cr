@@ -600,7 +600,9 @@ describe "checksum pinning" do
         output = ex.stdout + ex.stderr
         output.should contain("Checksum verification failed for web")
         output.should contain("postinstall script of rewrites_version")
-        File.read(install_path("web", "shard.yml")).should contain("version: 1.0.0")
+        # The other version is never left in place for a later install to reuse.
+        Dir.exists?(install_path("web")).should be_false
+        Dir.exists?(install_path("rewrites_version")).should be_false
       end
     end
 
@@ -613,6 +615,64 @@ describe "checksum pinning" do
         run "shards install --frozen --no-color"
         assert_installed "web", "2.1.0"
         File.exists?(install_path("post", "made.txt")).should be_true
+      end
+    end
+
+    # `tamper_once` rewrites web only while the project holds a flag file, then
+    # records the web source it built against. The failed install must leave
+    # nothing behind that a second install would accept as already built.
+    it "discards what the failed install wrote, so a second install rebuilds against the verified tree" do
+      create_git_repository "tamper_once"
+      create_file "tamper_once", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../tamper_once.flag ]; then rm ../../tamper_once.flag; echo '# replaced' > lib/web/src/web.cr; fi\n" \
+        "\tcp lib/web/src/web.cr built_from.txt\n"
+      create_git_release "tamper_once", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {tamper_once: "0.1.0"}}, {web: "2.1.0", tamper_once: "0.1.0"}) do
+        File.touch("tamper_once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("Checksum verification failed for web")
+        Dir.exists?(install_path("tamper_once")).should be_false
+        Dir.exists?(install_path("web")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+        web_source = File.read(install_path("web", "src/web.cr"))
+        web_source.should_not contain("# replaced")
+        File.read(install_path("tamper_once", "built_from.txt")).should eq(web_source)
+      end
+    end
+
+    it "fails when the script creates a lib/ entry that shard.lock does not pin" do
+      create_git_repository "adds_lib_entry"
+      create_file "adds_lib_entry", "Makefile", "all:\n\tmkdir -p lib/unlocked_extra/src\n\techo x > lib/unlocked_extra/src/unlocked_extra.cr\n"
+      create_git_release "adds_lib_entry", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {adds_lib_entry: "0.1.0"}}, {adds_lib_entry: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("postinstall script of adds_lib_entry created #{install_path("unlocked_extra")}")
+        File.exists?(install_path("unlocked_extra")).should be_false
+      end
+    end
+
+    it "fails `update` the same way when the script edits a verified dependency's files" do
+      create_git_repository "rewrites_on_update"
+      create_file "rewrites_on_update", "Makefile", "all:\n\techo '# replaced' > lib/web/src/web.cr\n"
+      create_git_release "rewrites_on_update", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {rewrites_on_update: "0.1.0"}}, {web: "2.1.0", rewrites_on_update: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Checksum verification failed for web")
+        output.should contain("postinstall script of rewrites_on_update")
       end
     end
   end
