@@ -321,7 +321,7 @@ module Shards
 
       list_of_newly_installed.each do |package|
         verify_checksum_before_scripts(package)
-        if package.postinstall && trees_before_scripts
+        if package.postinstall(packages) && trees_before_scripts
           verify_trees_unchanged_by_script(package, packages, trees_before_scripts)
           verify_no_lib_entry_added_by_script(package, packages, trees_before_scripts)
           accept_own_output_of(package, trees_before_scripts)

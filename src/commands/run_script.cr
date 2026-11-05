@@ -44,7 +44,9 @@ module Shards
         raise Error.new("Shard #{name.inspect} has no postinstall script") unless command
 
         Log.info { "Running postinstall of #{name}: #{command}" }
-        Script.run(package.install_path, command, "postinstall", name)
+        HandProjectLockToScript.new(package, locks.shards).perform do |env|
+          Script.run(package.install_path, command, "postinstall", name, env)
+        end
 
         script_hash = PostinstallInfo.hash_script(command)
         info = Shards.postinstall_info
