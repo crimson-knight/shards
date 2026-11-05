@@ -675,6 +675,50 @@ describe "checksum pinning" do
         output.should contain("postinstall script of rewrites_on_update")
       end
     end
+
+    # A script that fails still ran: whatever it wrote outside its own copy is
+    # checked and removed the same way, then the failure is raised.
+    it "removes a lib/ entry created by a script that then fails, on every run" do
+      create_git_repository "fails_after_lib_entry"
+      create_file "fails_after_lib_entry", "Makefile", "all:\n\tmkdir -p lib/x\n\texit 1\n"
+      create_git_release "fails_after_lib_entry", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {fails_after_lib_entry: "0.1.0"}}, {fails_after_lib_entry: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of fails_after_lib_entry")
+        output.should contain("Removed")
+        output.should contain(install_path("x"))
+        File.exists?(install_path("x")).should be_false
+
+        expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "removes a verified copy edited by a script that then fails, so the next install heals it" do
+      create_git_repository "fails_after_edit"
+      create_file "fails_after_edit", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../fails_after_edit.flag ]; then rm ../../fails_after_edit.flag; echo '# replaced' > lib/web/src/web.cr; exit 1; fi\n"
+      create_git_release "fails_after_edit", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {fails_after_edit: "0.1.0"}}, {web: "2.1.0", fails_after_edit: "0.1.0"}) do
+        File.touch("fails_after_edit.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of fails_after_edit")
+        output.should contain(install_path("web"))
+        Dir.exists?(install_path("web")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+        File.read(install_path("web", "src/web.cr")).should_not contain("# replaced")
+      end
+    end
   end
 
   it "`lock` records a sha256-v2 checksum for every new entry" do
