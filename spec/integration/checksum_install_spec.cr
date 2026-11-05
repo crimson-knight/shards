@@ -660,6 +660,56 @@ describe "checksum pinning" do
       end
     end
 
+    # A script such as `shards build` runs a nested install inside the package's
+    # own copy, which reaches the project's lib/ through the shared link. The
+    # nested install gets the project's lock, so it resolves nothing itself.
+    it "hands the script the project's lock, so a nested install keeps every locked version" do
+      create_git_repository "nested_install"
+      create_git_release "nested_install", "0.1.0", {
+        dependencies: {web: {git: git_url(:web)}},
+        scripts:      {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {nested_install: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", nested_install: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        assert_installed "nested_install", "0.1.0"
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+      end
+    end
+
+    it "runs the nested install without the package's development dependencies, which the project does not lock" do
+      create_git_repository "nested_with_dev"
+      create_git_release "nested_with_dev", "0.1.0", {
+        dependencies:             {web: {git: git_url(:web)}},
+        development_dependencies: {pg: {git: git_url(:pg)}},
+        scripts:                  {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {nested_with_dev: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", nested_with_dev: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        Dir.exists?(install_path("pg")).should be_false
+      end
+    end
+
+    it "puts back the shard.lock the package ships once its script has run" do
+      create_git_repository "ships_own_lock"
+      create_file "ships_own_lock", "shard.lock", "version: 2.0\nshards:\n  web:\n    git: #{git_url(:web)}\n    version: 2.1.0\n"
+      create_git_release "ships_own_lock", "0.1.0", {
+        dependencies: {web: {git: git_url(:web)}},
+        scripts:      {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {ships_own_lock: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", ships_own_lock: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        File.read(install_path("ships_own_lock", "shard.lock")).should contain("version: 2.1.0")
+      end
+    end
+
     it "fails `update` the same way when the script edits a verified dependency's files" do
       create_git_repository "rewrites_on_update"
       create_file "rewrites_on_update", "Makefile", "all:\n\techo '# replaced' > lib/web/src/web.cr\n"
