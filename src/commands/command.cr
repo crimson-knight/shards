@@ -321,7 +321,7 @@ module Shards
 
       list_of_newly_installed.each do |package|
         verify_checksum_before_scripts(package)
-        if package.postinstall && trees_before_scripts
+        if run_postinstall_script(package, packages, trees_before_scripts) && trees_before_scripts
           verify_trees_unchanged_by_script(package, packages, trees_before_scripts)
           verify_no_lib_entry_added_by_script(package, packages, trees_before_scripts)
           accept_own_output_of(package, trees_before_scripts)
@@ -362,19 +362,40 @@ module Shards
       TreesBeforeScripts.new(digests, list_lib_entries)
     end
 
+    # Runs one package's postinstall script and returns whether it ran. A script
+    # that fails still ran: every copy it changed and every install-directory
+    # entry it added are removed, with its own copy, before the failure is
+    # raised again with the removed paths named.
+    private def run_postinstall_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts?) : Bool
+      script_owner.postinstall
+    rescue script_failure : Script::Error
+      raise script_failure unless trees_before_scripts
+
+      list_of_changed = list_changed_by_script(script_owner, packages, trees_before_scripts)
+      list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
+      raise Script::Error.new("#{script_failure.message}\nRemoved #{list_of_removed_paths.join(", ")} so nothing the failed script wrote is reused.")
+    end
+
     private def verify_trees_unchanged_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil
+      list_of_changed = list_changed_by_script(script_owner, packages, trees_before_scripts)
+      return if list_of_changed.empty?
+
+      first_changed = list_of_changed.first
+      expected = trees_before_scripts.digests_of_installed_trees[first_changed.name]
+      actual = first_changed.computed_checksum || "missing"
+      list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
+      raise InstalledCopyChangedByScript.new(first_changed.name, first_changed.install_path, script_owner.name, expected, actual, list_of_removed_paths)
+    end
+
+    # The guarded copies, other than the script owner, whose digest no longer
+    # matches the one recorded before the scripts began.
+    private def list_changed_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Array(Package)
       digests = trees_before_scripts.digests_of_installed_trees
-      list_of_changed = packages.select do |package|
+      packages.select do |package|
         next false if package.name == script_owner.name
         next false unless expected = digests[package.name]?
         package.computed_checksum != expected
       end
-      return if list_of_changed.empty?
-
-      first_changed = list_of_changed.first
-      actual = first_changed.computed_checksum || "missing"
-      list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
-      raise InstalledCopyChangedByScript.new(first_changed.name, first_changed.install_path, script_owner.name, digests[first_changed.name], actual, list_of_removed_paths)
     end
 
     private def verify_no_lib_entry_added_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil
