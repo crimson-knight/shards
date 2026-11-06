@@ -758,6 +758,23 @@ describe "checksum pinning" do
       end
     end
 
+    it "fails when the script removes its own copy and exits 0, and the next install heals it" do
+      create_git_repository "removes_itself"
+      create_file "removes_itself", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; cd .. && rm -rf removes_itself; fi\n"
+      create_git_release "removes_itself", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {removes_itself: "0.1.0"}}, {removes_itself: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("removed its own copy")
+
+        run "shards install --frozen --no-color"
+        assert_installed "removes_itself", "0.1.0"
+      end
+    end
+
     it "heals a copy its own failing script made read-only, and leaves lib/ writable" do
       create_git_repository "readonly_own_fails"
       create_file "readonly_own_fails", "Makefile",

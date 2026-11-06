@@ -364,7 +364,11 @@ module Shards
     # entry it added are removed, with its own copy, before the failure is
     # raised again with the removed paths named.
     private def run_postinstall_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts?) : Bool
-      script_owner.postinstall
+      script_ran = script_owner.postinstall
+      if script_ran && !File.exists?(script_owner.install_path)
+        raise Script::Error.new("The postinstall script of #{script_owner.name} removed its own copy.")
+      end
+      script_ran
     rescue script_failure : Script::Error
       raise script_failure unless trees_before_scripts
 
