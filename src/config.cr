@@ -13,6 +13,7 @@ module Shards
   MINECART_STATE_DIRECTORY  = ".minecart"
   LEGACY_STATE_DIRECTORY    = ".shards"
   INSTALL_DIR               = "lib"
+  NESTED_INSTALL_ENV_NAME   = "MINECART_NESTED_INSTALL"
   AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
 
@@ -103,6 +104,13 @@ module Shards
   end
 
   def self.cache_path=(@@cache_path : String)
+  end
+
+  # Set by Minecart for an install a postinstall script runs. Only that script
+  # and what it starts can see it, and the project's own run still checks the
+  # project's install directory.
+  def self.nested_install? : Bool
+    ENV.has_key?(NESTED_INSTALL_ENV_NAME)
   end
 
   def self.install_path

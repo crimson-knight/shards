@@ -31,7 +31,7 @@ module Shards
       write_handed_lock
       Log.debug { "Handed the project's lock to the postinstall script of #{@script_owner.name} at #{lock_path}" }
       begin
-        yield({"SHARDS_OPTS" => nested_install_options} of String => String?)
+        yield({"SHARDS_OPTS" => nested_install_options, NESTED_INSTALL_ENV_NAME => @script_owner.name} of String => String?)
       ensure
         restore_shipped_lock(shipped_lock)
       end
