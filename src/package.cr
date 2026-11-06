@@ -1,6 +1,7 @@
 require "file_utils"
 require "./checksum"
 require "./helpers"
+require "./hand_project_lock_to_script"
 
 module Shards
   class Package
@@ -225,8 +226,9 @@ module Shards
     end
 
     # Runs the postinstall script when it is due. Returns true when a script ran
-    # (callers then check what it may have changed), false otherwise.
-    def postinstall : Bool
+    # (callers then check what it may have changed), false otherwise. The
+    # script gets the project's locked packages for any install it runs.
+    def postinstall(list_of_project_packages : Array(Package)) : Bool
       return false unless installed?
       return false unless command = spec.scripts["postinstall"]?
 
@@ -252,7 +254,9 @@ module Shards
       end
 
       Log.info { "Postinstall of #{name}: #{command}" }
-      Script.run(install_path, command, "postinstall", name)
+      HandProjectLockToScript.new(self, list_of_project_packages).perform do |env|
+        Script.run(install_path, command, "postinstall", name, env)
+      end
       info.shards[name] = PostinstallInfo::Entry.new(script_hash, has_run: true)
       info.save
       true
