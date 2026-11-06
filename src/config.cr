@@ -15,6 +15,11 @@ module Shards
   INSTALL_DIR               = "lib"
   AI_DOCS_INFO_FILENAME     = ".ai-docs-info.yml"
   POSTINSTALL_INFO_FILENAME = ".shards.postinstall"
+
+  # What may sit in the install directory besides installed packages: the files
+  # Minecart itself keeps there, and the folder metadata macOS writes.
+  INSTALL_STATE_ENTRIES = {".shards.info", POSTINSTALL_INFO_FILENAME, ".DS_Store"}
+
   ASSISTANT_CONFIG_FILENAME = ".assistant-config.yml"
 
   DEFAULT_COMMAND = "install"

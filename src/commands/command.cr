@@ -342,9 +342,6 @@ module Shards
       digests_of_installed_trees : Hash(String, String),
       list_of_lib_entries : Set(String)
 
-    # Files Minecart itself keeps in the install directory.
-    INSTALL_STATE_ENTRIES = {".shards.info", POSTINSTALL_INFO_FILENAME}
-
     # Returns nil when no newly installed package declares a postinstall
     # script, so no tree is hashed for nothing. Path dependencies are the
     # project's own source and are left out unless `--frozen` checks them.
@@ -359,7 +356,7 @@ module Shards
           digests[package.name] = digest
         end
       end
-      TreesBeforeScripts.new(digests, list_lib_entries)
+      TreesBeforeScripts.new(digests, Helpers.list_install_entries(Shards.install_path))
     end
 
     # Runs one package's postinstall script and returns whether it ran. A script
@@ -382,7 +379,7 @@ module Shards
 
       first_changed = list_of_changed.first
       expected = trees_before_scripts.digests_of_installed_trees[first_changed.name]
-      actual = first_changed.computed_checksum || "missing"
+      actual = digest_of_tree_or_nil(first_changed) || "missing or unreadable"
       list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
       raise InstalledCopyChangedByScript.new(first_changed.name, first_changed.install_path, script_owner.name, expected, actual, list_of_removed_paths)
     end
@@ -394,12 +391,12 @@ module Shards
       packages.select do |package|
         next false if package.name == script_owner.name
         next false unless expected = digests[package.name]?
-        package.computed_checksum != expected
+        digest_of_tree_or_nil(package) != expected
       end
     end
 
     private def verify_no_lib_entry_added_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil
-      list_of_new_entries = list_lib_entries - trees_before_scripts.list_of_lib_entries
+      list_of_new_entries = Helpers.list_install_entries(Shards.install_path) - trees_before_scripts.list_of_lib_entries
       list_of_new_entries.delete(script_owner.name)
       return if list_of_new_entries.empty?
 
@@ -413,7 +410,7 @@ module Shards
     private def accept_own_output_of(script_owner : Package, trees_before_scripts : TreesBeforeScripts) : Nil
       return unless trees_before_scripts.digests_of_installed_trees.has_key?(script_owner.name)
 
-      if digest = script_owner.computed_checksum
+      if digest = digest_of_tree_or_nil(script_owner)
         trees_before_scripts.digests_of_installed_trees[script_owner.name] = digest
       end
       Log.debug { "Postinstall script of #{script_owner.name} left every other installed copy unchanged" }
@@ -421,34 +418,45 @@ module Shards
 
     # Removes the script's own copy (its output was built from files that are
     # not the verified ones), every changed copy, and every install-directory
-    # entry that appeared after the scripts began. Returns the removed paths.
+    # entry that appeared after the scripts began. Returns the removed paths, or
+    # raises `ScriptLeftPathsBehind` naming any that are still there.
     private def discard_what_script_touched(script_owner : Package, list_of_changed : Array(Package), packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Array(String)
+      Helpers.restore_owner_access(Shards.install_path)
       list_of_removed_paths = [] of String
+      list_of_stuck_paths = [] of String
+
       ([script_owner] + list_of_changed).each do |package|
-        list_of_removed_paths << package.install_path
-        package.discard_installation
+        begin
+          package.discard_installation
+          list_of_removed_paths << package.install_path
+        rescue PathNotRemoved
+          list_of_stuck_paths << package.install_path
+        end
       end
 
-      list_of_new_entries = list_lib_entries - trees_before_scripts.list_of_lib_entries
+      list_of_new_entries = Helpers.list_install_entries(Shards.install_path) - trees_before_scripts.list_of_lib_entries
       list_of_new_entries.to_a.sort.each do |entry_name|
         entry_path = File.join(Shards.install_path, entry_name)
-        list_of_removed_paths << entry_path
-        Shards::Helpers.rm_rf(entry_path)
         Shards.info.installed.delete(entry_name)
+        begin
+          Helpers.rm_rf!(entry_path)
+          list_of_removed_paths << entry_path
+        rescue PathNotRemoved
+          list_of_stuck_paths << entry_path
+        end
       end
       Shards.info.save unless list_of_new_entries.empty?
 
+      raise ScriptLeftPathsBehind.new(script_owner.name, list_of_stuck_paths, list_of_removed_paths) unless list_of_stuck_paths.empty?
       list_of_removed_paths
     end
 
-    private def list_lib_entries : Set(String)
-      list_of_lib_entries = Set(String).new
-      return list_of_lib_entries unless Dir.exists?(Shards.install_path)
-
-      Dir.each_child(Shards.install_path) do |entry_name|
-        list_of_lib_entries << entry_name unless INSTALL_STATE_ENTRIES.includes?(entry_name)
-      end
-      list_of_lib_entries
+    # The digest of an installed copy, or nil when the copy is gone or a script
+    # made part of it unreadable. Either way it no longer matches its record.
+    private def digest_of_tree_or_nil(package : Package) : String?
+      package.computed_checksum
+    rescue File::Error
+      nil
     end
 
     private def guards_installed_tree?(package : Package) : Bool
