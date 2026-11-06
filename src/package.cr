@@ -195,6 +195,15 @@ module Shards
       Shards::Helpers.rm_rf(install_path)
     end
 
+    # True while the installed copy is where an install put it: a real directory
+    # for a fetched package, and a live link for a path dependency.
+    def installed_copy_in_place? : Bool
+      return File.exists?(install_path) if resolver.is_a?(PathResolver)
+
+      info = File.info?(install_path, follow_symlinks: false)
+      !info.nil? && info.directory?
+    end
+
     # Removes the installed copy together with its `.shards.info` entry and its
     # postinstall record, so the next install fetches, verifies and builds it
     # again instead of reusing what a failed run left behind. Raises

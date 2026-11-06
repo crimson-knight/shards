@@ -775,6 +775,26 @@ describe "checksum pinning" do
       end
     end
 
+    it "fails when the script replaces its own copy with a link, and leaves the project's lock alone" do
+      create_git_repository "links_itself"
+      create_file "links_itself", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; cd .. && rm -rf links_itself && ln -s .. links_itself; fi\n"
+      create_git_release "links_itself", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {links_itself: "0.1.0"}}, {links_itself: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("removed its own copy")
+        File.read("shard.lock").should eq(project_lock)
+        File.symlink?(install_path("links_itself")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "links_itself", "0.1.0"
+      end
+    end
+
     it "heals a copy its own failing script made read-only, and leaves lib/ writable" do
       create_git_repository "readonly_own_fails"
       create_file "readonly_own_fails", "Makefile",
