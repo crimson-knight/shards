@@ -155,6 +155,11 @@ the install, so it cannot see these two cases:
 - **A background process a script leaves running.** It can write to `lib/` after
   the last check has passed. Closing this needs a sandbox around scripts.
 
+A script that changes `shard.lock` and then exits, with any exit code, stops the
+install by name and the lock is restored. A script that kills the installer
+skips that comparison too, as above, so review `shard.lock` changes before
+committing them.
+
 If you do not trust a dependency's script, set `security.block_postinstall`.
 
 ### Lock File Format
