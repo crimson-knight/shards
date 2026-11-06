@@ -4,6 +4,7 @@ require "../ai_docs"
 require "../checksum"
 require "../change_logger"
 require "../assistant_config"
+require "../verify_lib_entries_are_locked"
 
 module Shards
   module Commands
@@ -38,6 +39,7 @@ module Shards
 
         if Shards.frozen?
           validate(packages)
+          verify_lib_entries_are_locked
         end
 
         # Every source is fetched and checked against the lock before any
@@ -52,6 +54,8 @@ module Shards
           # installs dependencies:
           package.install_executables
         end
+
+        verify_lib_entries_are_locked if Shards.frozen?
 
         AIDocsInstaller.new(path).install(packages)
 
@@ -79,6 +83,10 @@ module Shards
         touch_install_path
 
         check_crystal_version(packages)
+      end
+
+      private def verify_lib_entries_are_locked : Nil
+        VerifyLibEntriesAreLocked.new(Shards.install_path, locks.shards.map(&.name)).perform
       end
 
       private def validate(packages)

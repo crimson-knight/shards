@@ -138,7 +138,7 @@ module Shards
           next if prefix.empty? && entry == INSTALL_DIR && File.readlink(full) == INSTALLED_LIB_LINK_TARGET
           list_of_entries << {relative, full}
         elsif File.directory?(full)
-          next if EXCLUDED_DIRS.includes?(entry)
+          next if prefix.empty? && EXCLUDED_DIRS.includes?(entry)
           list_of_entries.concat(collect_entries(full, relative))
         elsif File.file?(full)
           list_of_entries << {relative, full}

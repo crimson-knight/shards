@@ -119,6 +119,19 @@ module Shards
         end
       end
 
+      it "hashes a nested folder named like version-control metadata" do
+        path = File.tempname("checksum", "test")
+        Dir.mkdir_p(File.join(path, "src"))
+        File.write(File.join(path, "src", "a.cr"), "a")
+        before = Shards::Checksum.compute(path)
+
+        Dir.mkdir_p(File.join(path, "src", ".git"))
+        File.write(File.join(path, "src", ".git", "evil.cr"), "plant")
+        Shards::Checksum.compute(path).should_not eq(before)
+      ensure
+        Shards::Helpers.rm_rf(path) if path
+      end
+
       it "excludes .git directory" do
         path = File.tempname("checksum", "test")
         Dir.mkdir_p(path)
