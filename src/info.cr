@@ -1,4 +1,5 @@
 require "./lock"
+require "./helpers"
 
 class Shards::Info
   getter install_path : String
@@ -28,6 +29,10 @@ class Shards::Info
       end
     end
 
+    # Whatever a postinstall script left at this path (read-only, a link, a
+    # folder) must not stop the record from being written.
+    Helpers.restore_owner_access(@install_path)
+    Helpers.rm_rf(info_path)
     File.open(info_path, "w") do |file|
       YAML.build(file) do |yaml|
         yaml.mapping do

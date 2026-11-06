@@ -362,14 +362,16 @@ module Shards
     # Runs one package's postinstall script and returns whether it ran. A script
     # that fails still ran: every copy it changed and every install-directory
     # entry it added are removed, with its own copy, before the failure is
-    # raised again with the removed paths named.
+    # raised again with the removed paths named. A `File::Error` gets the same
+    # treatment, because the script ran and can make the records that follow it
+    # fail to write.
     private def run_postinstall_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts?) : Bool
       script_ran = script_owner.postinstall
       if script_ran && !script_owner.installed_copy_in_place?
         raise Script::Error.new("The postinstall script of #{script_owner.name} removed its own copy, or replaced it with a link.")
       end
       script_ran
-    rescue script_failure : Script::Error
+    rescue script_failure : Script::Error | File::Error
       raise script_failure unless trees_before_scripts
 
       list_of_changed = list_changed_by_script(script_owner, packages, trees_before_scripts)
@@ -435,6 +437,11 @@ module Shards
           list_of_removed_paths << package.install_path
         rescue PathNotRemoved
           list_of_stuck_paths << package.install_path
+        rescue ex : File::Error
+          # The copy is gone; only its record could not be written, and a record
+          # with no copy means reinstall.
+          Log.warn { "Could not update the install records for #{package.name}: #{ex.message}" }
+          list_of_removed_paths << package.install_path
         end
       end
 
@@ -449,7 +456,11 @@ module Shards
           list_of_stuck_paths << entry_path
         end
       end
-      Shards.info.save unless list_of_new_entries.empty?
+      begin
+        Shards.info.save unless list_of_new_entries.empty?
+      rescue ex : File::Error
+        Log.warn { "Could not update the install records: #{ex.message}" }
+      end
 
       raise ScriptLeftPathsBehind.new(script_owner.name, list_of_stuck_paths, list_of_removed_paths) unless list_of_stuck_paths.empty?
       list_of_removed_paths
