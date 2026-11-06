@@ -709,6 +709,86 @@ describe "checksum pinning" do
         File.read(install_path("ships_own_lock", "shard.lock")).should contain("version: 2.1.0")
       end
     end
+    # Each of these makes putting the shipped lock back fail, or leaves nothing
+    # to put it back into. The tree checks and cleanup still have to run.
+    it "runs the checks when the script replaces shard.lock with a directory" do
+      create_git_repository "lock_as_directory"
+      create_file "lock_as_directory", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; rm -f shard.lock; mkdir -p shard.lock/keep; fi\n"
+      create_git_release "lock_as_directory", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {lock_as_directory: "0.1.0"}}, {lock_as_directory: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        output.should contain("created #{install_path("x")}")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "runs the checks when the script removes its own copy, which ships a shard.lock" do
+      create_git_repository "own_copy_removed"
+      create_file "own_copy_removed", "shard.lock", "version: 2.0\nshards: {}\n"
+      create_file "own_copy_removed", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; cd .. && rm -rf own_copy_removed; fi\n"
+      create_git_release "own_copy_removed", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {own_copy_removed: "0.1.0"}}, {own_copy_removed: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "own_copy_removed", "0.1.0"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "runs the checks when the script makes its own copy read-only" do
+      create_git_repository "own_copy_readonly"
+      create_file "own_copy_readonly", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; chmod 555 .; fi\n"
+      create_git_release "own_copy_readonly", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {own_copy_readonly: "0.1.0"}}, {own_copy_readonly: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        output.should contain("created #{install_path("x")}")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "never writes through a shard.lock symlink the package ships, and puts the link back" do
+      create_git_repository "lock_symlink"
+      File.symlink("../../shard.lock", File.join(git_path("lock_symlink"), "shard.lock"))
+      create_file "lock_symlink", "Makefile", "all:\n\trm -f shard.lock\n"
+      create_git_release "lock_symlink", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {lock_symlink: "0.1.0"}}, {lock_symlink: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+        File.readlink(install_path("lock_symlink", "shard.lock")).should eq("../../shard.lock")
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
 
     it "fails `update` the same way when the script edits a verified dependency's files" do
       create_git_repository "rewrites_on_update"
