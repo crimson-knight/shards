@@ -695,6 +695,21 @@ describe "checksum pinning" do
       end
     end
 
+    it "lets a package that vendors a real lib/ run a nested install from its script" do
+      create_git_repository "vendors_lib"
+      create_file "vendors_lib", "lib/vendored/vendored.cr", "module Vendored; end\n"
+      create_git_release "vendors_lib", "0.1.0", {scripts: {postinstall: "shards install --no-color"}}
+
+      with_shard({dependencies: {vendors_lib: "0.1.0"}}, {vendors_lib: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "vendors_lib", "0.1.0"
+        File.exists?(install_path("vendors_lib", "lib/vendored/vendored.cr")).should be_true
+        File.exists?(install_path("vendors_lib", "shard.lock")).should be_false
+
+        run "shards install --frozen --no-color"
+      end
+    end
+
     it "puts back the shard.lock the package ships once its script has run" do
       create_git_repository "ships_own_lock"
       create_file "ships_own_lock", "shard.lock", "version: 2.0\nshards:\n  web:\n    git: #{git_url(:web)}\n    version: 2.1.0\n"
