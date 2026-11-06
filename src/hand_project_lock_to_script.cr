@@ -62,10 +62,10 @@ module Shards
       raise Script::Error.new("Could not hand the project's lock to the postinstall script of #{@script_owner.name}: #{ex.message}")
     end
 
-    # A script that removed its own copy leaves nothing to restore into; the
-    # caller's checks handle that copy.
+    # A script that removed its own copy, or replaced it with a link, leaves
+    # nothing to restore into; the caller's checks handle that copy.
     private def restore_shipped_lock(shipped_lock : ShippedFile | ShippedLink | Nil) : Nil
-      return unless File.info?(@script_owner.install_path, follow_symlinks: false)
+      return unless @script_owner.installed_copy_in_place?
 
       Helpers.restore_owner_access(@script_owner.install_path)
       Helpers.rm_rf!(lock_path)
