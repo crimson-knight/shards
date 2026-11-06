@@ -23,6 +23,15 @@ module Shards
       end
     end
 
+    it "names a folder that carries the name of a state file" do
+      with_install_directory do |directory|
+        Dir.mkdir(File.join(directory, ".DS_Store"))
+
+        ex = expect_raises(UnlockedLibEntry) { VerifyLibEntriesAreLocked.new(directory, [] of String).perform }
+        ex.message.to_s.should contain(File.join(directory, ".DS_Store"))
+      end
+    end
+
     it "names every entry the lock does not pin" do
       with_install_directory do |directory|
         Dir.mkdir(File.join(directory, "web"))

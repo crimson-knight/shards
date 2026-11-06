@@ -208,19 +208,21 @@ module Shards
     # Removes the installed copy together with its `.shards.info` entry and its
     # postinstall record, so the next install fetches, verifies and builds it
     # again instead of reusing what a failed run left behind. Raises
-    # `PathNotRemoved` when the copy is still there; the records are gone either
-    # way, so nothing trusts it.
+    # `PathNotRemoved` when the copy is still there. The removal runs even when
+    # a record fails to write, so a failed save cannot leave the copy behind.
     def discard_installation : Nil
-      Shards.info.installed.delete(name)
-      Shards.info.save
+      begin
+        Shards.info.installed.delete(name)
+        Shards.info.save
 
-      postinstall_records = Shards.postinstall_info
-      if postinstall_records.shards.delete(name)
-        postinstall_records.save
+        postinstall_records = Shards.postinstall_info
+        if postinstall_records.shards.delete(name)
+          postinstall_records.save
+        end
+      ensure
+        Log.debug { "rm -rf #{Process.quote(install_path)}" }
+        Shards::Helpers.rm_rf!(install_path)
       end
-
-      Log.debug { "rm -rf #{Process.quote(install_path)}" }
-      Shards::Helpers.rm_rf!(install_path)
     end
 
     # Runs the postinstall script when it is due. Returns true when a script ran

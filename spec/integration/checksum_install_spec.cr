@@ -925,6 +925,80 @@ describe "checksum pinning" do
       end
     end
 
+    # A state file is the first thing the script's run writes after the script,
+    # so one the script made read-only must not stop the checks from running.
+    {
+      {".shards.postinstall", "0", "state_postinstall_ok"},
+      {".shards.postinstall", "1", "state_postinstall_fails"},
+      {".shards.info", "0", "state_info_ok"},
+      {".shards.info", "1", "state_info_fails"},
+    }.each do |state_file, exit_code, fixture|
+      it "removes a plant when the script makes #{state_file} read-only and exits #{exit_code}" do
+        target = "#{fixture}_target"
+        create_git_repository target
+        create_git_release target, "0.1.0", {scripts: {postinstall: "true"}}
+
+        create_git_repository fixture
+        create_file fixture, "Makefile",
+          "all:\n" \
+          "\tif [ -f ../../once.flag ]; then rm ../../once.flag; echo '# plant' > lib/#{target}/src/evil.cr; chmod 444 lib/#{state_file}; exit #{exit_code}; fi\n"
+        create_git_release fixture, "0.1.0", {
+          dependencies: {target => {git: git_url(target), version: "0.1.0"}},
+          scripts:      {postinstall: "make"},
+        }
+
+        with_shard({dependencies: {fixture => "0.1.0"}}, {target => "0.1.0", fixture => "0.1.0"}) do
+          File.touch("once.flag")
+          ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+          (ex.stdout + ex.stderr).should_not contain("Unhandled exception")
+          File.exists?(install_path(target, "src/evil.cr")).should be_false
+
+          run "shards install --frozen --no-color"
+          assert_installed target, "0.1.0"
+          File.exists?(install_path(target, "src/evil.cr")).should be_false
+        end
+      end
+    end
+
+    it "sees a plant under a nested folder named like version-control metadata" do
+      create_git_repository "plants_under_dotgit"
+      create_file "plants_under_dotgit", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/web/src/.git; echo '# plant' > lib/web/src/.git/evil.cr; fi\n"
+      create_git_release "plants_under_dotgit", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {plants_under_dotgit: "0.1.0"}}, {web: "2.1.0", plants_under_dotgit: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("Checksum verification failed for web")
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+        File.exists?(install_path("web", "src/.git/evil.cr")).should be_false
+      end
+    end
+
+    it "treats a folder named .DS_Store as an entry the lock does not pin" do
+      create_git_repository "ds_store_folder"
+      create_file "ds_store_folder", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/.DS_Store/src; touch lib/.DS_Store/src/ds.cr; fi\n"
+      create_git_release "ds_store_folder", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {ds_store_folder: "0.1.0"}}, {ds_store_folder: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("created #{install_path(".DS_Store")}")
+        File.exists?(install_path(".DS_Store")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path(".DS_Store")).should be_false
+      end
+    end
+
     it "heals a copy its own failing script made read-only, and leaves lib/ writable" do
       create_git_repository "readonly_own_fails"
       create_file "readonly_own_fails", "Makefile",
