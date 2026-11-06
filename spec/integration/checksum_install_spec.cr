@@ -725,6 +725,174 @@ describe "checksum pinning" do
         output.should contain("postinstall script of rewrites_on_update")
       end
     end
+
+    # A script that fails still ran: whatever it wrote outside its own copy is
+    # checked and removed the same way, then the failure is raised.
+    it "removes a lib/ entry created by a script that then fails, on every run" do
+      create_git_repository "fails_after_lib_entry"
+      create_file "fails_after_lib_entry", "Makefile", "all:\n\tmkdir -p lib/x\n\texit 1\n"
+      create_git_release "fails_after_lib_entry", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {fails_after_lib_entry: "0.1.0"}}, {fails_after_lib_entry: "0.1.0"}) do
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of fails_after_lib_entry")
+        output.should contain("Removed")
+        output.should contain(install_path("x"))
+        File.exists?(install_path("x")).should be_false
+
+        expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "removes a verified copy edited by a script that then fails, so the next install heals it" do
+      create_git_repository "fails_after_edit"
+      create_file "fails_after_edit", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../fails_after_edit.flag ]; then rm ../../fails_after_edit.flag; echo '# replaced' > lib/web/src/web.cr; exit 1; fi\n"
+      create_git_release "fails_after_edit", "0.1.0", {
+        dependencies: {web: {git: git_url(:web), version: "2.1.0"}},
+        scripts:      {postinstall: "make"},
+      }
+
+      with_shard({dependencies: {fails_after_edit: "0.1.0"}}, {web: "2.1.0", fails_after_edit: "0.1.0"}) do
+        File.touch("fails_after_edit.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of fails_after_edit")
+        output.should contain(install_path("web"))
+        Dir.exists?(install_path("web")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+        File.read(install_path("web", "src/web.cr")).should_not contain("# replaced")
+      end
+    end
+
+    # A script can make what it leaves harder to remove. Cleanup restores owner
+    # access first, and only reports a path as removed once it is gone.
+    it "removes a read-only lib/ entry created by a script that then fails" do
+      create_git_repository "readonly_entry_fails"
+      create_file "readonly_entry_fails", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; touch lib/x/x.cr; chmod 555 lib/x; exit 1; fi\n"
+      create_git_release "readonly_entry_fails", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {readonly_entry_fails: "0.1.0"}}, {readonly_entry_fails: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("Removed")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "removes a read-only lib/ entry created by a script that then succeeds" do
+      create_git_repository "readonly_entry_ok"
+      create_file "readonly_entry_ok", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; touch lib/x/x.cr; chmod 555 lib/x; fi\n"
+      create_git_release "readonly_entry_ok", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {readonly_entry_ok: "0.1.0"}}, {readonly_entry_ok: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("created #{install_path("x")}")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "heals a copy its own failing script made read-only, and leaves lib/ writable" do
+      create_git_repository "readonly_own_fails"
+      create_file "readonly_own_fails", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; touch lib/x/x.cr; chmod 555 .; exit 1; fi\n"
+      create_git_release "readonly_own_fails", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {readonly_own_fails: "0.1.0"}}, {readonly_own_fails: "0.1.0"}) do
+        File.touch("once.flag")
+        expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        File.exists?(install_path("x")).should be_false
+        File.info(install_path).permissions.includes?(File::Permissions::OwnerWrite).should be_true
+
+        run "shards install --frozen --no-color"
+        assert_installed "readonly_own_fails", "0.1.0"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    # chflags makes an entry that even its owner cannot remove, so this is the
+    # one path where cleanup has to admit it failed.
+    {% if flag?(:darwin) %}
+      it "names a path it could not remove, and every later --frozen install fails on it" do
+        create_git_repository "immutable_entry"
+        create_file "immutable_entry", "Makefile", "all:\n\tmkdir -p lib/x\n\ttouch lib/x/x.cr\n\tchflags uchg lib/x/x.cr\n\texit 1\n"
+        create_git_release "immutable_entry", "0.1.0", {scripts: {postinstall: "make"}}
+
+        with_shard({dependencies: {immutable_entry: "0.1.0"}}, {immutable_entry: "0.1.0"}) do
+          begin
+            ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+            output = ex.stdout + ex.stderr
+            output.should contain("could not be removed")
+            output.should contain(install_path("x"))
+
+            ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+            (ex.stdout + ex.stderr).should contain("shard.lock does not pin")
+          ensure
+            Process.run("chflags", ["-R", "nouchg", install_path("x")])
+          end
+        end
+      end
+    {% end %}
+  end
+
+  describe "--frozen and lib/ entries the lock does not pin" do
+    it "fails by name before any script runs, and leaves the entry alone" do
+      with_shard({dependencies: {post: "*"}}, {post: "0.1.0"}) do
+        Dir.mkdir_p(install_path("stray"))
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain(install_path("stray"))
+        output.should contain("shard.lock does not pin")
+        File.exists?(install_path("post", "made.txt")).should be_false
+        Dir.exists?(install_path("stray")).should be_true
+      end
+    end
+
+    it "fails by name on a plain file, which `require` can load too" do
+      with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}) do
+        Dir.mkdir_p(install_path)
+        File.write(install_path("stray.cr"), "# unpinned")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain(install_path("stray.cr"))
+      end
+    end
+
+    it "accepts the install state files and macOS folder metadata" do
+      with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}) do
+        run "shards install --frozen --no-color"
+        File.write(install_path(".DS_Store"), "")
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.1.0"
+      end
+    end
+
+    it "leaves a plain install alone, so an unpinned entry stays the project's business" do
+      with_shard({dependencies: {web: "2.1.0"}}, {web: "2.1.0"}) do
+        Dir.mkdir_p(install_path("stray"))
+        run "shards install --no-color"
+        Dir.exists?(install_path("stray")).should be_true
+      end
+    end
   end
 
   it "`lock` records a sha256-v2 checksum for every new entry" do

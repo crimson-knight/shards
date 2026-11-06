@@ -111,6 +111,31 @@ module Shards
     end
   end
 
+  # A path that `Helpers.rm_rf!` tried to remove is still there.
+  class PathNotRemoved < Error
+    def initialize(path : String)
+      super "Could not remove #{path}."
+    end
+  end
+
+  # Cleanup after a postinstall script could not remove what the script touched.
+  # Nothing is reported as removed that is still there.
+  class ScriptLeftPathsBehind < Error
+    def initialize(script_owner_name : String, list_of_stuck_paths : Array(String), list_of_removed_paths : Array(String))
+      super "The postinstall script of #{script_owner_name} left paths that could not be removed: #{list_of_stuck_paths.join(", ")}.\n" \
+            "Removed #{list_of_removed_paths.join(", ")}. Remove the remaining paths by hand, then run `minecart install` again."
+    end
+  end
+
+  # `--frozen` installs only what the lock says, and these entries are in the
+  # install directory without being in the lock.
+  class UnlockedLibEntry < Error
+    def initialize(list_of_entry_paths : Array(String))
+      super "#{list_of_entry_paths.join(", ")}: in the install directory, but #{LOCK_FILENAME} does not pin #{list_of_entry_paths.size == 1 ? "it" : "them"}, and `require` can load #{list_of_entry_paths.size == 1 ? "it" : "them"}.\n" \
+            "Remove #{list_of_entry_paths.size == 1 ? "it" : "them"}, then run `minecart install --frozen` again."
+    end
+  end
+
   class ChecksumMismatch < Error
     def initialize(package_name : String, expected : String, actual : String)
       super "Checksum verification failed for #{package_name}.\n" \
