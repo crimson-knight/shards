@@ -1101,6 +1101,88 @@ describe "checksum pinning" do
     end
   end
 
+  # The lock is the one file every later run trusts, so a script that changes it
+  # stops the install by name and the honest bytes go back.
+  describe "a postinstall script that changes the project's shard.lock" do
+    it "stops by name and restores the lock when the script rewrites it and exits 0" do
+      create_git_repository "rewrites_lock_ok"
+      create_file "rewrites_lock_ok", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; fi\n"
+      create_git_release "rewrites_lock_ok", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_ok: "0.1.0"}}, {rewrites_lock_ok: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("The postinstall script of rewrites_lock_ok changed")
+        output.should contain("shard.lock")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        assert_installed "rewrites_lock_ok", "0.1.0"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores the lock and names the change when the script rewrites it and fails" do
+      create_git_repository "rewrites_lock_fails"
+      create_file "rewrites_lock_fails", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; exit 1; fi\n"
+      create_git_release "rewrites_lock_fails", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_fails: "0.1.0"}}, {rewrites_lock_fails: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of rewrites_lock_fails")
+        output.should contain("Restored")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores a lock the script deleted" do
+      create_git_repository "deletes_lock"
+      create_file "deletes_lock", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; rm ../../shard.lock; fi\n"
+      create_git_release "deletes_lock", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {deletes_lock: "0.1.0"}}, {deletes_lock: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of deletes_lock changed")
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "stops `update` the same way" do
+      create_git_repository "rewrites_lock_update"
+      create_file "rewrites_lock_update", "Makefile",
+        "all:\n" \
+        "\tprintf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock\n"
+      create_git_release "rewrites_lock_update", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_update: "0.1.0"}}, {rewrites_lock_update: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+
+        ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of rewrites_lock_update changed")
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+  end
+
   it "`lock` records a sha256-v2 checksum for every new entry" do
     with_shard({dependencies: {web: "2.1.0", pg: "0.2.1"}}) do
       run "shards lock --no-color"
