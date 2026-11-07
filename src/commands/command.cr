@@ -366,17 +366,70 @@ module Shards
     # treatment, because the script ran and can make the records that follow it
     # fail to write.
     private def run_postinstall_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts?) : Bool
-      script_ran = script_owner.postinstall
-      if script_ran && !script_owner.installed_copy_in_place?
-        raise Script::Error.new("The postinstall script of #{script_owner.name} removed its own copy, or replaced it with a link.")
-      end
-      script_ran
-    rescue script_failure : Script::Error | File::Error
-      raise script_failure unless trees_before_scripts
+      project_lock_before = read_project_lock
+      begin
+        script_ran = script_owner.postinstall(packages)
+        if script_ran && !script_owner.installed_copy_in_place?
+          raise Script::Error.new("The postinstall script of #{script_owner.name} removed its own copy, or replaced it with a link.")
+        end
+        if script_ran && read_project_lock != project_lock_before
+          raise Script::Error.new("The postinstall script of #{script_owner.name} changed #{lockfile_path}.")
+        end
+        script_ran
+      rescue script_failure : Script::Error | File::Error
+        lock_note = restore_project_lock_if_changed(project_lock_before)
+        raise script_failure unless trees_before_scripts
 
-      list_of_changed = list_changed_by_script(script_owner, packages, trees_before_scripts)
-      list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
-      raise Script::Error.new("#{script_failure.message}\nRemoved #{list_of_removed_paths.join(", ")} so nothing the failed script wrote is reused.")
+        list_of_changed = list_changed_by_script(script_owner, packages, trees_before_scripts)
+        list_of_removed_paths = discard_what_script_touched(script_owner, list_of_changed, packages, trees_before_scripts)
+        raise Script::Error.new("#{script_failure.message}\n#{lock_note}Removed #{list_of_removed_paths.join(", ")} so nothing the failed script wrote is reused.")
+      end
+    end
+
+    # The project's `shard.lock` as a script found it: its bytes and mode, and
+    # its link target when it is a link. All empty when there is no lock yet, or
+    # none that can be read.
+    private record ProjectLockState,
+      content : String?,
+      permissions : File::Permissions?,
+      link_target : String?
+
+    private def read_project_lock : ProjectLockState
+      info = File.info?(lockfile_path, follow_symlinks: false)
+      return ProjectLockState.new(nil, nil, nil) unless info
+
+      link_target = info.symlink? ? File.readlink(lockfile_path) : nil
+      ProjectLockState.new(File.read(lockfile_path), info.permissions, link_target)
+    rescue File::Error
+      ProjectLockState.new(nil, nil, nil)
+    end
+
+    private def write_project_lock(project_lock : ProjectLockState) : Nil
+      link_target = project_lock.link_target
+      File.symlink(link_target, lockfile_path) if link_target
+
+      content = project_lock.content
+      return unless content
+
+      permissions = project_lock.permissions
+      if permissions && !link_target
+        File.write(lockfile_path, content, perm: permissions)
+      else
+        File.write(lockfile_path, content)
+      end
+    end
+
+    # Puts the lock back when a script changed it, because the next run trusts
+    # whatever is there. Returns the line that says what happened, for the error.
+    private def restore_project_lock_if_changed(project_lock_before : ProjectLockState) : String
+      return "" if read_project_lock == project_lock_before
+
+      Helpers.restore_owner_access(File.dirname(lockfile_path))
+      Helpers.rm_rf!(lockfile_path)
+      write_project_lock(project_lock_before)
+      "Restored #{lockfile_path} to what it held before the script.\n"
+    rescue ex : File::Error | PathNotRemoved
+      "Could not restore #{lockfile_path}: #{ex.message} Restore it from version control before installing again.\n"
     end
 
     private def verify_trees_unchanged_by_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts) : Nil

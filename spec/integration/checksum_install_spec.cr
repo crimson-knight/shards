@@ -660,6 +660,151 @@ describe "checksum pinning" do
       end
     end
 
+    # A script such as `shards build` runs a nested install inside the package's
+    # own copy, which reaches the project's lib/ through the shared link. The
+    # nested install gets the project's lock, so it resolves nothing itself.
+    it "hands the script the project's lock, so a nested install keeps every locked version" do
+      create_git_repository "nested_install"
+      create_git_release "nested_install", "0.1.0", {
+        dependencies: {web: {git: git_url(:web)}},
+        scripts:      {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {nested_install: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", nested_install: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        assert_installed "nested_install", "0.1.0"
+
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+      end
+    end
+
+    it "runs the nested install without the package's development dependencies, which the project does not lock" do
+      create_git_repository "nested_with_dev"
+      create_git_release "nested_with_dev", "0.1.0", {
+        dependencies:             {web: {git: git_url(:web)}},
+        development_dependencies: {pg: {git: git_url(:pg)}},
+        scripts:                  {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {nested_with_dev: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", nested_with_dev: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        Dir.exists?(install_path("pg")).should be_false
+      end
+    end
+
+    it "lets a package that vendors a real lib/ run a nested install from its script" do
+      create_git_repository "vendors_lib"
+      create_file "vendors_lib", "lib/vendored/vendored.cr", "module Vendored; end\n"
+      create_git_release "vendors_lib", "0.1.0", {scripts: {postinstall: "shards install --no-color"}}
+
+      with_shard({dependencies: {vendors_lib: "0.1.0"}}, {vendors_lib: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "vendors_lib", "0.1.0"
+        File.exists?(install_path("vendors_lib", "lib/vendored/vendored.cr")).should be_true
+        File.exists?(install_path("vendors_lib", "shard.lock")).should be_false
+
+        run "shards install --frozen --no-color"
+      end
+    end
+
+    it "puts back the shard.lock the package ships once its script has run" do
+      create_git_repository "ships_own_lock"
+      create_file "ships_own_lock", "shard.lock", "version: 2.0\nshards:\n  web:\n    git: #{git_url(:web)}\n    version: 2.1.0\n"
+      create_git_release "ships_own_lock", "0.1.0", {
+        dependencies: {web: {git: git_url(:web)}},
+        scripts:      {postinstall: "shards install --no-color"},
+      }
+
+      with_shard({dependencies: {ships_own_lock: "0.1.0", web: "2.0.0"}}, {web: "2.0.0", ships_own_lock: "0.1.0"}) do
+        run "shards install --frozen --no-color"
+        assert_installed "web", "2.0.0"
+        File.read(install_path("ships_own_lock", "shard.lock")).should contain("version: 2.1.0")
+      end
+    end
+    # Each of these makes putting the shipped lock back fail, or leaves nothing
+    # to put it back into. The tree checks and cleanup still have to run.
+    it "runs the checks when the script replaces shard.lock with a directory" do
+      create_git_repository "lock_as_directory"
+      create_file "lock_as_directory", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; rm -f shard.lock; mkdir -p shard.lock/keep; fi\n"
+      create_git_release "lock_as_directory", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {lock_as_directory: "0.1.0"}}, {lock_as_directory: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        output.should contain("created #{install_path("x")}")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "runs the checks when the script removes its own copy, which ships a shard.lock" do
+      create_git_repository "own_copy_removed"
+      create_file "own_copy_removed", "shard.lock", "version: 2.0\nshards: {}\n"
+      create_file "own_copy_removed", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; cd .. && rm -rf own_copy_removed; fi\n"
+      create_git_release "own_copy_removed", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {own_copy_removed: "0.1.0"}}, {own_copy_removed: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        assert_installed "own_copy_removed", "0.1.0"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "runs the checks when the script makes its own copy read-only" do
+      create_git_repository "own_copy_readonly"
+      create_file "own_copy_readonly", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; mkdir -p lib/x; chmod 555 .; fi\n"
+      create_git_release "own_copy_readonly", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {own_copy_readonly: "0.1.0"}}, {own_copy_readonly: "0.1.0"}) do
+        File.touch("once.flag")
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should_not contain("Unhandled exception")
+        output.should contain("created #{install_path("x")}")
+        File.exists?(install_path("x")).should be_false
+
+        run "shards install --frozen --no-color"
+        File.exists?(install_path("x")).should be_false
+      end
+    end
+
+    it "never writes through a shard.lock symlink the package ships, and puts the link back" do
+      create_git_repository "lock_symlink"
+      File.symlink("../../shard.lock", File.join(git_path("lock_symlink"), "shard.lock"))
+      create_file "lock_symlink", "Makefile", "all:\n\trm -f shard.lock\n"
+      create_git_release "lock_symlink", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {lock_symlink: "0.1.0"}}, {lock_symlink: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+        File.readlink(install_path("lock_symlink", "shard.lock")).should eq("../../shard.lock")
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
     it "fails `update` the same way when the script edits a verified dependency's files" do
       create_git_repository "rewrites_on_update"
       create_file "rewrites_on_update", "Makefile", "all:\n\techo '# replaced' > lib/web/src/web.cr\n"
@@ -888,6 +1033,47 @@ describe "checksum pinning" do
       end
     end
 
+    it "a frozen install leaves a read-only lib/ read-only" do
+      with_shard({dependencies: {web: "*"}}) do
+        run "shards install --no-color"
+        File.chmod("lib", 0o555)
+        begin
+          run "shards install --frozen --no-color"
+          (File.info("lib").permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod("lib", 0o755)
+        end
+      end
+    end
+
+    it "takes the handed lock back out of a path dependency's read-only source" do
+      create_path_repository "readonly_source", "0.1.0"
+      create_file "readonly_source", "shard.yml", "name: readonly_source\nversion: 0.1.0\nscripts:\n  postinstall: chmod 0555 .\n"
+      source_directory = git_path("readonly_source")
+
+      with_shard({dependencies: {readonly_source: {path: rel_path(:readonly_source)}}}) do
+        begin
+          run "shards install --no-color"
+          File.exists?(File.join(source_directory, "shard.lock")).should be_false
+          (File.info(source_directory).permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod(source_directory, 0o755)
+        end
+      end
+    end
+
+    it "the next install fails on a locked file its own script edited" do
+      create_git_repository "own_edit"
+      create_file "own_edit", "src/own_edit.cr", "# locked\n"
+      create_git_release "own_edit", "0.1.0", {scripts: {postinstall: "echo changed >> src/own_edit.cr"}}
+
+      with_shard({dependencies: {own_edit: "0.1.0"}}) do
+        run "shards install --no-color"
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("own_edit")
+      end
+    end
+
     # chflags makes an entry that even its owner cannot remove, so this is the
     # one path where cleanup has to admit it failed.
     {% if flag?(:darwin) %}
@@ -952,6 +1138,88 @@ describe "checksum pinning" do
         Dir.mkdir_p(install_path("stray"))
         run "shards install --no-color"
         Dir.exists?(install_path("stray")).should be_true
+      end
+    end
+  end
+
+  # The lock is the one file every later run trusts, so a script that changes it
+  # stops the install by name and the honest bytes go back.
+  describe "a postinstall script that changes the project's shard.lock" do
+    it "stops by name and restores the lock when the script rewrites it and exits 0" do
+      create_git_repository "rewrites_lock_ok"
+      create_file "rewrites_lock_ok", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; fi\n"
+      create_git_release "rewrites_lock_ok", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_ok: "0.1.0"}}, {rewrites_lock_ok: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("The postinstall script of rewrites_lock_ok changed")
+        output.should contain("shard.lock")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        assert_installed "rewrites_lock_ok", "0.1.0"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores the lock and names the change when the script rewrites it and fails" do
+      create_git_repository "rewrites_lock_fails"
+      create_file "rewrites_lock_fails", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; exit 1; fi\n"
+      create_git_release "rewrites_lock_fails", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_fails: "0.1.0"}}, {rewrites_lock_fails: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of rewrites_lock_fails")
+        output.should contain("Restored")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores a lock the script deleted" do
+      create_git_repository "deletes_lock"
+      create_file "deletes_lock", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; rm ../../shard.lock; fi\n"
+      create_git_release "deletes_lock", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {deletes_lock: "0.1.0"}}, {deletes_lock: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of deletes_lock changed")
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "stops `update` the same way" do
+      create_git_repository "rewrites_lock_update"
+      create_file "rewrites_lock_update", "Makefile",
+        "all:\n" \
+        "\tprintf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock\n"
+      create_git_release "rewrites_lock_update", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_update: "0.1.0"}}, {rewrites_lock_update: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+
+        ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of rewrites_lock_update changed")
+        File.read("shard.lock").should eq(project_lock)
       end
     end
   end
