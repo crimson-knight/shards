@@ -96,6 +96,12 @@ rewrites an entry as `sha256-v2:` when it re-resolves that dependency;
 `minecart lock --update-checksums` verifies each legacy entry and then records
 the `sha256-v2:` checksum of the same version.
 
+A `sha256-v2:` value is the same on macOS and Linux. A Windows checkout gives a
+different value, because Git can rewrite line endings there and the file system
+has no executable bit. A `shard.lock` written on Windows therefore fails
+verification on macOS and Linux, and the reverse, so a team on both keeps a lock
+for each. `git-tree:` entries already in a lock verify on all three.
+
 Checksum rules for `minecart install`:
 
 - Every `shard.lock` entry the install reuses must have a checksum, or the
