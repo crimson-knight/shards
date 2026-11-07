@@ -1033,6 +1033,47 @@ describe "checksum pinning" do
       end
     end
 
+    it "a frozen install leaves a read-only lib/ read-only" do
+      with_shard({dependencies: {web: "*"}}) do
+        run "shards install --no-color"
+        File.chmod("lib", 0o555)
+        begin
+          run "shards install --frozen --no-color"
+          (File.info("lib").permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod("lib", 0o755)
+        end
+      end
+    end
+
+    it "takes the handed lock back out of a path dependency's read-only source" do
+      create_path_repository "readonly_source", "0.1.0"
+      create_file "readonly_source", "shard.yml", "name: readonly_source\nversion: 0.1.0\nscripts:\n  postinstall: chmod 0555 .\n"
+      source_directory = git_path("readonly_source")
+
+      with_shard({dependencies: {readonly_source: {path: rel_path(:readonly_source)}}}) do
+        begin
+          run "shards install --no-color"
+          File.exists?(File.join(source_directory, "shard.lock")).should be_false
+          (File.info(source_directory).permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod(source_directory, 0o755)
+        end
+      end
+    end
+
+    it "the next install fails on a locked file its own script edited" do
+      create_git_repository "own_edit"
+      create_file "own_edit", "src/own_edit.cr", "# locked\n"
+      create_git_release "own_edit", "0.1.0", {scripts: {postinstall: "echo changed >> src/own_edit.cr"}}
+
+      with_shard({dependencies: {own_edit: "0.1.0"}}) do
+        run "shards install --no-color"
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("own_edit")
+      end
+    end
+
     # chflags makes an entry that even its owner cannot remove, so this is the
     # one path where cleanup has to admit it failed.
     {% if flag?(:darwin) %}
@@ -1097,6 +1138,88 @@ describe "checksum pinning" do
         Dir.mkdir_p(install_path("stray"))
         run "shards install --no-color"
         Dir.exists?(install_path("stray")).should be_true
+      end
+    end
+  end
+
+  # The lock is the one file every later run trusts, so a script that changes it
+  # stops the install by name and the honest bytes go back.
+  describe "a postinstall script that changes the project's shard.lock" do
+    it "stops by name and restores the lock when the script rewrites it and exits 0" do
+      create_git_repository "rewrites_lock_ok"
+      create_file "rewrites_lock_ok", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; fi\n"
+      create_git_release "rewrites_lock_ok", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_ok: "0.1.0"}}, {rewrites_lock_ok: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("The postinstall script of rewrites_lock_ok changed")
+        output.should contain("shard.lock")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        assert_installed "rewrites_lock_ok", "0.1.0"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores the lock and names the change when the script rewrites it and fails" do
+      create_git_repository "rewrites_lock_fails"
+      create_file "rewrites_lock_fails", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; printf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock; exit 1; fi\n"
+      create_git_release "rewrites_lock_fails", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_fails: "0.1.0"}}, {rewrites_lock_fails: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        output = ex.stdout + ex.stderr
+        output.should contain("Failed postinstall of rewrites_lock_fails")
+        output.should contain("Restored")
+        File.read("shard.lock").should eq(project_lock)
+
+        run "shards install --frozen --no-color"
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "restores a lock the script deleted" do
+      create_git_repository "deletes_lock"
+      create_file "deletes_lock", "Makefile",
+        "all:\n" \
+        "\tif [ -f ../../once.flag ]; then rm ../../once.flag; rm ../../shard.lock; fi\n"
+      create_git_release "deletes_lock", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {deletes_lock: "0.1.0"}}, {deletes_lock: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+        File.touch("once.flag")
+
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of deletes_lock changed")
+        File.read("shard.lock").should eq(project_lock)
+      end
+    end
+
+    it "stops `update` the same way" do
+      create_git_repository "rewrites_lock_update"
+      create_file "rewrites_lock_update", "Makefile",
+        "all:\n" \
+        "\tprintf 'version: 2.0\\nshards: {}\\n' > ../../shard.lock\n"
+      create_git_release "rewrites_lock_update", "0.1.0", {scripts: {postinstall: "make"}}
+
+      with_shard({dependencies: {rewrites_lock_update: "0.1.0"}}, {rewrites_lock_update: "0.1.0"}) do
+        project_lock = File.read("shard.lock")
+
+        ex = expect_raises(FailedCommand) { run "shards update --no-color" }
+        (ex.stdout + ex.stderr).should contain("The postinstall script of rewrites_lock_update changed")
+        File.read("shard.lock").should eq(project_lock)
       end
     end
   end
