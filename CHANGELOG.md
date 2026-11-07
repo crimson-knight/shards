@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Minecart 2025.11.25.9 (2026-11-07)
 
 - New `shard.lock` entries record `sha256-v2:` checksums for every fetched dependency: a SHA-256 over each file's path, bytes and mode (regular, executable or symlink), with symlinks recorded by their link text and never followed. A real top-level `lib/` directory is covered; only the `lib` link Minecart writes is left out. A shard that ships a symlink to an absolute path (asset_pipeline does) installs and verifies.
 - Existing `sha256:` (v1) and `git-tree:` (Git SHA-1 tree id) entries keep verifying under their original rules, `--frozen` included, with a notice. `minecart update` rewrites an entry as `sha256-v2:` only when it re-resolves that dependency; `minecart lock --update-checksums` verifies legacy entries and upgrades them.
@@ -11,6 +11,11 @@
 - `minecart update` verifies each new copy again right before its own postinstall script, records checksums from a fresh checkout instead of the installed copy, and fails when an installed copy it keeps no longer matches its checksum.
 - `minecart run-script` obeys `security.block_postinstall`, reinstalls the locked version, verifies it against `shard.lock`, and runs the script from that fresh copy.
 - `minecart lock` records a `sha256-v2:` checksum for every entry new to the lock.
+- `install --frozen` checks reused copies against their locked source, and fails by name on any `lib/` entry the lock does not list.
+- A postinstall script that changes another installed copy, adds a `lib/` entry or changes `shard.lock` stops the install by name. The checks and cleanup also run when the script fails, and the lock is restored.
+- A nested install inside a postinstall script, such as `shards build`, resolves from the project's lock, so it cannot overwrite the project's locked copies.
+- A read-only `lib/` keeps its mode through a frozen install.
+- The compliance guide lists what these checks cannot see: a script that kills the installer, leaves a background process, edits its own package's files in the install that runs it, or makes `shard.lock` immutable.
 
 ## Minecart 2025.11.25.8 (2026-10-06)
 
