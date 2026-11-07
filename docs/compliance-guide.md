@@ -135,10 +135,27 @@ and Bundler lockfiles. Review postinstall scripts before trusting them, or set
 Best-effort extra check: each reused installed copy is compared against a
 fresh checkout of its locked version before any script runs. A package whose
 source declares a postinstall script may hold extra files (its script's
-output). The comparison skips VCS metadata directories (`.git`, `.hg`,
-`.fossil`, `.fslckout`, `_FOSSIL_`) and the `lib` link Minecart writes. This
+output). The comparison skips VCS metadata directories at the top of a copy
+(`.git`, `.hg`, `.fossil`, `.fslckout`, `_FOSSIL_`) and the `lib` link Minecart
+writes. This
 catches accidental edits and stale copies; it is defense in depth, not a
 guarantee against local tampering.
+
+### Known limits: hostile postinstall scripts
+
+When one dependency's postinstall script is hostile and `shard.lock` is honest,
+Minecart checks what the script changed after it exits. Each check runs inside
+the install, so it cannot see these two cases:
+
+- **A script that kills the installer.** The check that would run after the
+  script never runs, and every record the script can reach can be forged, so no
+  check inside the run can see it. A plant in a copy whose source declares its
+  own postinstall script stays, because such a copy may hold extra files, and
+  later `--frozen` installs exit 0.
+- **A background process a script leaves running.** It can write to `lib/` after
+  the last check has passed. Closing this needs a sandbox around scripts.
+
+If you do not trust a dependency's script, set `security.block_postinstall`.
 
 ### Lock File Format
 

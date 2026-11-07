@@ -1,5 +1,6 @@
 require "yaml"
 require "digest/sha256"
+require "./helpers"
 
 module Shards
   # Tracks postinstall script execution state across installs.
@@ -75,6 +76,10 @@ module Shards
     def save
       Dir.mkdir_p(File.dirname(@path))
 
+      # Whatever a postinstall script left at this path (read-only, a link, a
+      # folder) must not stop the record from being written.
+      Helpers.restore_owner_access(File.dirname(@path))
+      Helpers.rm_rf(@path)
       File.open(@path, "w") do |file|
         YAML.build(file) do |yaml|
           yaml.mapping do

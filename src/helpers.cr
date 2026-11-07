@@ -33,6 +33,7 @@ module Shards::Helpers
   def self.rm_rf(path : String) : Nil
     # TODO: delete this and use https://github.com/crystal-lang/crystal/pull/9903
     if !File.symlink?(path) && Dir.exists?(path)
+      restore_owner_access(path)
       Dir.each_child(path) do |entry|
         src = File.join(path, entry)
         rm_rf(src)
@@ -41,13 +42,51 @@ module Shards::Helpers
     else
       begin
         File.delete(path)
-      rescue File::AccessDeniedError
+      rescue ex : File::AccessDeniedError
+        # chmod follows a symlink, which would change the mode of its target.
+        raise ex if File.symlink?(path)
+
         # To be able to delete read-only files (e.g. ones under .git/) on Windows.
         File.chmod(path, 0o666)
         File.delete(path)
       end
     end
   rescue File::Error
+  end
+
+  # Same as `rm_rf`, and raises `PathNotRemoved` when the path is still there
+  # afterward, so a caller can say "removed" and mean it.
+  def self.rm_rf!(path : String) : Nil
+    rm_rf(path)
+    raise PathNotRemoved.new(path) if File.info?(path, follow_symlinks: false)
+  end
+
+  # Gives the owner read, write and search access to a real directory, so what
+  # it holds can be listed and removed. Leaves symlinks and their targets alone.
+  def self.restore_owner_access(directory : String) : Nil
+    info = File.info?(directory, follow_symlinks: false)
+    return unless info && info.directory?
+    return if info.permissions.includes?(File::Permissions::OwnerAll)
+
+    File.chmod(directory, info.permissions | File::Permissions::OwnerAll)
+  rescue File::Error
+  end
+
+  # The names in the install directory, without the regular files Minecart
+  # itself keeps there. A folder or link carrying one of those names counts as
+  # an entry, because it can hold code.
+  def self.list_install_entries(install_path : String) : Set(String)
+    list_of_entries = Set(String).new
+    return list_of_entries unless Dir.exists?(install_path)
+
+    restore_owner_access(install_path)
+    Dir.each_child(install_path) do |entry_name|
+      entry_info = File.info?(File.join(install_path, entry_name), follow_symlinks: false)
+      next if entry_info && entry_info.file? && INSTALL_STATE_ENTRIES.includes?(entry_name)
+
+      list_of_entries << entry_name
+    end
+    list_of_entries
   end
 
   def self.rm_rf_children(dir : String) : Nil
