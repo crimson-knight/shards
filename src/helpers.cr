@@ -72,6 +72,19 @@ module Shards::Helpers
   rescue File::Error
   end
 
+  # Gives the owner read and search access to a real directory, and only when it
+  # lacks them. Listing needs nothing more, so a read-only directory keeps its mode.
+  def self.restore_owner_listing_access(directory : String) : Nil
+    info = File.info?(directory, follow_symlinks: false)
+    return unless info && info.directory?
+
+    listing_access = File::Permissions::OwnerRead | File::Permissions::OwnerExecute
+    return if info.permissions.includes?(listing_access)
+
+    File.chmod(directory, info.permissions | listing_access)
+  rescue File::Error
+  end
+
   # The names in the install directory, without the regular files Minecart
   # itself keeps there. A folder or link carrying one of those names counts as
   # an entry, because it can hold code.
@@ -79,7 +92,7 @@ module Shards::Helpers
     list_of_entries = Set(String).new
     return list_of_entries unless Dir.exists?(install_path)
 
-    restore_owner_access(install_path)
+    restore_owner_listing_access(install_path)
     Dir.each_child(install_path) do |entry_name|
       entry_info = File.info?(File.join(install_path, entry_name), follow_symlinks: false)
       next if entry_info && entry_info.file? && INSTALL_STATE_ENTRIES.includes?(entry_name)

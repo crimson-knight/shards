@@ -67,15 +67,37 @@ module Shards
     private def restore_shipped_lock(shipped_lock : ShippedFile | ShippedLink | Nil) : Nil
       return unless @script_owner.installed_copy_in_place?
 
-      Helpers.restore_owner_access(@script_owner.install_path)
-      Helpers.rm_rf!(lock_path)
-      if shipped_lock.is_a?(ShippedFile)
-        File.write(lock_path, shipped_lock.content, perm: shipped_lock.permissions)
-      elsif shipped_lock.is_a?(ShippedLink)
-        File.symlink(shipped_lock.target, lock_path)
+      with_write_access_to_installed_copy do
+        Helpers.rm_rf!(lock_path)
+        if shipped_lock.is_a?(ShippedFile)
+          File.write(lock_path, shipped_lock.content, perm: shipped_lock.permissions)
+        elsif shipped_lock.is_a?(ShippedLink)
+          File.symlink(shipped_lock.target, lock_path)
+        end
       end
     rescue ex : File::Error | PathNotRemoved
       raise Script::Error.new("Could not restore #{lock_path} after the postinstall script of #{@script_owner.name}: #{ex.message}")
+    end
+
+    # A path dependency's installed copy is a link to the developer's own source.
+    # Its directory gets write access only for the restore and then the mode the
+    # script left, so the handed lock never stays behind in that source.
+    private def with_write_access_to_installed_copy(& : ->) : Nil
+      copy_info = File.info?(@script_owner.install_path, follow_symlinks: false)
+      unless copy_info && copy_info.symlink?
+        Helpers.restore_owner_access(@script_owner.install_path)
+        yield
+        return
+      end
+
+      source_directory = File.realpath(@script_owner.install_path)
+      permissions_before = File.info(source_directory).permissions
+      Helpers.restore_owner_access(source_directory)
+      begin
+        yield
+      ensure
+        File.chmod(source_directory, permissions_before)
+      end
     end
 
     # Every locked package except the script's own. A path dependency's source

@@ -145,7 +145,7 @@ guarantee against local tampering.
 
 When one dependency's postinstall script is hostile and `shard.lock` is honest,
 Minecart checks what the script changed after it exits. Each check runs inside
-the install, so it cannot see these two cases:
+the install, and the script has already run as you, so these cases remain:
 
 - **A script that kills the installer.** The check that would run after the
   script never runs, and every record the script can reach can be forged, so no
@@ -154,9 +154,16 @@ the install, so it cannot see these two cases:
   later `--frozen` installs exit 0.
 - **A background process a script leaves running.** It can write to `lib/` after
   the last check has passed. Closing this needs a sandbox around scripts.
+- **A script that edits its own package's files.** A build script writes into its
+  own copy, so the install that runs it accepts that copy when the script exits.
+  The next install compares the copy with a fresh checkout of its locked version
+  and fails by name.
+- **A script that makes `shard.lock` immutable.** Minecart detects the change, but
+  cannot put the lock back. The install stops and says so, and you restore the
+  lock from version control.
 
 A script that changes `shard.lock` and then exits, with any exit code, stops the
-install by name and the lock is restored. A script that kills the installer
+install by name and the lock is restored unless it is immutable, as above. A script that kills the installer
 skips that comparison too, as above, so review `shard.lock` changes before
 committing them.
 

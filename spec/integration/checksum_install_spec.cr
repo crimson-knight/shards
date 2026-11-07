@@ -1033,6 +1033,47 @@ describe "checksum pinning" do
       end
     end
 
+    it "a frozen install leaves a read-only lib/ read-only" do
+      with_shard({dependencies: {web: "*"}}) do
+        run "shards install --no-color"
+        File.chmod("lib", 0o555)
+        begin
+          run "shards install --frozen --no-color"
+          (File.info("lib").permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod("lib", 0o755)
+        end
+      end
+    end
+
+    it "takes the handed lock back out of a path dependency's read-only source" do
+      create_path_repository "readonly_source", "0.1.0"
+      create_file "readonly_source", "shard.yml", "name: readonly_source\nversion: 0.1.0\nscripts:\n  postinstall: chmod 0555 .\n"
+      source_directory = git_path("readonly_source")
+
+      with_shard({dependencies: {readonly_source: {path: rel_path(:readonly_source)}}}) do
+        begin
+          run "shards install --no-color"
+          File.exists?(File.join(source_directory, "shard.lock")).should be_false
+          (File.info(source_directory).permissions.value & 0o777).should eq(0o555)
+        ensure
+          File.chmod(source_directory, 0o755)
+        end
+      end
+    end
+
+    it "the next install fails on a locked file its own script edited" do
+      create_git_repository "own_edit"
+      create_file "own_edit", "src/own_edit.cr", "# locked\n"
+      create_git_release "own_edit", "0.1.0", {scripts: {postinstall: "echo changed >> src/own_edit.cr"}}
+
+      with_shard({dependencies: {own_edit: "0.1.0"}}) do
+        run "shards install --no-color"
+        ex = expect_raises(FailedCommand) { run "shards install --frozen --no-color" }
+        (ex.stdout + ex.stderr).should contain("own_edit")
+      end
+    end
+
     # chflags makes an entry that even its owner cannot remove, so this is the
     # one path where cleanup has to admit it failed.
     {% if flag?(:darwin) %}
