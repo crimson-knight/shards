@@ -366,7 +366,7 @@ module Shards
     # treatment, because the script ran and can make the records that follow it
     # fail to write.
     private def run_postinstall_script(script_owner : Package, packages : Array(Package), trees_before_scripts : TreesBeforeScripts?) : Bool
-      script_ran = script_owner.postinstall
+      script_ran = script_owner.postinstall(packages)
       if script_ran && !script_owner.installed_copy_in_place?
         raise Script::Error.new("The postinstall script of #{script_owner.name} removed its own copy, or replaced it with a link.")
       end

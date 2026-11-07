@@ -85,7 +85,12 @@ module Shards
         check_crystal_version(packages)
       end
 
+      # A nested install's install directory may be a real `lib/` the package
+      # vendors, which its own handed lock knows nothing about. The project's run
+      # checks the project's install directory after the script.
       private def verify_lib_entries_are_locked : Nil
+        return if Shards.nested_install?
+
         VerifyLibEntriesAreLocked.new(Shards.install_path, locks.shards.map(&.name)).perform
       end
 
