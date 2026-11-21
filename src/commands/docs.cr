@@ -824,7 +824,7 @@ module Shards
             # Strip script tags
             body = body.gsub(/<script[^>]*>.*?<\/script>/m, "")
             # Convert headers
-            body = body.gsub(/<h([1-6])[^>]*>(.*?)<\/h\1>/m) { "#{"#" * $1.to_i} #{strip_tags($2)}\n\n" }
+            body = Docs.convert_headings_to_markdown(body)
             # Convert code blocks
             body = body.gsub(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/m) { "```\n#{html_decode(strip_tags($1))}\n```\n\n" }
             body = body.gsub(/<pre[^>]*>(.*?)<\/pre>/m) { "```\n#{html_decode(strip_tags($1))}\n```\n\n" }
@@ -846,8 +846,28 @@ module Shards
         end
       end
 
-      private def strip_tags(html : String) : String
+      # Matches one `<h1>` to `<h6>` element; the capture group that took part
+      # gives the level. Each level closes its own tag because Mica, the
+      # `-Duse_mica` Regex engine, has no backreferences (`<\/h>`). Only the
+      # alternative for the digit at a position can match there, so a single
+      # pass finds exactly the matches the backreference form found.
+      HEADING_PATTERN = /<h1[^>]*>(.*?)<\/h1>|<h2[^>]*>(.*?)<\/h2>|<h3[^>]*>(.*?)<\/h3>|<h4[^>]*>(.*?)<\/h4>|<h5[^>]*>(.*?)<\/h5>|<h6[^>]*>(.*?)<\/h6>/m
+
+      # Converts each `<hN>` element in *html* into a level-N Markdown heading
+      # followed by a blank line, with the tags inside the heading stripped.
+      def self.convert_headings_to_markdown(html : String) : String
+        html.gsub(HEADING_PATTERN) do |_, heading_match|
+          level = (1..6).find! { |group| heading_match[group]? }
+          "#{"#" * level} #{strip_tags(heading_match[level])}\n\n"
+        end
+      end
+
+      def self.strip_tags(html : String) : String
         html.gsub(/<[^>]+>/, "")
+      end
+
+      private def strip_tags(html : String) : String
+        Docs.strip_tags(html)
       end
 
       private def html_decode(text : String) : String
