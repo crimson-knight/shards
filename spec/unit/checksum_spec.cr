@@ -344,7 +344,10 @@ module Shards
           expected = "sha256:a6bc346dfc626c85b1249a5c5b9f2278290a668d1f789f3283e59df1e7c55da4"
           Checksum.compute_legacy_sha256(path).should eq(expected)
           Checksum.verify(path, expected).should be_true
-          Checksum.compute(path).should start_with("sha256-v2:")
+          # Worked out from the documented sha256-v2 rule (mode NUL path NUL size NUL bytes,
+          # entries in path order) by an independent implementation, so the digest engine
+          # under Checksum can change only if lock values stay byte for byte the same.
+          Checksum.compute(path).should eq("sha256-v2:0c0eb6bb42dd9c2ab5a2e31e95ea09596cc211dad2ad60bde84b236721602c01")
         ensure
           Shards::Helpers.rm_rf(path)
         end

@@ -1,5 +1,5 @@
 require "yaml"
-require "digest/sha256"
+require "./sha256_digest"
 
 module Shards
   # Tracks installed AI documentation files and their checksums.
@@ -138,7 +138,7 @@ module Shards
 
     # Computes a SHA-256 checksum for the given string content.
     def self.checksum(content : String) : String
-      "sha256:#{Digest::SHA256.hexdigest(content)}"
+      "sha256:#{SHA256Digest.hexdigest(content)}"
     end
 
     # Computes a SHA-256 checksum for the file at the given path.

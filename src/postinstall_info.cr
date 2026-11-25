@@ -1,5 +1,5 @@
 require "yaml"
-require "digest/sha256"
+require "./sha256_digest"
 require "./helpers"
 
 module Shards
@@ -105,7 +105,7 @@ module Shards
 
     # Computes a SHA-256 hash of a postinstall command string.
     def self.hash_script(command : String) : String
-      "sha256:#{Digest::SHA256.hexdigest(command)}"
+      "sha256:#{SHA256Digest.hexdigest(command)}"
     end
   end
 end
