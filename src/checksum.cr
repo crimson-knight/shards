@@ -1,4 +1,4 @@
-require "digest/sha256"
+require "./sha256_digest"
 require "./config"
 
 module Shards
@@ -66,7 +66,7 @@ module Shards
     end
 
     private def self.digest_entries(list_of_entries : Array({String, String})) : String
-      digest = Digest::SHA256.new
+      digest = SHA256Digest.new
       list_of_entries.sort_by(&.[0]).each do |relative_path, full_path|
         info = File.info(full_path, follow_symlinks: false)
         if info.symlink?
@@ -90,7 +90,7 @@ module Shards
     end
 
     private def self.legacy_digest(path : String, list_of_files : Array(String)) : String
-      digest = Digest::SHA256.new
+      digest = SHA256Digest.new
       list_of_files.sort.each do |relative_path|
         content = legacy_file_content(File.join(path, relative_path))
         digest.update(relative_path)

@@ -1,5 +1,5 @@
 require "json"
-require "digest/sha256"
+require "./sha256_digest"
 require "./lockfile_differ"
 
 module Shards
@@ -47,7 +47,7 @@ module Shards
       updated = changes.select(&.status.updated?).map { |c| change_detail(c) }
 
       checksum = if File.exists?(lockfile_path)
-                   Digest::SHA256.hexdigest(File.read(lockfile_path))
+                   SHA256Digest.hexdigest(File.read(lockfile_path))
                  else
                    "unknown"
                  end

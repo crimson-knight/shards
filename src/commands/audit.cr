@@ -2,7 +2,7 @@ require "./command"
 require "../vulnerability_scanner"
 require "../vulnerability_report"
 require "../purl"
-require "digest/sha256"
+require "../sha256_digest"
 
 module Shards
   module Commands
