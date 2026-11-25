@@ -1,5 +1,11 @@
 # Changelog
 
+## Minecart 2025.11.25.10 (2026-11-25)
+
+- Minecart links no C library beyond the operating system. Built with crystal-alpha 1.22.3-incremental-3, `otool -L` shows `/usr/lib/libSystem.B.dylib` only on macOS, and `ldd` shows the OS layer only on Linux: regex, YAML, compression, encodings and HTTPS come from the compiler's Mica and Beryl, and SHA-256 from a pinned copy of Beryl v0.2.2 under `src/vendor`.
+- Lock checksums are unchanged: every `sha256-v2:`, `sha256:` and `git-tree:` value is byte for byte what 2025.11.25.9 writes and verifies. `install --frozen` of Amber 2.0.0-beta.16, Grant 0.28.2 and Amber CLI 2.0.17 passes, and `lock --rekey` records the same 14 values with either release.
+- Docs headings convert without a regex backreference, so Minecart builds without `-Duse_pcre2`.
+
 ## Minecart 2025.11.25.9 (2026-11-07)
 
 - New `shard.lock` entries record `sha256-v2:` checksums for every fetched dependency: a SHA-256 over each file's path, bytes and mode (regular, executable or symlink), with symlinks recorded by their link text and never followed. A real top-level `lib/` directory is covered; only the `lib` link Minecart writes is left out. A shard that ships a symlink to an absolute path (asset_pipeline does) installs and verifies.
